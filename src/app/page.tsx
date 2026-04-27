@@ -1,0 +1,158 @@
+'use client';
+
+import { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAppStore, type View } from '@/store/appStore';
+import SplashScreen from '@/components/SplashScreen';
+import GeometricBackground from '@/components/GeometricBackground';
+import Header from '@/components/Header';
+import ChatView from '@/components/ChatView';
+import QuizView from '@/components/QuizView';
+import ProfileView from '@/components/ProfileView';
+import AdminPanel from '@/components/AdminPanel';
+import SideDrawer from '@/components/SideDrawer';
+import Footer from '@/components/Footer';
+import { BookOpen, Swords, GraduationCap, Brain, User, Settings } from 'lucide-react';
+
+const TABS: { view: View; label: string; icon: React.ReactNode }[] = [
+  { view: 'chat', label: 'الأيوان العلمي', icon: <BookOpen className="w-5 h-5" /> },
+  { view: 'debate', label: 'المحاور', icon: <Swords className="w-5 h-5" /> },
+  { view: 'teacher', label: 'الأستاذ', icon: <GraduationCap className="w-5 h-5" /> },
+  { view: 'quiz', label: 'اختبر نفسك', icon: <Brain className="w-5 h-5" /> },
+  { view: 'profile', label: 'الملف الشخصي', icon: <User className="w-5 h-5" /> },
+];
+
+const ADMIN_CODE = 'qalamadmin2024';
+
+export default function Home() {
+  const {
+    currentView,
+    setCurrentView,
+    splashComplete,
+    setSheetOpen,
+    setSplashComplete,
+  } = useAppStore();
+
+  // Auto-complete splash after 4.5 seconds as fallback
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!splashComplete) {
+        setSplashComplete(true);
+      }
+    }, 4500);
+    return () => clearTimeout(timer);
+  }, [splashComplete, setSplashComplete]);
+
+  // Listen for admin access via special sequence
+  useEffect(() => {
+    let buffer = '';
+    const handleKeyDown = (e: KeyboardEvent) => {
+      buffer += e.key;
+      if (buffer.length > 20) buffer = buffer.slice(-20);
+      if (buffer.includes(ADMIN_CODE)) {
+        setCurrentView('admin');
+        buffer = '';
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setCurrentView]);
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
+      {/* Splash Screen */}
+      <SplashScreen />
+
+      {/* Geometric Background */}
+      <AnimatePresence>
+        {splashComplete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+            className="fixed inset-0 z-0"
+          >
+            <GeometricBackground />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main App */}
+      <AnimatePresence>
+        {splashComplete && (
+          <motion.div
+            className="relative z-10 flex flex-col min-h-screen"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+          >
+            {/* Header */}
+            <Header onMenuClick={() => setSheetOpen(true)} />
+
+            {/* Side Drawer */}
+            <SideDrawer />
+
+            {/* Main Content */}
+            <main className="flex-1 flex flex-col overflow-hidden">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentView}
+                  className="flex-1 overflow-y-auto"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {currentView === 'chat' && <ChatView />}
+                  {currentView === 'debate' && <ChatView />}
+                  {currentView === 'teacher' && <ChatView />}
+                  {currentView === 'quiz' && <QuizView />}
+                  {currentView === 'profile' && <ProfileView />}
+                  {currentView === 'admin' && <AdminPanel />}
+                </motion.div>
+              </AnimatePresence>
+            </main>
+
+            {/* Bottom Tab Bar */}
+            <nav className="sticky bottom-0 z-30 glass-card border-t border-border/20">
+              <div className="flex items-center justify-around px-1 py-1 max-w-2xl mx-auto">
+                {TABS.map((tab) => {
+                  const isActive = currentView === tab.view;
+                  return (
+                    <motion.button
+                      key={tab.view}
+                      className="flex flex-col items-center gap-0.5 py-2 px-2 rounded-xl transition-all relative min-w-[60px]"
+                      onClick={() => setCurrentView(tab.view)}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeTab"
+                          className="absolute inset-0 bg-primary/10 rounded-xl border border-primary/20"
+                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        />
+                      )}
+                      <span className={`relative z-10 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
+                        {tab.icon}
+                      </span>
+                      <span
+                        className={`relative z-10 text-[9px] sm:text-[10px] font-medium ${
+                          isActive ? 'text-primary' : 'text-muted-foreground'
+                        }`}
+                      >
+                        {tab.label}
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </nav>
+
+            {/* Footer */}
+            <Footer />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

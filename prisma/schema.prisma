@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatar    String?
+  role      String   @default("user") // "user" or "owner"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chatSessions ChatSession[]
+  quizResults  QuizResult[]
+  profiles     UserProfile[]
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  userId    String?
+  title     String?
+  mode      String   @default("chat") // "chat", "debate", "teacher"
+  scholar   String?  // Selected scholar name
+  messages  Message[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  sessionId String
+  role      String   // "user", "assistant", "system"
+  content   String
+  sources   String?  // JSON array of RAG sources
+  createdAt DateTime @default(now())
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model QuizResult {
+  id        String   @id @default(cuid())
+  userId    String?
+  category  String   // "عقائد", "منطق", "علم", "نحو", "فقه"
+  score     Int
+  total     Int      @default(100)
+  answers   String   // JSON array of question/answer pairs
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+}
+
+model UserProfile {
+  id        String   @id @default(cuid())
+  userId    String
+  bio       String?
+  interests String?  // JSON array
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model OwnerSettings {
+  id        String   @id @default(cuid())
+  ragLinks  String?  // JSON array of knowledge base URLs
+  apiKeys   String?  // JSON array of {key, status, name} - status: "active", "waiting", "consumed"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
