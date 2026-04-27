@@ -1,94 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import { BookOpen, Compass, Mic, Calendar, ChevronDown, ChevronUp, Clock, Menu } from 'lucide-react';
+import { BookOpen, Compass, Mic, Calendar, ChevronDown, Clock, Menu } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import QiblaCompass from './QiblaCompass';
-
-// ========== PRAYERS DATA ==========
-const PRAYERS = [
-  {
-    id: 'd Kumail',
-    title: 'دعاء كميل',
-    subtitle: 'الدعاء المروي عن الإمام علي بن أبي طالب (ع)',
-    text: 'اَللّـهُمَّ إِنّي اَسْاَلُكَ بِرَحْمَتِكَ الَّتي وَسِعَتْ كُلَّ شَيْء، وَبِقُوَّتِكَ الَّتي قَهَرَتْ كُلَّ شَيْء، وَخَضَعَ لَها كُلُّ شَيْء، وَذَلَّ لَها كُلُّ شَيْء...',
-  },
-  {
-    id: 'd arafa',
-    title: 'دعاء عرفة',
-    subtitle: 'من أدعية يوم عرفة',
-    text: 'اَلحَمْدُ للهِ رَبِّ الْعالَمينَ، اَللّهُمَّ لكَ الْحَمْدُ كَما يَنْبَغي لِشَانِ كَرَمِكَ وَعَظيمِ سُلْطانِكَ...',
-  },
-  {
-    id: 'd nadba',
-    title: 'دعاء ندبة',
-    subtitle: 'الدعاء المروي عن الإمام المهدي (عج)',
-    text: 'اَلْحَمْدُ للهِ رَبِّ الْعالَمينَ، وَصَلَّى اللهُ عَلى سَيِّدِنا مُحَمَّد نَبيِّهِ وَآلِهِ وَسَلَّمَ تَسْليماً...',
-  },
-  {
-    id: 'd faraj',
-    title: 'دعاء الفرج',
-    subtitle: 'دعاء يُقال في أوقات الشدة',
-    text: 'لا اِلـهَ اِلاّ اللهُ الْحَلِيمُ الْكَرِيمُ، لا اِلـهَ اِلاّ اللهُ الْعَلِيُّ الْعَظيمُ، سُبْحانَ اللهِ رَبِّ السَّماواتِ السَّبْعِ وَرَبِّ الاَرَضينَ السَّبْعِ...',
-  },
-  {
-    id: 'd sanami',
-    title: 'دعاء صنمي قريش',
-    subtitle: 'الدعاء المروي عن أهل البيت (ع)',
-    text: 'اَللّـهُمَّ اِنّي اَسْاَلُكَ مِنْ فَضْلِكَ، وَاَسْاَلُكَ مِنْ رَحْمَتِكَ، وَاَسْاَلُكَ مِنْ عَفْوِكَ...',
-  },
-  {
-    id: 'd tawassul',
-    title: 'دعاء التوسل',
-    subtitle: 'دعاء التوسل بآل محمد (ص)',
-    text: 'اَللّهُمَّ اِنّي اَتَوَجَّهُ اِلَيْكَ بِنَبِيِّكَ نَبِيِّ الرَّحْمَةِ مُحَمَّد صَلَّى اللهُ عَلَيْهِ وَآلِهِ...',
-  },
-  {
-    id: 'd ahd',
-    title: 'دعاء العهد',
-    subtitle: 'يُقرأ أول أيام شهر رجب',
-    text: 'اَللّهُمَّ رَبَّ النّورِ الْعَظيمِ، وَرَبَّ الْكُرْسِيِّ الرَّفيعِ، وَرَبَّ الْبَحْرِ الْمَسْجُورِ...',
-  },
-  {
-    id: 'd simat',
-    title: 'دعاء السمات',
-    subtitle: 'من أدعية الإمام زين العابدين (ع)',
-    text: 'اَللّهُمَّ اجْعَلْ في قَلْبي عَلَماً وَنُوراً وَفَهْماً وَإيماناً وَيَقيناً...',
-  },
-  {
-    id: 'd sabr',
-    title: 'دعاء أهل الصبر',
-    subtitle: 'دعاء لأهل المصائب والصبر',
-    text: 'اَللّهُمَّ صَلِّ عَلى مُحَمَّد وَآلِ مُحَمَّد وَارْزُقْني فِي دارِ الدُّنْيا طاعَتَكَ...',
-  },
-];
-
-const ZIYARAT = [
-  {
-    id: 'z ashura',
-    title: 'زيارة عاشوراء',
-    subtitle: 'الزيارة المقدسة في يوم عاشوراء',
-    text: 'اَلسَّلامُ عَلَيْكَ يا اَبا عَبْدِ اللهِ، اَلسَّلامُ عَلَيْكَ يَابْنَ رَسُولِ اللهِ...',
-  },
-  {
-    id: 'z warith',
-    title: 'زيارة وارث',
-    subtitle: 'الزيارة المروية عن الإمام الصادق (ع)',
-    text: 'اَلسَّلامُ عَلَيْكَ يا وارِثَ آدَمَ صَفْوَةِ اللهِ، اَلسَّلامُ عَلَيْكَ يا وارِثَ نُوح نَبِيِّ اللهِ...',
-  },
-  {
-    id: 'z jamea',
-    title: 'الجامعة الكبيرة',
-    subtitle: 'من أعظم الزيارات',
-    text: 'اَلسَّلامُ عَلَيْكَ يا اَميرَ الْمُؤْمِنينَ، اَلسَّلامُ عَلَيْكَ يا وَلِيَّ اللهِ...',
-  },
-];
 
 // ========== SERMONS DATA ==========
 const SERMONS = [
@@ -162,8 +83,42 @@ const MONTH_NAMES = [
   'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة',
 ];
 
+interface PrayerItem {
+  id: string;
+  title: string;
+  subtitle?: string;
+  category: string;
+  text: string;
+}
+
 export default function SideDrawer() {
   const { sheetOpen, setSheetOpen } = useAppStore();
+  const [prayers, setPrayers] = useState<PrayerItem[]>([]);
+  const [prayersLoading, setPrayersLoading] = useState(true);
+
+  const fetchPrayers = useCallback(async () => {
+    try {
+      setPrayersLoading(true);
+      const res = await fetch('/api/prayers');
+      if (res.ok) {
+        const data = await res.json();
+        setPrayers(data.prayers || []);
+      }
+    } catch {
+      // silent
+    } finally {
+      setPrayersLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (sheetOpen) {
+      fetchPrayers();
+    }
+  }, [sheetOpen, fetchPrayers]);
+
+  const duaItems = prayers.filter((p) => p.category === 'دعاء');
+  const ziyaratItems = prayers.filter((p) => p.category === 'زيارة');
 
   return (
     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -198,17 +153,31 @@ export default function SideDrawer() {
           </TabsList>
 
           <ScrollArea className="h-[calc(100vh-140px)] px-3 pb-6">
-            {/* Prayers Tab */}
+            {/* Prayers Tab - Dynamic from API */}
             <TabsContent value="prayers" className="mt-0 space-y-4">
               <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">الأدعية</h3>
-              {PRAYERS.map((prayer) => (
-                <PrayerCard key={prayer.id} {...prayer} />
-              ))}
+              {prayersLoading ? (
+                <div className="flex items-center justify-center py-6 text-muted-foreground text-xs">
+                  <motion.div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin-slow ml-2" />
+                  جارٍ التحميل...
+                </div>
+              ) : duaItems.length > 0 ? (
+                duaItems.map((prayer) => (
+                  <PrayerCard key={prayer.id} title={prayer.title} subtitle={prayer.subtitle || ''} text={prayer.text} />
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-4">لا توجد أدعية مضافة بعد. يمكن للمالك إضافتها من لوحة التحكم.</p>
+              )}
+
               <Separator className="my-4 bg-primary/10" />
               <h3 className="text-sm font-bold text-foreground/80 mb-3">الزيارات</h3>
-              {ZIYARAT.map((z) => (
-                <PrayerCard key={z.id} {...z} />
-              ))}
+              {ziyaratItems.length > 0 ? (
+                ziyaratItems.map((prayer) => (
+                  <PrayerCard key={prayer.id} title={prayer.title} subtitle={prayer.subtitle || ''} text={prayer.text} />
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-4">لا توجد زيارات مضافة بعد.</p>
+              )}
             </TabsContent>
 
             {/* Qibla Tab */}
@@ -220,7 +189,7 @@ export default function SideDrawer() {
             <TabsContent value="sermons" className="mt-0 space-y-4">
               <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">خطب أمير المؤمنين (ع)</h3>
               {SERMONS.map((sermon) => (
-                <PrayerCard key={sermon.id} {...sermon} />
+                <PrayerCard key={sermon.id} title={sermon.title} subtitle={sermon.subtitle} text={sermon.text} />
               ))}
             </TabsContent>
 
@@ -247,7 +216,6 @@ export default function SideDrawer() {
                 ))}
               </div>
 
-              {/* Countdown hint */}
               <div className="mt-4 p-4 rounded-xl bg-primary/5 border border-primary/10 text-center">
                 <Clock className="w-5 h-5 text-primary mx-auto mb-2" />
                 <p className="text-xs text-muted-foreground">العد التنازلي للمناسبة القادمة سيظهر هنا</p>
@@ -296,7 +264,6 @@ function PrayerCard({ title, subtitle, text }: { title: string; subtitle: string
           >
             <div className="prayer-border mx-3 mb-3">
               <p className="text-sm leading-[2.2] arabic-text text-foreground/80 whitespace-pre-wrap">{text}</p>
-              <p className="text-[10px] text-muted-foreground mt-3 text-center">... إلى آخر الدعاء</p>
             </div>
           </motion.div>
         )}
@@ -304,5 +271,3 @@ function PrayerCard({ title, subtitle, text }: { title: string; subtitle: string
     </motion.div>
   );
 }
-
-

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "قلم كود - المساعد الذكي",
   description: "قلم كود - المساعد الذكي للعلوم الإسلامية. أسئلة، محاورات، اختبارات ومزيد.",
   icons: {
-    icon: "https://www.image2url.com/r2/default/images/1777243027880-4d8eea3f-27a3-4bc6-834b-1a192e3641f3.png",
+    icon: "https://www.image2url.com/r2/default/images/1777330045986-560b3c15-7c7b-4c2f-af23-6499ce631950.png",
   },
 };
 

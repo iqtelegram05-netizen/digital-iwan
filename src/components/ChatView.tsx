@@ -2,48 +2,51 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAppStore, type Message } from '@/store/appStore';
+import { useAppStore, type Message, type ChatMode } from '@/store/appStore';
 import { Send, Trash2, BookOpen, Swords, GraduationCap } from 'lucide-react';
 import CrystalButton from './CrystalButton';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
-const VIEW_CONFIG: Record<string, { title: string; icon: React.ReactNode; placeholder: string }> = {
+const VIEW_CONFIG: Record<string, { title: string; icon: React.ReactNode; placeholder: string; mode: ChatMode }> = {
   chat: {
     title: 'الأيوان العلمي',
     icon: <BookOpen className="w-5 h-5" />,
     placeholder: 'اسأل سؤالك في العلوم الإسلامية...',
+    mode: 'chat',
   },
   debate: {
     title: 'المحاور الرقمي',
     icon: <Swords className="w-5 h-5" />,
     placeholder: 'قدّم حجتك للنقاش...',
+    mode: 'debate',
   },
   teacher: {
     title: 'الأستاذ الرقمي',
     icon: <GraduationCap className="w-5 h-5" />,
     placeholder: 'اسأل أي موضوع تريد فهمه ببساطة...',
+    mode: 'teacher',
   },
 };
 
 export default function ChatView() {
   const {
     currentView,
-    messages,
+    chatState,
     addMessage,
     clearMessages,
-    isLoading,
     setIsLoading,
-    sessionId,
     setSessionId,
     selectedScholar,
   } = useAppStore();
 
+  const config = VIEW_CONFIG[currentView] || VIEW_CONFIG.chat;
+  const chatMode = config.mode;
+  const modeState = chatState[chatMode];
+  const { messages, sessionId, isLoading } = modeState;
+
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const config = VIEW_CONFIG[currentView] || VIEW_CONFIG.chat;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -60,9 +63,9 @@ export default function ChatView() {
       content: input.trim(),
     };
 
-    addMessage(userMessage);
+    addMessage(chatMode, userMessage);
     setInput('');
-    setIsLoading(true);
+    setIsLoading(chatMode, true);
 
     try {
       const res = await fetch('/api/chat', {
@@ -71,7 +74,7 @@ export default function ChatView() {
         body: JSON.stringify({
           message: userMessage.content,
           sessionId,
-          mode: currentView === 'chat' ? 'chat' : currentView === 'debate' ? 'debate' : 'teacher',
+          mode: chatMode,
           scholar: selectedScholar,
         }),
       });
@@ -79,7 +82,7 @@ export default function ChatView() {
       const data = await res.json();
 
       if (data.sessionId) {
-        setSessionId(data.sessionId);
+        setSessionId(chatMode, data.sessionId);
       }
 
       const assistantMessage: Message = {
@@ -89,17 +92,17 @@ export default function ChatView() {
         sources: data.sources,
       };
 
-      addMessage(assistantMessage);
+      addMessage(chatMode, assistantMessage);
     } catch {
-      addMessage({
+      addMessage(chatMode, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: 'عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.',
       });
     } finally {
-      setIsLoading(false);
+      setIsLoading(chatMode, false);
     }
-  }, [input, isLoading, addMessage, currentView, sessionId, selectedScholar, setSessionId, setIsLoading]);
+  }, [input, isLoading, addMessage, chatMode, sessionId, selectedScholar, setSessionId, setIsLoading]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -107,6 +110,10 @@ export default function ChatView() {
       sendMessage();
     }
   };
+
+  const handleClearMessages = useCallback(() => {
+    clearMessages(chatMode);
+  }, [clearMessages, chatMode]);
 
   return (
     <div className="flex flex-col h-full max-w-3xl mx-auto">
@@ -132,7 +139,7 @@ export default function ChatView() {
             variant="ghost"
             size="sm"
             className="text-destructive/70 hover:text-destructive hover:bg-destructive/10 text-xs"
-            onClick={clearMessages}
+            onClick={handleClearMessages}
           >
             <Trash2 className="w-3.5 h-3.5 ml-1" />
             مسح المحادثة

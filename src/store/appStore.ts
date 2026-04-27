@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 export type View = 'splash' | 'chat' | 'debate' | 'teacher' | 'quiz' | 'profile' | 'admin';
-export type SidePanel = 'none' | 'prayers' | 'qibla' | 'sermons' | 'events';
+export type ChatMode = 'chat' | 'debate' | 'teacher';
 
 export interface Message {
   id: string;
@@ -17,27 +17,27 @@ export interface QuizQuestion {
   correctAnswer: number;
 }
 
-export interface AppState {
+interface ModeChatState {
+  messages: Message[];
+  sessionId: string | null;
+  isLoading: boolean;
+}
+
+interface AppState {
   // Views
   currentView: View;
   setCurrentView: (view: View) => void;
-
-  // Side panel
-  sidePanel: SidePanel;
-  setSidePanel: (panel: SidePanel) => void;
 
   // Theme
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
 
-  // Chat
-  messages: Message[];
-  addMessage: (message: Message) => void;
-  clearMessages: () => void;
-  isLoading: boolean;
-  setIsLoading: (loading: boolean) => void;
-  sessionId: string | null;
-  setSessionId: (id: string | null) => void;
+  // Chat - separate state per mode to prevent cross-contamination
+  chatState: Record<ChatMode, ModeChatState>;
+  addMessage: (mode: ChatMode, message: Message) => void;
+  clearMessages: (mode: ChatMode) => void;
+  setIsLoading: (mode: ChatMode, loading: boolean) => void;
+  setSessionId: (mode: ChatMode, id: string | null) => void;
 
   // Scholar selection
   selectedScholar: string | null;
@@ -62,23 +62,65 @@ export interface AppState {
   setSheetOpen: (open: boolean) => void;
 }
 
+const emptyChatState: ModeChatState = {
+  messages: [],
+  sessionId: null,
+  isLoading: false,
+};
+
 export const useAppStore = create<AppState>((set) => ({
   currentView: 'splash',
   setCurrentView: (view) => set({ currentView: view }),
 
-  sidePanel: 'none',
-  setSidePanel: (panel) => set({ sidePanel: panel }),
-
   theme: 'dark',
   setTheme: (theme) => set({ theme }),
 
-  messages: [],
-  addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
-  clearMessages: () => set({ messages: [], sessionId: null }),
-  isLoading: false,
-  setIsLoading: (loading) => set({ isLoading: loading }),
-  sessionId: null,
-  setSessionId: (id) => set({ sessionId: id }),
+  chatState: {
+    chat: { ...emptyChatState },
+    debate: { ...emptyChatState },
+    teacher: { ...emptyChatState },
+  },
+
+  addMessage: (mode, message) =>
+    set((state) => ({
+      chatState: {
+        ...state.chatState,
+        [mode]: {
+          ...state.chatState[mode],
+          messages: [...state.chatState[mode].messages, message],
+        },
+      },
+    })),
+
+  clearMessages: (mode) =>
+    set((state) => ({
+      chatState: {
+        ...state.chatState,
+        [mode]: { ...emptyChatState },
+      },
+    })),
+
+  setIsLoading: (mode, loading) =>
+    set((state) => ({
+      chatState: {
+        ...state.chatState,
+        [mode]: {
+          ...state.chatState[mode],
+          isLoading: loading,
+        },
+      },
+    })),
+
+  setSessionId: (mode, id) =>
+    set((state) => ({
+      chatState: {
+        ...state.chatState,
+        [mode]: {
+          ...state.chatState[mode],
+          sessionId: id,
+        },
+      },
+    })),
 
   selectedScholar: 'السيد علي السيستاني',
   setSelectedScholar: (scholar) => set({ selectedScholar: scholar }),

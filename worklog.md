@@ -176,3 +176,130 @@
 
 ### Issues Encountered
 - None. All operations completed successfully.
+
+---
+
+## Task 4: Database Schema Update, Prayers Management & User Management APIs
+**Agent:** full-stack-developer
+**Date:** 2025-06-15
+**Status:** ✅ Completed
+
+---
+
+### Files Created/Modified
+
+#### 1. Database Schema (`prisma/schema.prisma`)
+- **Updated** the existing schema with new models and fields
+- **New model `LoginLog`**: tracks user login/logout events (userId, email, action, createdAt)
+- **New model `Prayer`**: stores prayers and visitations (title, subtitle, category "دعاء"/"زيارة", text, isPublished)
+- **Updated `User` model**:
+  - Added `role` field expanded: "user", "supervisor", "owner"
+  - Added `isBlocked` field (default false)
+  - Added `lastLogin` DateTime field
+  - Added `loginLogs` relation to LoginLog
+- **Updated `OwnerSettings` model**:
+  - `apiKeys` now includes `createdAt` field in the JSON structure
+- **Database pushed successfully** with `bun run db:push`
+
+#### 2. Prayers Management API (`src/app/api/prayers/route.ts`)
+- **GET** `/api/prayers` — Get all published prayers, optional `?category=دعاء` or `?category=زيارة` filter
+- **POST** `/api/prayers` — Create new prayer (title, subtitle, category, text)
+- **PUT** `/api/prayers` — Update existing prayer (id, title?, subtitle?, category?, text?, isPublished?)
+- **DELETE** `/api/prayers` — Delete prayer by id
+- All CRUD operations with Arabic error messages and proper validation
+
+#### 3. User Management API (`src/app/api/admin/users/route.ts`)
+- **GET** `/api/admin/users` — Get all users with:
+  - Latest login log entry
+  - Total unique login count from loginLogs
+  - Role, blocked status, avatar, creation date
+- **PUT** `/api/admin/users` — Update user role and/or blocked status
+  - Role validation: "user", "supervisor", "owner"
+- **POST** `/api/admin/users` — Block user (creates block, checks if already blocked)
+- **DELETE** `/api/admin/users` — Unblock user (removes block, checks if not blocked)
+
+#### 4. Enhanced Admin API (`src/app/api/admin/route.ts`)
+- **Completely rewritten** with 10-slot API key management system
+- **GET** `/api/admin` — Returns settings with 10 pre-initialized key slots and stats
+- **PUT** `/api/admin` — Update RAG links (replaces entire array)
+- **POST actions:**
+  - `addKey` — Add key to specific slot (slotIndex 0-9). First key auto-set to "active", others to "waiting"
+  - `swapKey` — Replace key in specific slot, preserving status
+  - `removeLink` — Remove specific RAG link URL
+  - `consumeKey` — Mark current active key as "consumed", auto-switch to next "waiting" key
+- **Key slot structure:** `{ key, status, name, createdAt }` with status: "active"/"waiting"/"consumed"
+- **Auto-initialization:** First access creates 10 empty slots named "مفتاح 1" through "مفتاح 10"
+- **Auto-repair:** Ensures exactly 10 slots exist at all times
+
+#### 5. Auth API (`src/app/api/auth/route.ts`)
+- **POST** `/api/auth` — Login: creates user if not exists, updates lastLogin, creates LoginLog, returns userId as token
+- **POST** `/api/auth` (action: logout) — Creates LoginLog with action "logout"
+- **GET** `/api/auth?userId=xxx` — Validates user exists and is not blocked, returns user info
+- Blocked user detection on login (returns 403) and auth check
+
+### Technical Notes
+- All error messages in Arabic
+- Proper input validation on all endpoints
+- API keys auto-management: cannot be manually switched without going through endpoints
+- `consumeKey` action handles automatic key rotation (active → consumed → next waiting → active)
+- ESLint: **0 errors** ✅
+- Dev server: **Running** with no errors ✅
+
+### Issues Encountered
+- None. All operations completed successfully.
+
+---
+
+## Task 3 (Update): Major Frontend Updates - Qalam Code AI Application
+**Agent:** full-stack-developer
+**Date:** 2025-06-15
+**Status:** ✅ Completed
+
+---
+
+### Files Created/Modified
+
+#### 1. Zustand Store (`src/store/appStore.ts`)
+- **Exported** `ChatMode` type for use in components
+
+#### 2. Global CSS (`src/app/globals.css`) — Major Addition
+- **Cosmic Geometric Pattern** (`.cosmic-pattern`): Multi-layered radial gradients + 45° linear grid
+- **Islamic/Shia Pattern Animation** (`.islamic-pattern-bg`): `@keyframes islamic-rise` elevator effect
+- **3D Button Effects** (`.btn-3d`): Perspective transform with translateZ hover/active
+- **Glowing Geometric Borders** (`.glow-border`): Conic-gradient rotating border animation
+- **Hexagonal Grid Overlay** (`.hex-grid-overlay`): CSS-only hex pattern with shimmer
+- **Enhanced Crystal Burst** (`.crystal-burst-particle`): CSS custom properties for directional burst
+- **3D Perspective Container** (`.perspective-3d`)
+- **Geometric Shimmer** (`.geo-shimmer`): Brightness + drop-shadow pulse
+
+#### 3. New Component: IslamicPatternBg (`src/components/IslamicPatternBg.tsx`)
+- 18 floating Islamic/Shia Unicode symbols with CSS-only elevator animation
+
+#### 4. ChatView (`src/components/ChatView.tsx`) — Complete Rewrite
+- Fixed message isolation per mode using `chatState[chatMode]` pattern
+- Each mode has separate messages, sessionId, isLoading
+
+#### 5. CrystalButton (`src/components/CrystalButton.tsx`) — Enhanced 3D
+- 3D perspective hover/active transforms
+- 10 geometric burst particles (hexagon/diamond/circle) per click
+- 5-color palette, edge glow on hover
+
+#### 6. GeometricBackground (`src/components/GeometricBackground.tsx`) — Enhanced
+- 20 shapes with diamond and star types added
+- 4 depth levels for better parallax
+- Shimmer effect on all shapes
+
+#### 7. SplashScreen (`src/components/SplashScreen.tsx`) — Enhanced
+- 30 particles, 10 Islamic floating symbols
+- 16 geometric shapes with diamond type
+- Enhanced central glow and secondary glow ring
+
+#### 8. Main Page (`src/app/page.tsx`) — Background Layers
+- 4 stacked background layers: cosmic, hex grid, Islamic symbols, geometric shapes
+
+### Build Status
+- ESLint: **0 errors** ✅
+- Dev server: **Running** on port 3000 ✅
+
+### Issues Encountered
+- None.

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore, type View } from '@/store/appStore';
 import SplashScreen from '@/components/SplashScreen';
 import GeometricBackground from '@/components/GeometricBackground';
+import IslamicPatternBg from '@/components/IslamicPatternBg';
 import Header from '@/components/Header';
 import ChatView from '@/components/ChatView';
 import QuizView from '@/components/QuizView';
@@ -12,7 +13,7 @@ import ProfileView from '@/components/ProfileView';
 import AdminPanel from '@/components/AdminPanel';
 import SideDrawer from '@/components/SideDrawer';
 import Footer from '@/components/Footer';
-import { BookOpen, Swords, GraduationCap, Brain, User, Settings } from 'lucide-react';
+import { BookOpen, Swords, GraduationCap, Brain, User } from 'lucide-react';
 
 const TABS: { view: View; label: string; icon: React.ReactNode }[] = [
   { view: 'chat', label: 'الأيوان العلمي', icon: <BookOpen className="w-5 h-5" /> },
@@ -63,7 +64,7 @@ export default function Home() {
       {/* Splash Screen */}
       <SplashScreen />
 
-      {/* Geometric Background */}
+      {/* Background Layers */}
       <AnimatePresence>
         {splashComplete && (
           <motion.div
@@ -72,6 +73,13 @@ export default function Home() {
             transition={{ duration: 1 }}
             className="fixed inset-0 z-0"
           >
+            {/* Cosmic pattern (bottom layer) */}
+            <div className="cosmic-pattern" />
+            {/* Hex grid overlay */}
+            <div className="hex-grid-overlay" />
+            {/* Islamic floating symbols */}
+            <IslamicPatternBg />
+            {/* Geometric shapes with parallax */}
             <GeometricBackground />
           </motion.div>
         )}
@@ -93,7 +101,7 @@ export default function Home() {
             <SideDrawer />
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col overflow-hidden">
+            <main className="flex-1 flex flex-col overflow-hidden pb-0">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentView}

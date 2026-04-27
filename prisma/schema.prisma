@@ -12,13 +12,26 @@ model User {
   email     String   @unique
   name      String?
   avatar    String?
-  role      String   @default("user") // "user" or "owner"
+  role      String   @default("user") // "user", "supervisor", "owner"
+  isBlocked Boolean  @default(false)
+  lastLogin DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   chatSessions ChatSession[]
   quizResults  QuizResult[]
   profiles     UserProfile[]
+  loginLogs    LoginLog[]
+}
+
+model LoginLog {
+  id        String   @id @default(cuid())
+  userId    String
+  email     String
+  action    String   @default("login") // "login" or "logout"
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model ChatSession {
@@ -26,7 +39,7 @@ model ChatSession {
   userId    String?
   title     String?
   mode      String   @default("chat") // "chat", "debate", "teacher"
-  scholar   String?  // Selected scholar name
+  scholar   String?
   messages  Message[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -71,7 +84,18 @@ model UserProfile {
 model OwnerSettings {
   id        String   @id @default(cuid())
   ragLinks  String?  // JSON array of knowledge base URLs
-  apiKeys   String?  // JSON array of {key, status, name} - status: "active", "waiting", "consumed"
+  apiKeys   String?  // JSON array of {key, status, name, createdAt}
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Prayer {
+  id          String   @id @default(cuid())
+  title       String
+  subtitle    String?
+  category    String   @default("دعاء") // "دعاء" or "زيارة"
+  text        String
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

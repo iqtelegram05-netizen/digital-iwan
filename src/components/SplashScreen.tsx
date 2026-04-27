@@ -3,14 +3,16 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
 
-const LOGO_URL = 'https://www.image2url.com/r2/default/images/1777243027880-4d8eea3f-27a3-4bc6-834b-1a192e3641f3.png';
+const LOGO_URL = 'https://www.image2url.com/r2/default/images/1777330045986-560b3c15-7c7b-4c2f-af23-6499ce631950.png';
 
-const floatingShapes = Array.from({ length: 12 }, (_, i) => ({
+const ISLAMIC_SYMBOLS = ['☪', '﷽', '✦', '◆', '⬡', '✧', '◈', '✶', '◕', '⬢'];
+
+const floatingShapes = Array.from({ length: 16 }, (_, i) => ({
   id: i,
-  type: (['circle', 'hexagon', 'triangle'] as const)[i % 3],
-  startX: (Math.random() - 0.5) * 200,
-  startY: (Math.random() - 0.5) * 200,
-  size: 15 + Math.random() * 35,
+  type: (['circle', 'hexagon', 'triangle', 'diamond'] as const)[i % 4],
+  startX: (Math.random() - 0.5) * 250,
+  startY: (Math.random() - 0.5) * 250,
+  size: 12 + Math.random() * 40,
   delay: Math.random() * 2,
 }));
 
@@ -26,30 +28,57 @@ export default function SplashScreen() {
           transition={{ duration: 0.8, ease: 'easeInOut' }}
         >
           {/* Green particles */}
-          {Array.from({ length: 20 }).map((_, i) => (
+          {Array.from({ length: 30 }).map((_, i) => (
             <motion.div
               key={`particle-${i}`}
               className="absolute rounded-full bg-emerald-500"
               style={{
-                width: 2 + Math.random() * 4,
-                height: 2 + Math.random() * 4,
-                left: `${10 + Math.random() * 80}%`,
-                top: `${10 + Math.random() * 80}%`,
+                width: 2 + Math.random() * 5,
+                height: 2 + Math.random() * 5,
+                left: `${5 + Math.random() * 90}%`,
+                top: `${5 + Math.random() * 90}%`,
               }}
               initial={{ opacity: 0, scale: 0 }}
               animate={{
                 opacity: [0, 0.8, 0],
                 scale: [0, 1, 0],
-                y: [0, -80 - Math.random() * 60],
-                x: [(Math.random() - 0.5) * 40, (Math.random() - 0.5) * 60],
+                y: [0, -80 - Math.random() * 80],
+                x: [(Math.random() - 0.5) * 50, (Math.random() - 0.5) * 70],
               }}
               transition={{
-                duration: 3 + Math.random() * 2,
-                delay: 0.3 + Math.random() * 1.5,
+                duration: 2.5 + Math.random() * 2,
+                delay: 0.2 + Math.random() * 1.5,
                 repeat: Infinity,
-                repeatDelay: Math.random() * 2,
+                repeatDelay: Math.random() * 1.5,
               }}
             />
+          ))}
+
+          {/* Islamic floating symbols during splash */}
+          {ISLAMIC_SYMBOLS.map((symbol, i) => (
+            <motion.span
+              key={`islamic-${i}`}
+              className="absolute text-emerald-500/10 select-none"
+              style={{
+                fontSize: `${1.5 + Math.random() * 2}rem`,
+                left: `${5 + Math.random() * 90}%`,
+              }}
+              initial={{ y: '100vh', opacity: 0, rotate: 0 }}
+              animate={{
+                y: '-100px',
+                opacity: [0, 0.08, 0.08, 0],
+                rotate: 360,
+              }}
+              transition={{
+                duration: 6 + Math.random() * 6,
+                delay: 0.5 + i * 0.4,
+                repeat: Infinity,
+                repeatDelay: Math.random() * 3,
+                ease: 'linear',
+              }}
+            >
+              {symbol}
+            </motion.span>
           ))}
 
           {/* Geometric shapes flowing from edges to center */}
@@ -61,11 +90,16 @@ export default function SplashScreen() {
                   ? 'geo-circle'
                   : shape.type === 'hexagon'
                   ? 'geo-hexagon'
+                  : shape.type === 'diamond'
+                  ? 'geo-circle'
                   : 'geo-triangle'
               }`}
               style={{
                 width: shape.size,
                 height: shape.size,
+                clipPath: shape.type === 'diamond'
+                  ? 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)'
+                  : undefined,
               }}
               initial={{
                 x: shape.startX * 3,
@@ -90,13 +124,21 @@ export default function SplashScreen() {
 
           {/* Central glow */}
           <motion.div
-            className="absolute w-48 h-48 rounded-full"
+            className="absolute w-56 h-56 rounded-full"
             style={{
-              background: 'radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(16,185,129,0.35) 0%, rgba(16,185,129,0.1) 40%, transparent 70%)',
             }}
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: [0, 2, 1.5], opacity: [0, 0.8, 0.5] }}
+            animate={{ scale: [0, 2.2, 1.5], opacity: [0, 0.9, 0.6] }}
             transition={{ duration: 2.5, delay: 1, ease: 'easeOut' }}
+          />
+
+          {/* Secondary glow ring */}
+          <motion.div
+            className="absolute w-72 h-72 rounded-full border border-emerald-500/10"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: [0, 1.5, 1.2], opacity: [0, 0.3, 0.15], rotate: 180 }}
+            transition={{ duration: 3, delay: 1.2, ease: 'easeOut' }}
           />
 
           {/* Logo */}
