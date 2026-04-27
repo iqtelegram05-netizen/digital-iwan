@@ -87,8 +87,8 @@ export default function QuizView() {
   }, [quizCategory, quizQuestions, quizAnswers, setQuizScore]);
 
   const getGrade = (score: number) => {
-    if (score >= 90) return { label: 'ممتاز', color: 'text-emerald-500' };
-    if (score >= 80) return { label: 'جيد جداً', color: 'text-emerald-400' };
+    if (score >= 90) return { label: 'ممتاز', color: 'text-sky-500' };
+    if (score >= 80) return { label: 'جيد جداً', color: 'text-sky-400' };
     if (score >= 70) return { label: 'جيد', color: 'text-yellow-500' };
     if (score >= 50) return { label: 'مقبول', color: 'text-orange-500' };
     return { label: 'يحتاج تحسين', color: 'text-red-500' };
@@ -113,7 +113,7 @@ export default function QuizView() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary green-glow">
+          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary sky-glow">
             <Brain className="w-10 h-10" />
           </div>
           <h2 className="text-xl font-bold text-foreground">اختبر نفسك</h2>
@@ -161,7 +161,7 @@ export default function QuizView() {
           <h2 className="text-2xl font-bold">نتيجة الاختبار</h2>
 
           <motion.div
-            className="text-6xl font-bold text-primary green-glow-text"
+            className="text-6xl font-bold text-primary sky-glow-text"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, delay: 0.3 }}
@@ -187,14 +187,14 @@ export default function QuizView() {
                   transition={{ delay: 0.5 + i * 0.1 }}
                 >
                   {isCorrect ? (
-                    <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <CheckCircle className="w-4 h-4 text-sky-500 shrink-0 mt-0.5" />
                   ) : (
                     <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="font-medium mb-1">{q.question}</p>
                     {!isCorrect && (
-                      <p className="text-xs text-emerald-500">
+                      <p className="text-xs text-sky-500">
                         الإجابة الصحيحة: {q.options[q.correctAnswer]}
                       </p>
                     )}
@@ -258,7 +258,7 @@ export default function QuizView() {
                   variant={isSelected ? 'default' : 'outline'}
                   className={`w-full h-auto py-3 px-4 text-right justify-start text-sm rounded-xl transition-all ${
                     isSelected
-                      ? 'bg-primary text-primary-foreground shadow-lg green-glow'
+                      ? 'bg-primary text-primary-foreground shadow-lg sky-glow'
                       : 'border-primary/20 hover:bg-primary/10 hover:border-primary/40'
                   }`}
                   onClick={() => setQuizAnswer(question.id, idx)}

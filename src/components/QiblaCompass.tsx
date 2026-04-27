@@ -98,7 +98,7 @@ export default function QiblaCompass() {
               style={{
                 height: isMain ? '10px' : '5px',
                 width: isMain ? '2px' : '1px',
-                background: isMain ? '#10b981' : 'rgba(16,185,129,0.3)',
+                background: isMain ? '#0ea5e9' : 'rgba(14,165,233,0.3)',
                 transformOrigin: '50% 112px',
                 transform: `rotate(${angle}deg)`,
               }}
@@ -137,7 +137,7 @@ export default function QiblaCompass() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <p className="text-3xl font-bold text-primary green-glow-text">{Math.round(direction)}°</p>
+          <p className="text-3xl font-bold text-primary sky-glow-text">{Math.round(direction)}°</p>
           <p className="text-sm text-muted-foreground">{bearing}</p>
         </motion.div>
       )}

@@ -16,7 +16,7 @@ interface BurstParticle {
   color: string;
 }
 
-const COLORS = ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#059669'];
+const COLORS = ['#0ea5e9', '#38bdf8', '#7dd3fc', '#bae6fd', '#0284c7'];
 
 function getShapeClip(shape: 'hexagon' | 'diamond' | 'circle') {
   switch (shape) {
@@ -96,7 +96,7 @@ export default function CrystalButton({ children, className, onClick, ...props }
         <motion.div
           className="absolute inset-0 rounded-[inherit] opacity-0"
           style={{
-            boxShadow: 'inset 0 0 20px rgba(16,185,129,0.2), 0 0 15px rgba(16,185,129,0.15)',
+            boxShadow: 'inset 0 0 20px rgba(14,165,233,0.2), 0 0 15px rgba(14,165,233,0.15)',
           }}
           whileHover={{ opacity: 1 }}
           transition={{ duration: 0.3 }}

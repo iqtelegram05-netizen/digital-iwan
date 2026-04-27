@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
+import { useTheme } from 'next-themes';
 
 const LOGO_URL = 'https://www.image2url.com/r2/default/images/1777330045986-560b3c15-7c7b-4c2f-af23-6499ce631950.png';
 
@@ -18,20 +19,35 @@ const floatingShapes = Array.from({ length: 16 }, (_, i) => ({
 
 export default function SplashScreen() {
   const { splashComplete, setSplashComplete } = useAppStore();
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+
+  // Dynamic colors based on theme
+  const particleColor = isDark ? 'bg-sky-500' : 'bg-sky-500';
+  const symbolColor = isDark ? 'text-sky-500/10' : 'text-sky-500/8';
+  const glowColor = isDark
+    ? 'radial-gradient(circle, rgba(14,165,233,0.35) 0%, rgba(14,165,233,0.1) 40%, transparent 70%)'
+    : 'radial-gradient(circle, rgba(14,165,233,0.25) 0%, rgba(14,165,233,0.08) 40%, transparent 70%)';
+  const ringColor = isDark ? 'border-sky-500/10' : 'border-sky-500/15';
+  const titleColor = isDark ? 'text-sky-400' : 'text-sky-600';
+  const subtitleColor = isDark ? 'text-sky-300/60' : 'text-sky-700/60';
+  const glowTextClass = isDark ? 'sky-glow-text' : '';
+  const bgColor = isDark ? 'bg-[#050505]' : 'bg-gradient-to-br from-sky-50 via-white to-sky-50';
+  const spinnerBorder = isDark ? 'border-sky-500/30 border-t-sky-500' : 'border-sky-400/30 border-t-sky-500';
 
   return (
     <AnimatePresence>
       {!splashComplete && (
         <motion.div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-[#050505] overflow-hidden"
+          className={`fixed inset-0 z-[100] flex items-center justify-center ${bgColor} overflow-hidden`}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8, ease: 'easeInOut' }}
         >
-          {/* Green particles */}
+          {/* Particles */}
           {Array.from({ length: 30 }).map((_, i) => (
             <motion.div
               key={`particle-${i}`}
-              className="absolute rounded-full bg-emerald-500"
+              className={`absolute rounded-full ${particleColor}`}
               style={{
                 width: 2 + Math.random() * 5,
                 height: 2 + Math.random() * 5,
@@ -58,7 +74,7 @@ export default function SplashScreen() {
           {ISLAMIC_SYMBOLS.map((symbol, i) => (
             <motion.span
               key={`islamic-${i}`}
-              className="absolute text-emerald-500/10 select-none"
+              className={`absolute ${symbolColor} select-none`}
               style={{
                 fontSize: `${1.5 + Math.random() * 2}rem`,
                 left: `${5 + Math.random() * 90}%`,
@@ -125,9 +141,7 @@ export default function SplashScreen() {
           {/* Central glow */}
           <motion.div
             className="absolute w-56 h-56 rounded-full"
-            style={{
-              background: 'radial-gradient(circle, rgba(16,185,129,0.35) 0%, rgba(16,185,129,0.1) 40%, transparent 70%)',
-            }}
+            style={{ background: glowColor }}
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: [0, 2.2, 1.5], opacity: [0, 0.9, 0.6] }}
             transition={{ duration: 2.5, delay: 1, ease: 'easeOut' }}
@@ -135,7 +149,7 @@ export default function SplashScreen() {
 
           {/* Secondary glow ring */}
           <motion.div
-            className="absolute w-72 h-72 rounded-full border border-emerald-500/10"
+            className={`absolute w-72 h-72 rounded-full border ${ringColor}`}
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: [0, 1.5, 1.2], opacity: [0, 0.3, 0.15], rotate: 180 }}
             transition={{ duration: 3, delay: 1.2, ease: 'easeOut' }}
@@ -156,7 +170,7 @@ export default function SplashScreen() {
               transition={{ duration: 4, delay: 2.5, repeat: Infinity, ease: 'easeInOut' }}
             />
             <motion.h1
-              className="text-2xl sm:text-3xl font-bold text-emerald-400 green-glow-text"
+              className={`text-2xl sm:text-3xl font-bold ${titleColor} ${glowTextClass}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 2.5, duration: 0.8 }}
@@ -164,7 +178,7 @@ export default function SplashScreen() {
               قلم كود
             </motion.h1>
             <motion.p
-              className="text-emerald-300/60 text-sm"
+              className={`${subtitleColor} text-sm`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 3, duration: 0.6 }}
@@ -181,7 +195,7 @@ export default function SplashScreen() {
             transition={{ delay: 3.2, duration: 0.5 }}
           >
             <motion.div
-              className="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin-slow"
+              className={`w-12 h-12 border-2 ${spinnerBorder} rounded-full animate-spin-slow`}
               onAnimationComplete={() => setSplashComplete(true)}
             />
           </motion.div>

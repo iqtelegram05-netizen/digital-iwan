@@ -156,7 +156,7 @@ export default function ChatView() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary green-glow">
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary sky-glow">
               {config.icon}
             </div>
             <p className="text-sm text-center max-w-xs">{config.placeholder}</p>

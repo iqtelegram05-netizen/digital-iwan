@@ -98,7 +98,7 @@ export default function GeometricBackground() {
             width: shape.size,
             height: shape.size,
             opacity: shape.opacity,
-            borderColor: isDark ? 'rgba(16,185,129,0.3)' : 'rgba(16,185,129,0.2)',
+            borderColor: isDark ? 'rgba(14,165,233,0.3)' : 'rgba(14,165,233,0.2)',
             animationDelay: `${shape.delay}s`,
             animationDuration: `${shape.duration}s`,
             clipPath: getClipPath(shape.type),

@@ -65,16 +65,16 @@ const SERMONS = [
 
 // ========== EVENTS DATA ==========
 const HIJRI_EVENTS = [
-  { month: 1, day: 1, title: 'رأس السنة الهجرية', color: 'bg-emerald-500' },
+  { month: 1, day: 1, title: 'رأس السنة الهجرية', color: 'bg-sky-500' },
   { month: 1, day: 10, title: 'عاشوراء - استشهاد الإمام الحسين (ع)', color: 'bg-red-600' },
   { month: 2, day: 20, title: 'أربعينية الحسين (ع)', color: 'bg-red-600' },
-  { month: 3, day: 17, title: 'مولد النبي محمد (ص) والإمام الصادق (ع)', color: 'bg-emerald-500' },
-  { month: 7, day: 27, title: 'المبعث النبوي', color: 'bg-emerald-500' },
-  { month: 8, day: 15, title: 'مولد الإمام المهدي (عج)', color: 'bg-emerald-500' },
+  { month: 3, day: 17, title: 'مولد النبي محمد (ص) والإمام الصادق (ع)', color: 'bg-sky-500' },
+  { month: 7, day: 27, title: 'المبعث النبوي', color: 'bg-sky-500' },
+  { month: 8, day: 15, title: 'مولد الإمام المهدي (عج)', color: 'bg-sky-500' },
   { month: 9, day: 19, title: 'ضربة الإمام علي (ع)', color: 'bg-yellow-600' },
   { month: 9, day: 21, title: 'شهادة الإمام علي (ع)', color: 'bg-red-600' },
   { month: 9, day: 27, title: 'ليلة القدر', color: 'bg-blue-500' },
-  { month: 12, day: 18, title: 'عيد الغدير الأغر', color: 'bg-emerald-500' },
+  { month: 12, day: 18, title: 'عيد الغدير الأغر', color: 'bg-sky-500' },
 ];
 
 const MONTH_NAMES = [

@@ -48,12 +48,12 @@ export default function ProfileView() {
           {/* Avatar area */}
           <div className="relative h-32 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent flex items-center justify-center">
             <motion.div
-              className="w-24 h-24 rounded-full bg-primary/20 border-4 border-primary/30 flex items-center justify-center green-glow"
+              className="w-24 h-24 rounded-full bg-primary/20 border-4 border-primary/30 flex items-center justify-center sky-glow"
               whileHover={{ scale: 1.05 }}
             >
               <User className="w-10 h-10 text-primary" />
             </motion.div>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(16,185,129,0.1),transparent)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(14,165,233,0.1),transparent)]" />
           </div>
 
           <CardContent className="p-6 space-y-5">

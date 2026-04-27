@@ -74,7 +74,7 @@ interface PrayerItem {
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  active: { label: 'يعمل', color: 'bg-emerald-500 text-white' },
+  active: { label: 'يعمل', color: 'bg-sky-500 text-white' },
   waiting: { label: 'قيد الانتظار', color: 'bg-yellow-500 text-white' },
   consumed: { label: 'مستهلك', color: 'bg-red-500 text-white' },
 };
@@ -299,7 +299,7 @@ export default function AdminPanel() {
       >
         {/* Header */}
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center green-glow">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center sky-glow">
             <Shield className="w-6 h-6 text-primary" />
           </div>
           <div>
@@ -375,7 +375,7 @@ export default function AdminPanel() {
                   مفاتيح API (10 خانات)
                   {data?.stats && (
                     <div className="flex gap-1 mr-auto">
-                      <Badge variant="secondary" className="text-[9px] bg-emerald-500/20 text-emerald-600">{data.stats.activeKeys} يعمل</Badge>
+                      <Badge variant="secondary" className="text-[9px] bg-sky-500/20 text-sky-600">{data.stats.activeKeys} يعمل</Badge>
                       <Badge variant="secondary" className="text-[9px] bg-yellow-500/20 text-yellow-600">{data.stats.waitingKeys} انتظار</Badge>
                       <Badge variant="secondary" className="text-[9px] bg-red-500/20 text-red-600">{data.stats.consumedKeys} مستهلك</Badge>
                     </div>
@@ -507,7 +507,7 @@ export default function AdminPanel() {
                             </Select>
 
                             {user.isBlocked ? (
-                              <CrystalButton variant="outline" size="sm" className="h-7 text-[10px] border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-600 rounded-lg" onClick={() => updateUser(user.id, { isBlocked: false })} disabled={saving}>
+                              <CrystalButton variant="outline" size="sm" className="h-7 text-[10px] border-sky-500/30 hover:bg-sky-500/10 text-sky-600 rounded-lg" onClick={() => updateUser(user.id, { isBlocked: false })} disabled={saving}>
                                 <ShieldCheck className="w-3 h-3 ml-1" />
                                 رفع الحظر
                               </CrystalButton>
