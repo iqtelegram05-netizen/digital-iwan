@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+// بريد المالك - يُعيّن تلقائياً كمالك عند تسجيل الدخول
+const OWNER_EMAILS = ['iqtelegram05@gmail.com'];
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get('code');
@@ -57,18 +60,35 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}/?auth_error=no_email`);
     }
 
-    // حفظ/تحديث المستخدم في قاعدة البيانات (مع تجاهل الأخطاء)
+    // حفظ/تحديث المستخدم في قاعدة البيانات
     let userId = googleId;
     let userRole = 'user';
 
     try {
       let user = await db.user.findUnique({ where: { email } });
+      const isOwner = OWNER_EMAILS.includes(email);
+
       if (!user) {
-        user = await db.user.create({ data: { email, name, avatar, lastLogin: new Date() } });
+        user = await db.user.create({
+          data: {
+            email,
+            name,
+            avatar,
+            lastLogin: new Date(),
+            role: isOwner ? 'owner' : 'user',
+          },
+        });
       } else {
+        // تحديث المالك دائماً (حتى لو تم تغيير دوره)
+        const updateData: Record<string, unknown> = {
+          lastLogin: new Date(),
+          ...(name ? { name } : {}),
+          ...(avatar ? { avatar } : {}),
+        };
+        if (isOwner) updateData.role = 'owner';
         user = await db.user.update({
           where: { id: user.id },
-          data: { lastLogin: new Date(), ...(name ? { name } : {}), ...(avatar ? { avatar } : {}) },
+          data: updateData,
         });
       }
       userId = user.id;

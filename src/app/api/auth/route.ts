@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+// بريد المالك - يُعيّن تلقائياً كمالك عند تسجيل الدخول
+const OWNER_EMAILS = ['iqtelegram05@gmail.com'];
+
 // POST: Login (Google or manual) or Logout
 export async function POST(request: NextRequest) {
   try {
@@ -45,6 +48,7 @@ export async function POST(request: NextRequest) {
 
     // Login action - create user if not exists
     let user = await db.user.findUnique({ where: { email } });
+    const isOwner = OWNER_EMAILS.includes(email);
 
     if (!user) {
       // Create new user
@@ -54,17 +58,20 @@ export async function POST(request: NextRequest) {
           name: name || null,
           avatar: avatar || null,
           lastLogin: new Date(),
+          role: isOwner ? 'owner' : 'user',
         },
       });
     } else {
       // Update last login and info
+      const updateData: Record<string, unknown> = {
+        lastLogin: new Date(),
+        ...(name ? { name } : {}),
+        ...(avatar ? { avatar } : {}),
+      };
+      if (isOwner) updateData.role = 'owner';
       user = await db.user.update({
         where: { id: user.id },
-        data: {
-          lastLogin: new Date(),
-          ...(name ? { name } : {}),
-          ...(avatar ? { avatar } : {}),
-        },
+        data: updateData,
       });
     }
 

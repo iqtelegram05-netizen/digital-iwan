@@ -10,7 +10,8 @@ import CrystalButton from './CrystalButton';
 import { useAppStore, type UserProfile } from '@/store/appStore';
 import {
   User, Save, Sparkles, LogOut, Mail, Calendar, Shield,
-  ChevronLeft, LogIn, Loader2, AlertCircle, CheckCircle2
+  ChevronLeft, LogIn, Loader2, AlertCircle, CheckCircle2, Settings,
+  Crown
 } from 'lucide-react';
 
 const INTEREST_OPTIONS = [
@@ -37,7 +38,7 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
 }
 
 export default function ProfileView() {
-  const { user, setUser } = useAppStore();
+  const { user, setUser, setCurrentView } = useAppStore();
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [interests, setInterests] = useState<string[]>([]);
@@ -148,9 +149,9 @@ export default function ProfileView() {
       // 2. حفظ في localStorage (للاستمرارية)
       localStorage.setItem('iwan_user', JSON.stringify(userData));
 
-      // 3. إرسال للسيرفر لحفظ في قاعدة البيانات (في الخلفية)
+      // 3. إرسال للسيرفر لحفظ في قاعدة البيانات + تحديث الدور
       try {
-        await fetch('/api/auth', {
+        const authRes = await fetch('/api/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -159,9 +160,21 @@ export default function ProfileView() {
             avatar: userData.avatar,
           }),
         });
+        if (authRes.ok) {
+          const authData = await authRes.json();
+          if (authData.user) {
+            // تحديث بيانات المستخدم من السيرفر (يشمل الدور)
+            const updatedUser: UserProfile = {
+              ...userData,
+              id: authData.user.id || userData.id,
+              role: authData.user.role || userData.role,
+            };
+            setUser(updatedUser);
+            localStorage.setItem('iwan_user', JSON.stringify(updatedUser));
+          }
+        }
       } catch (serverErr) {
         console.warn('Server auth save failed (non-critical):', serverErr);
-        // لا نمنع تسجيل الدخول إذا فشل الحفظ في السيرفر
       }
 
       setLoginStatus('success');
@@ -421,6 +434,19 @@ export default function ProfileView() {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              {/* زر لوحة التحكم - للمالك والمشرفين */}
+              {(user.role === 'owner' || user.role === 'supervisor') && (
+                <motion.button
+                  onClick={() => setCurrentView('admin')}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-purple-500/30 bg-purple-500/5 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300 transition-all text-sm"
+                  whileTap={{ scale: 0.97 }}
+                >
+                  {user.role === 'owner' ? <Crown className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
+                  <Settings className="w-4 h-4" />
+                  لوحة التحكم
+                </motion.button>
+              )}
 
               <motion.button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-destructive/30 text-destructive/80 hover:bg-destructive/10 hover:text-destructive transition-all text-sm" whileTap={{ scale: 0.97 }}>
                 <LogOut className="w-4 h-4" />

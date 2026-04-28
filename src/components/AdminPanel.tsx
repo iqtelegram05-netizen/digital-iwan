@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import CrystalButton from './CrystalButton';
+import { useAppStore } from '@/store/appStore';
 import {
   Key,
   Link2,
@@ -31,6 +32,7 @@ import {
   ShieldAlert,
   Save,
   Eye,
+  ArrowRight,
 } from 'lucide-react';
 
 // ========== Types ==========
@@ -88,6 +90,7 @@ const ROLE_CONFIG: Record<string, { label: string; color: string }> = {
 type AdminTab = 'keys' | 'users' | 'prayers';
 
 export default function AdminPanel() {
+  const { setCurrentView } = useAppStore();
   const [activeTab, setActiveTab] = useState<AdminTab>('keys');
   const [data, setData] = useState<AdminData | null>(null);
   const [users, setUsers] = useState<AppUser[]>([]);
@@ -298,14 +301,25 @@ export default function AdminPanel() {
         animate={{ opacity: 1, y: 0 }}
       >
         {/* Header */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center sky-glow">
-            <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+        <div className="flex items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center sky-glow">
+              <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-base sm:text-xl font-bold">لوحة التحكم</h2>
+              <p className="text-xs text-muted-foreground">للمالك والمشرفين حصراً</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-base sm:text-xl font-bold">لوحة التحكم</h2>
-            <p className="text-xs text-muted-foreground">للمالك والمشرفين حصراً</p>
-          </div>
+          <CrystalButton
+            variant="outline"
+            size="sm"
+            className="border-primary/20 hover:bg-primary/10 text-xs gap-1"
+            onClick={() => setCurrentView('profile')}
+          >
+            <ArrowRight className="w-4 h-4" />
+            العودة
+          </CrystalButton>
         </div>
 
         {/* Tab Selector */}
