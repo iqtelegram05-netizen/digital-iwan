@@ -290,17 +290,18 @@ export default function AdminPanel() {
     if (!confirm('هل أنت متأكد من حذف جميع الأدعية والزيارات والخطب ومفاتيح API؟\nهذا الإجراء لا يمكن التراجع عنه.')) return;
     setSaving(true);
     try {
-      const res = await fetch('/api/setup/clean');
-      if (res.ok) {
-        const json = await res.json();
+      const res = await fetch('/api/setup/clean', { method: 'POST' });
+      const json = await res.json();
+      if (json.success) {
         // Re-fetch data after cleaning
         await fetchData();
-        alert(`تم المسح بنجاح!\n- أدعية/زيارات/خطب محذوفة: ${json.details?.deletedPrayers || 0}\n- إعدادات محذوفة: ${json.details?.deletedSettings || 0}`);
+        const lines = Object.entries(json.details || {}).map(([k, v]) => `${k}: ${v}`).join('\n');
+        alert(`نتيجة المسح:\n${lines}`);
       } else {
-        alert('حدث خطأ أثناء مسح البيانات');
+        alert(`خطأ: ${json.error || 'غير معروف'}\n${json.details || ''}`);
       }
-    } catch {
-      alert('حدث خطأ أثناء الاتصال بالخادم');
+    } catch (err) {
+      alert('خطأ في الاتصال: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setSaving(false);
     }

@@ -1,30 +1,30 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// نقطة نهاية لمسح البيانات الوهمية (مفاتيح API + الأدعية/الخطب/الزيارات)
-export async function GET() {
+// نقطة نهاية لمسح البيانات الوهمية باستخدام SQL مباشر
+export async function POST() {
   try {
-    const results: Record<string, number> = {};
+    const results: Record<string, string> = {};
 
-    // 1. حذف جميع الأدعية والزيارات والخطب
+    // 1. حذف جميع الأدعية والزيارات والخطب بالـ SQL المباشر
     try {
-      const deletePrayers = await db.prayer.deleteMany({});
-      results['deletedPrayers'] = deletePrayers.count;
+      await db.$executeRawUnsafe('DELETE FROM "Prayer"');
+      results['prayers'] = 'تم حذف جميع الأدعية والزيارات والخطب';
     } catch (e) {
-      console.warn('Delete prayers warning:', e);
-      results['deletedPrayers'] = 0;
+      console.error('Delete prayers error:', e);
+      results['prayers'] = 'خطأ: ' + (e instanceof Error ? e.message : String(e));
     }
 
-    // 2. حذف إعدادات المالك (مفاتيح API وروابط RAG)
+    // 2. حذف إعدادات المالك بالـ SQL المباشر
     try {
-      const deleteSettings = await db.ownerSettings.deleteMany({});
-      results['deletedSettings'] = deleteSettings.count;
+      await db.$executeRawUnsafe('DELETE FROM "OwnerSettings"');
+      results['settings'] = 'تم حذف إعدادات المالك';
     } catch (e) {
-      console.warn('Delete settings warning:', e);
-      results['deletedSettings'] = 0;
+      console.error('Delete settings error:', e);
+      results['settings'] = 'خطأ: ' + (e instanceof Error ? e.message : String(e));
     }
 
-    // 3. إعادة إنشاء إعدادات المالك فارغة
+    // 3. إعادة إنشاء إعدادات فارغة
     try {
       await db.ownerSettings.create({
         data: {
@@ -39,15 +39,25 @@ export async function GET() {
           ),
         },
       });
-      results['createdSettings'] = 1;
+      results['newSettings'] = 'تم إنشاء إعدادات فارغة';
     } catch (e) {
-      console.warn('Create settings warning:', e);
-      results['createdSettings'] = 0;
+      console.error('Create settings error:', e);
+      results['newSettings'] = 'خطأ: ' + (e instanceof Error ? e.message : String(e));
+    }
+
+    // 4. التحقق من النتيجة
+    try {
+      const prayerCount = await db.$queryRawUnsafe('SELECT COUNT(*)::int as count FROM "Prayer"') as Array<{ count: number }>;
+      const settingsCount = await db.$queryRawUnsafe('SELECT COUNT(*)::int as count FROM "OwnerSettings"') as Array<{ count: number }>;
+      results['remainingPrayers'] = String(prayerCount[0]?.count ?? 'غير معروف');
+      results['remainingSettings'] = String(settingsCount[0]?.count ?? 'غير معروف');
+    } catch (e) {
+      results['verification'] = 'خطأ في التحقق';
     }
 
     return NextResponse.json({
       success: true,
-      message: 'تم مسح جميع البيانات الوهمية بنجاح',
+      message: 'تم المسح',
       details: results,
     });
   } catch (error) {
