@@ -322,3 +322,38 @@ Text input area in all chat sections was floating in the middle of the screen in
 
 ### Build Status
 - Build: **Successful** ✅
+
+---
+
+## Task 6: Delete Old Sermons & Add Clean Data Button
+**Agent:** main
+**Date:** 2026-04-28
+**Status:** ✅ Completed
+
+### Problem
+User reported that old placeholder sermons/prayers/API keys were not deleted from the database. The admin panel was only showing published items, so drafts were invisible.
+
+### Changes Made
+
+#### 1. `/api/prayers` (`src/app/api/prayers/route.ts`)
+- Added `?all=true` query parameter support for admin panel
+- When `?all=true`, fetches ALL prayers/sermons/visits regardless of publish status
+- Default behavior unchanged: only published items for public-facing requests
+
+#### 2. `AdminPanel.tsx` (`src/components/AdminPanel.tsx`)
+- Changed fetch from `/api/prayers` to `/api/prayers?all=true` so admin sees all items
+- Added `clearAllData()` function that calls `/api/setup/clean` endpoint
+- Added red "مسح البيانات" (Clear Data) button in admin header next to "العودة" button
+- Button shows confirmation dialog before deleting
+- After clearing, auto-refreshes data and shows results
+
+#### 3. Clean Endpoint (`/api/setup/clean`) — Already Existed
+- Deletes all prayers/sermons/visits from Prayer table
+- Deletes all owner settings (API keys + RAG links)
+- Re-creates empty settings with 10 blank API key slots
+- Returns count of deleted items
+
+### Notes
+- "خطب" category already existed in VALID_CATEGORIES
+- AdminPanel already had "خطب" as a SelectItem option
+- User needs to deploy and click "مسح البيانات" button to clear old data
