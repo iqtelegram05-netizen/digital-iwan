@@ -84,7 +84,7 @@ export default function SideDrawer() {
   return (
     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
       <SheetContent side="right" className="w-[90vw] max-w-md p-0 bg-background/95 backdrop-blur-xl">
-        <SheetHeader className="p-4 pb-0 pr-10 border-b border-border/20">
+        <SheetHeader className="p-4 pb-0 border-b border-border/20">
           <SheetTitle className="flex items-center gap-2 text-primary text-lg">
             القائمة الرئيسية
           </SheetTitle>
