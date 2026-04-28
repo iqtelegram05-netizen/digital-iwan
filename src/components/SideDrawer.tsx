@@ -126,7 +126,7 @@ export default function SideDrawer() {
                   {duaItems.map((prayer, idx) => (
                     <motion.button
                       key={prayer.id}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-card/40 border border-primary/10 hover:bg-primary/10 hover:border-primary/30 transition-all text-right group"
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-card/40 border border-primary/10 hover:bg-primary/10 hover:border-primary/30 transition-all text-right group overflow-hidden"
                       onClick={() => handleOpen(prayer)}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -136,14 +136,14 @@ export default function SideDrawer() {
                       <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
                         <BookOpen className="w-4 h-4 text-primary" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{prayer.title}</p>
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">{prayer.title}</p>
                         {prayer.subtitle && (
                           <p className="text-[10px] text-muted-foreground truncate mt-0.5">{prayer.subtitle}</p>
                         )}
                       </div>
                       <motion.div
-                        className="text-primary/40 group-hover:text-primary transition-colors"
+                        className="shrink-0 text-primary/40 group-hover:text-primary transition-colors"
                         whileHover={{ x: -3 }}
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -164,7 +164,7 @@ export default function SideDrawer() {
                   {ziyaratItems.map((prayer, idx) => (
                     <motion.button
                       key={prayer.id}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-card/40 border border-primary/10 hover:bg-primary/10 hover:border-primary/30 transition-all text-right group"
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-card/40 border border-primary/10 hover:bg-primary/10 hover:border-primary/30 transition-all text-right group overflow-hidden"
                       onClick={() => handleOpen(prayer)}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -174,14 +174,14 @@ export default function SideDrawer() {
                       <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
                         <Compass className="w-4 h-4 text-primary" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{prayer.title}</p>
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">{prayer.title}</p>
                         {prayer.subtitle && (
                           <p className="text-[10px] text-muted-foreground truncate mt-0.5">{prayer.subtitle}</p>
                         )}
                       </div>
                       <motion.div
-                        className="text-primary/40 group-hover:text-primary transition-colors"
+                        className="shrink-0 text-primary/40 group-hover:text-primary transition-colors"
                         whileHover={{ x: -3 }}
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -214,7 +214,7 @@ export default function SideDrawer() {
                   {sermonItems.map((prayer, idx) => (
                     <motion.button
                       key={prayer.id}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-card/40 border border-primary/10 hover:bg-primary/10 hover:border-primary/30 transition-all text-right group"
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-card/40 border border-primary/10 hover:bg-primary/10 hover:border-primary/30 transition-all text-right group overflow-hidden"
                       onClick={() => handleOpen(prayer)}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -224,14 +224,14 @@ export default function SideDrawer() {
                       <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
                         <Mic className="w-4 h-4 text-primary" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{prayer.title}</p>
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">{prayer.title}</p>
                         {prayer.subtitle && (
                           <p className="text-[10px] text-muted-foreground truncate mt-0.5">{prayer.subtitle}</p>
                         )}
                       </div>
                       <motion.div
-                        className="text-primary/40 group-hover:text-primary transition-colors"
+                        className="shrink-0 text-primary/40 group-hover:text-primary transition-colors"
                         whileHover={{ x: -3 }}
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
