@@ -68,8 +68,26 @@ export default function ProfileView() {
 
         const googleUser = await res.json();
 
-        // إرسال البيانات للسيرفر لحفظها
-        const loginRes = await fetch('/api/auth', {
+        if (!googleUser.email) {
+          console.error('Google login: no email returned');
+          setLoading(false);
+          return;
+        }
+
+        // حفظ المستخدم محلياً مباشرة من بيانات Google
+        const userProfile: UserProfile = {
+          id: googleUser.sub || Date.now().toString(),
+          email: googleUser.email,
+          name: googleUser.name || null,
+          avatar: googleUser.picture || null,
+          role: 'user',
+          isBlocked: false,
+          lastLogin: new Date().toISOString(),
+        };
+        saveUserLocally(userProfile);
+
+        // محاولة إرسال البيانات للسيرفر (في الخلفية، لا ننتظره)
+        fetch('/api/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -77,22 +95,24 @@ export default function ProfileView() {
             name: googleUser.name,
             avatar: googleUser.picture,
           }),
+        }).then((loginRes) => {
+          return loginRes.json();
+        }).then((loginData) => {
+          if (loginData.user) {
+            const updatedProfile: UserProfile = {
+              id: loginData.user.id,
+              email: loginData.user.email,
+              name: loginData.user.name,
+              avatar: loginData.user.avatar,
+              role: loginData.user.role,
+              isBlocked: loginData.user.isBlocked,
+              lastLogin: loginData.user.lastLogin,
+            };
+            saveUserLocally(updatedProfile);
+          }
+        }).catch(() => {
+          // تجاهل خطأ السيرفر - المستخدم محفوظ محلياً
         });
-
-        const loginData = await loginRes.json();
-
-        if (loginData.user) {
-          const userProfile: UserProfile = {
-            id: loginData.user.id,
-            email: loginData.user.email,
-            name: loginData.user.name,
-            avatar: loginData.user.avatar,
-            role: loginData.user.role,
-            isBlocked: loginData.user.isBlocked,
-            lastLogin: loginData.user.lastLogin,
-          };
-          saveUserLocally(userProfile);
-        }
       } catch (error) {
         console.error('Google login error:', error);
       } finally {
