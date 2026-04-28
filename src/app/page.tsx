@@ -39,23 +39,34 @@ export default function Home() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const authSuccess = params.get('auth_success');
+    const authError = params.get('auth_error');
 
+    // معالجة نجاح تسجيل الدخول (من التبويب الكامل fallback)
     if (authSuccess) {
       try {
-        const userData: UserProfile = JSON.parse(atob(authSuccess));
+        const decoded = decodeURIComponent(authSuccess);
+        const userData: UserProfile = JSON.parse(atob(decoded));
         if (userData.email) {
           localStorage.setItem('iwan_user', JSON.stringify(userData));
           setUser(userData);
           setCurrentView('profile');
         }
-      } catch {
-        // تجاهل خطأ فك التشفير
+      } catch (e) {
+        console.error('Failed to parse auth_success:', e);
       }
       // تنظيف URL
       window.history.replaceState({}, '', '/');
     }
 
-    // استعادة المستخدم من localStorage إذا لم يكن موجوداً
+    // معالجة خطأ تسجيل الدخول
+    if (authError) {
+      console.error('Google auth error:', authError);
+      window.history.replaceState({}, '', '/');
+      // إظهار رسالة خطأ للمستخدم عبر tab الملف الشخصي
+      setCurrentView('profile');
+    }
+
+    // استعادة المستخدم من localStorage (دائماً)
     const savedUser = localStorage.getItem('iwan_user');
     if (savedUser) {
       try {

@@ -8,11 +8,14 @@ export async function GET(request: NextRequest) {
   const origin = request.nextUrl.origin;
 
   if (error) {
-    return NextResponse.redirect(`${origin}/?auth_error=${encodeURIComponent(error)}`);
+    // إذا كان الطلب من نافذة منبثقة، نرسل خطأ عبر postMessage
+    const html = getPopupHtml(origin, null, error);
+    return new NextResponse(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   }
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/?auth_error=no_code`);
+    const html = getPopupHtml(origin, null, 'no_code');
+    return new NextResponse(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   }
 
   try {
@@ -37,6 +40,7 @@ export async function GET(request: NextRequest) {
 
     if (!tokenData.id_token) {
       console.error('No id_token in response:', JSON.stringify(tokenData));
+      // توجيه عادي مع خطأ
       return NextResponse.redirect(`${origin}/?auth_error=no_token`);
     }
 
@@ -71,10 +75,8 @@ export async function GET(request: NextRequest) {
       userRole = user.role;
     } catch (dbError) {
       console.error('DB error (non-critical):', dbError);
-      // نتجاوز خطأ قاعدة البيانات
     }
 
-    // إعادة التوجيه مع بيانات المستخدم
     const userData = JSON.stringify({
       id: userId,
       email,
@@ -86,9 +88,52 @@ export async function GET(request: NextRequest) {
     });
 
     const encoded = Buffer.from(userData).toString('base64');
-    return NextResponse.redirect(`${origin}/?auth_success=${encodeURIComponent(encoded)}`);
+
+    // إذا كان الطلب من نافذة منبثقة، نرسل البيانات عبر postMessage
+    const html = getPopupHtml(origin, encoded, null);
+    return new NextResponse(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
   } catch (err) {
     console.error('Google auth callback error:', err);
     return NextResponse.redirect(`${origin}/?auth_error=server_error`);
   }
+}
+
+// HTML page that sends user data back to the opener via postMessage
+function getPopupHtml(origin: string, encoded: string | null, error: string | null) {
+  const userDataJson = encoded ? JSON.stringify(atob(encoded)) : 'null';
+  const errorMsg = error ? JSON.stringify(error) : 'null';
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Google Login</title></head>
+<body>
+<script>
+  try {
+    if (window.opener && !window.opener.closed) {
+      var userData = ${userDataJson};
+      var error = ${errorMsg};
+      if (userData) {
+        var userObj = JSON.parse(userData);
+        window.opener.postMessage({ type: 'google_auth_success', user: userObj }, '${origin}');
+      } else if (error) {
+        window.opener.postMessage({ type: 'google_auth_error', error: error }, '${origin}');
+      }
+    }
+    window.close();
+  } catch(e) {
+    // fallback: redirect to home
+    var encoded = ${encoded ? `'${encoded}'` : 'null'};
+    var error = ${errorMsg};
+    if (encoded) {
+      window.location.href = '${origin}/?auth_success=' + encodeURIComponent(encoded);
+    } else {
+      window.location.href = '${origin}/?auth_error=' + encodeURIComponent(error || 'unknown');
+    }
+  }
+</script>
+<p style="text-align:center;padding:40px;font-family:Arial,sans-serif;color:#666;">
+  جارٍ إتمام تسجيل الدخول...
+</p>
+</body>
+</html>`;
 }
