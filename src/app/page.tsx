@@ -72,32 +72,13 @@ export default function Home() {
       try {
         const parsed = JSON.parse(savedUser);
         if (parsed && parsed.email) {
+          // التحقق من دور المالك مباشرة في الواجهة
+          const ownerEmails = ['iqtelegram05@gmail.com'];
+          if (ownerEmails.includes(parsed.email.toLowerCase()) && parsed.role !== 'owner') {
+            parsed.role = 'owner';
+            localStorage.setItem('iwan_user', JSON.stringify(parsed));
+          }
           setUser(parsed);
-
-          // التحقق من الدور من السيرفر (لتحديث دور المالك تلقائياً)
-          const userId = parsed.id;
-          const userEmail = parsed.email;
-          const params = new URLSearchParams();
-          if (userId) params.set('userId', userId);
-          if (userEmail) params.set('email', userEmail);
-          fetch(`/api/auth?${params.toString()}`)
-            .then(res => res.ok ? res.json() : null)
-            .then(authData => {
-              if (authData && authData.valid && authData.user) {
-                const updated: UserProfile = {
-                  ...parsed,
-                  id: authData.user.id || parsed.id,
-                  role: authData.user.role || parsed.role,
-                  isBlocked: authData.user.isBlocked ?? parsed.isBlocked,
-                  lastLogin: authData.user.lastLogin || parsed.lastLogin,
-                  name: authData.user.name || parsed.name,
-                  avatar: authData.user.avatar || parsed.avatar,
-                };
-                setUser(updated);
-                localStorage.setItem('iwan_user', JSON.stringify(updated));
-              }
-            })
-            .catch(() => {}); // تجاهل أخطاء التوثيق
         }
       } catch {
         localStorage.removeItem('iwan_user');

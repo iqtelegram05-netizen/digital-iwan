@@ -19,6 +19,13 @@ const INTEREST_OPTIONS = [
   'فلسفة إسلامية', 'منطق', 'نحو', 'بلاغة', 'أصول الفقه',
 ];
 
+// بريد المالك - يُعيّن مباشرة في الواجهة
+const OWNER_EMAILS = ['iqtelegram05@gmail.com'];
+
+function isOwnerEmail(email: string): boolean {
+  return OWNER_EMAILS.includes(email.toLowerCase());
+}
+
 // فك تشفير JWT بدون مكتبات خارجية
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
@@ -133,12 +140,13 @@ export default function ProfileView() {
         throw new Error('فشل فك تشفير بيانات Google');
       }
 
+      const userEmail = payload.email as string;
       const userData: UserProfile = {
-        id: (payload.sub as string) || (payload.email as string),
-        email: payload.email as string,
+        id: (payload.sub as string) || userEmail,
+        email: userEmail,
         name: (payload.name as string) || null,
         avatar: (payload.picture as string) || null,
-        role: 'user',
+        role: isOwnerEmail(userEmail) ? 'owner' : 'user',
         isBlocked: false,
         lastLogin: new Date().toISOString(),
       };
@@ -435,8 +443,8 @@ export default function ProfileView() {
                 )}
               </AnimatePresence>
 
-              {/* زر لوحة التحكم - للمالك والمشرفين */}
-              {(user.role === 'owner' || user.role === 'supervisor') && (
+              {/* زر لوحة التحكم - يظهر للمالك دائماً */}
+              {(user.role === 'owner' || user.role === 'supervisor' || isOwnerEmail(user.email)) && (
                 <motion.button
                   onClick={() => setCurrentView('admin')}
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-purple-500/30 bg-purple-500/5 text-purple-400 hover:bg-purple-500/10 hover:text-purple-300 transition-all text-sm"
