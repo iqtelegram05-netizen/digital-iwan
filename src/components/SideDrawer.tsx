@@ -11,58 +11,6 @@ import { BookOpen, Compass, Mic, Calendar, ChevronDown, Clock, Menu } from 'luci
 import { Separator } from '@/components/ui/separator';
 import QiblaCompass from './QiblaCompass';
 
-// ========== SERMONS DATA ==========
-const SERMONS = [
-  {
-    id: 's qasiya',
-    title: 'الخطبة القاصعة',
-    subtitle: 'من خُطب أمير المؤمنين (ع) في نهج البلاغة',
-    text: 'فَإِنَّ أَوْلَى النّاسِ بِالأَنْبِيَاءِ أَعْمَلُهُمْ بِما جاءُوا بِهِ، ثُمَّ تَلا ذلِكَ قَوْلُهُ عَزَّ وَجَلَّ: "إِنَّ الَّذينَ يُؤْمِنُونَ وَيَعْمَلُونَ الصّالِحاتِ أُولئِكَ هُمْ خَيْرُ الْبَرِيَّةِ"...',
-  },
-  {
-    id: 's nh1',
-    title: 'نهج البلاغة - الخطبة 1',
-    subtitle: 'أول الخطب في نهج البلاغة',
-    text: 'اَلْحَمْدُ للهِ الَّذي لا يُبْلِغُ مَدْحَهُ الْقائِلُونَ، وَلا يُحْصِي نَعْماءَهُ الْعادُّونَ، وَلا يُؤَدّي حَقَّهُ الْمُجْتَهِدُونَ...',
-  },
-  {
-    id: 's nh3',
-    title: 'نهج البلاغة - الخطبة 3',
-    subtitle: 'الخطبة الشقشقية',
-    text: 'أَمَا وَاللهِ لَوَدِدْتُ أَنَّ مُحَمَّداً صَلَّى اللهُ عَلَيْهِ وَآلِهِ لَمْ يُبْعَثْ قَطُّ، وَأَنَّ لِي كَبِدَي شَقّاً بِما أَرى مِنْ هَلْكِ أُمَّتِي...',
-  },
-  {
-    id: 's nh16',
-    title: 'نهج البلاغة - الخطبة 16',
-    subtitle: 'في صفات المتقين',
-    text: 'اَلتَّقْوى هِيَ الْخَيْرُ كُلُّهُ، وَهِيَ السِّلْمُ كُلُّهُ، وَالْحُكْمَةُ كُلُّها، وَالْبِرُّ كُلُّهُ...',
-  },
-  {
-    id: 's nh183',
-    title: 'نهج البلاغة - الخطبة 183',
-    subtitle: 'في صفات الله تعالى',
-    text: 'اَلْحَمْدُ للهِ الَّذي لا يَصْطَفِي مِنْ خَلْقِهِ سِوَى مَنْ عَلِمَ أَنَّ النِّعْمَةَ مِنْهُ...',
-  },
-  {
-    id: 's nh216',
-    title: 'نهج البلاغة - الخطبة 216',
-    subtitle: 'في الوعظ والتذكير',
-    text: 'أَيُّهَا النّاسُ، إِنَّمَا الدُّنْيا دارُ مَمَرٍّ لا دارُ مَقَرٍّ، وَالنّاسُ فيها رَجُلانِ: رَجُلٌ باعَ نَفْسَهُ فَأَتْبَعَها...',
-  },
-  {
-    id: 's mutaqin',
-    title: 'خطبة المتقين',
-    subtitle: 'في صفات المتقين',
-    text: 'وَقَدْ تَخَلَّوْا مِنَ الدُّنْيا فَتَخَلَّتْ مِنْهُمْ، وَتَخَلَّتْ مِنْهُمْ فَتَخَلَّوْا مِنْها...',
-  },
-  {
-    id: 's ashthar',
-    title: 'عهد مالك الأشتر',
-    subtitle: 'وصية الإمام علي (ع) لمالك الأشتر عند توليه مصر',
-    text: 'هذا ما أَمَرَ بِهِ عَبْدُ اللهِ عَلِيٌّ أَميرُ الْمُؤْمِنينَ مالِكاً الْأَشْتَرَ حِينَ وَلَّاهُ مِصْرَ...',
-  },
-];
-
 // ========== EVENTS DATA ==========
 const HIJRI_EVENTS = [
   { month: 1, day: 1, title: 'رأس السنة الهجرية', color: 'bg-sky-500' },
@@ -119,6 +67,7 @@ export default function SideDrawer() {
 
   const duaItems = prayers.filter((p) => p.category === 'دعاء');
   const ziyaratItems = prayers.filter((p) => p.category === 'زيارة');
+  const sermonItems = prayers.filter((p) => p.category === 'خطب');
 
   return (
     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -185,12 +134,21 @@ export default function SideDrawer() {
               <QiblaCompass />
             </TabsContent>
 
-            {/* Sermons Tab */}
+            {/* Sermons Tab - Dynamic from API */}
             <TabsContent value="sermons" className="mt-0 space-y-4">
-              <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">خطب أمير المؤمنين (ع)</h3>
-              {SERMONS.map((sermon) => (
-                <PrayerCard key={sermon.id} title={sermon.title} subtitle={sermon.subtitle} text={sermon.text} />
-              ))}
+              <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">الخطب</h3>
+              {prayersLoading ? (
+                <div className="flex items-center justify-center py-6 text-muted-foreground text-xs">
+                  <motion.div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin-slow ml-2" />
+                  جارٍ التحميل...
+                </div>
+              ) : sermonItems.length > 0 ? (
+                sermonItems.map((prayer) => (
+                  <PrayerCard key={prayer.id} title={prayer.title} subtitle={prayer.subtitle || ''} text={prayer.text} />
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-4">لا توجد خطب مضافة بعد. يمكن للمالك إضافتها من لوحة التحكم.</p>
+              )}
             </TabsContent>
 
             {/* Events Tab */}
