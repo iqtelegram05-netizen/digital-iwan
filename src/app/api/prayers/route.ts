@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+const VALID_CATEGORIES = ['دعاء', 'زيارة', 'خطب'];
+
 // GET: Get all published prayers, optionally filtered by category
 export async function GET(request: NextRequest) {
   try {
@@ -8,7 +10,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
 
     const where: Record<string, unknown> = { isPublished: true };
-    if (category && (category === 'دعاء' || category === 'زيارة')) {
+    if (category && VALID_CATEGORIES.includes(category)) {
       where.category = category;
     }
 
@@ -21,13 +23,13 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Prayers GET Error:', error);
     return NextResponse.json(
-      { error: 'حدث خطأ أثناء جلب الأدعية والزيارات' },
+      { error: 'حدث خطأ أثناء جلب البيانات' },
       { status: 500 }
     );
   }
 }
 
-// POST: Create a new prayer
+// POST: Create a new prayer/sermon
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -40,9 +42,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (category && category !== 'دعاء' && category !== 'زيارة') {
+    if (category && !VALID_CATEGORIES.includes(category)) {
       return NextResponse.json(
-        { error: 'الفئة يجب أن تكون "دعاء" أو "زيارة"' },
+        { error: `الفئة يجب أن تكون إحدى: ${VALID_CATEGORIES.join('، ')}` },
         { status: 400 }
       );
     }
@@ -58,19 +60,19 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { message: 'تم إضافة الدعاء بنجاح', prayer },
+      { message: 'تم الإضافة بنجاح', prayer },
       { status: 201 }
     );
   } catch (error) {
     console.error('Prayers POST Error:', error);
     return NextResponse.json(
-      { error: 'حدث خطأ أثناء إضافة الدعاء' },
+      { error: 'حدث خطأ أثناء الإضافة' },
       { status: 500 }
     );
   }
 }
 
-// PUT: Update a prayer
+// PUT: Update a prayer/sermon
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
@@ -78,7 +80,7 @@ export async function PUT(request: NextRequest) {
 
     if (!id) {
       return NextResponse.json(
-        { error: 'معرف الدعاء مطلوب' },
+        { error: 'المعرف مطلوب' },
         { status: 400 }
       );
     }
@@ -86,7 +88,7 @@ export async function PUT(request: NextRequest) {
     const existing = await db.prayer.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json(
-        { error: 'الدعاء غير موجود' },
+        { error: 'غير موجود' },
         { status: 404 }
       );
     }
@@ -95,9 +97,9 @@ export async function PUT(request: NextRequest) {
     if (title !== undefined) updateData.title = title;
     if (subtitle !== undefined) updateData.subtitle = subtitle;
     if (category !== undefined) {
-      if (category !== 'دعاء' && category !== 'زيارة') {
+      if (!VALID_CATEGORIES.includes(category)) {
         return NextResponse.json(
-          { error: 'الفئة يجب أن تكون "دعاء" أو "زيارة"' },
+          { error: `الفئة يجب أن تكون إحدى: ${VALID_CATEGORIES.join('، ')}` },
           { status: 400 }
         );
       }
@@ -112,19 +114,19 @@ export async function PUT(request: NextRequest) {
     });
 
     return NextResponse.json({
-      message: 'تم تحديث الدعاء بنجاح',
+      message: 'تم التحديث بنجاح',
       prayer,
     });
   } catch (error) {
     console.error('Prayers PUT Error:', error);
     return NextResponse.json(
-      { error: 'حدث خطأ أثناء تحديث الدعاء' },
+      { error: 'حدث خطأ أثناء التحديث' },
       { status: 500 }
     );
   }
 }
 
-// DELETE: Delete a prayer
+// DELETE: Delete a prayer/sermon
 export async function DELETE(request: NextRequest) {
   try {
     const body = await request.json();
@@ -132,7 +134,7 @@ export async function DELETE(request: NextRequest) {
 
     if (!id) {
       return NextResponse.json(
-        { error: 'معرف الدعاء مطلوب' },
+        { error: 'المعرف مطلوب' },
         { status: 400 }
       );
     }
@@ -140,18 +142,18 @@ export async function DELETE(request: NextRequest) {
     const existing = await db.prayer.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json(
-        { error: 'الدعاء غير موجود' },
+        { error: 'غير موجود' },
         { status: 404 }
       );
     }
 
     await db.prayer.delete({ where: { id } });
 
-    return NextResponse.json({ message: 'تم حذف الدعاء بنجاح' });
+    return NextResponse.json({ message: 'تم الحذف بنجاح' });
   } catch (error) {
     console.error('Prayers DELETE Error:', error);
     return NextResponse.json(
-      { error: 'حدث خطأ أثناء حذف الدعاء' },
+      { error: 'حدث خطأ أثناء الحذف' },
       { status: 500 }
     );
   }

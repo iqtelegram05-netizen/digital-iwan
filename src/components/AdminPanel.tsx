@@ -327,7 +327,7 @@ export default function AdminPanel() {
           {([
             { id: 'keys', label: 'المفاتيح والروابط', icon: Key },
             { id: 'users', label: 'المستخدمون', icon: Users },
-            { id: 'prayers', label: 'الأدعية والزيارات', icon: BookOpen },
+            { id: 'prayers', label: 'الأدعية والخطب', icon: BookOpen },
           ] as const).map((tab) => (
             <CrystalButton
               key={tab.id}
@@ -557,12 +557,12 @@ export default function AdminPanel() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-primary" />
-                  إضافة دعاء أو زيارة
+                  إضافة دعاء أو زيارة أو خطبة
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex gap-2">
-                  <Input value={prayerTitle} onChange={(e) => setPrayerTitle(e.target.value)} placeholder="عنوان الدعاء أو الزيارة" className="text-xs border-primary/20 bg-card/50" />
+                  <Input value={prayerTitle} onChange={(e) => setPrayerTitle(e.target.value)} placeholder="العنوان" className="text-xs border-primary/20 bg-card/50" />
                   <Input value={prayerSubtitle} onChange={(e) => setPrayerSubtitle(e.target.value)} placeholder="وصف مختصر" className="text-xs border-primary/20 bg-card/50" />
                   <Select value={prayerCategory} onValueChange={setPrayerCategory}>
                     <SelectTrigger className="w-24 text-xs border-primary/20 bg-card/50">
@@ -571,10 +571,11 @@ export default function AdminPanel() {
                     <SelectContent>
                       <SelectItem value="دعاء" className="text-xs">دعاء</SelectItem>
                       <SelectItem value="زيارة" className="text-xs">زيارة</SelectItem>
+                      <SelectItem value="خطب" className="text-xs">خطب</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <Textarea value={prayerText} onChange={(e) => setPrayerText(e.target.value)} placeholder="نص الدعاء أو الزيارة..." className="min-h-[120px] text-xs border-primary/20 bg-card/50 resize-none" />
+                <Textarea value={prayerText} onChange={(e) => setPrayerText(e.target.value)} placeholder="النص..." className="min-h-[120px] text-xs border-primary/20 bg-card/50 resize-none" />
                 <CrystalButton className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg" onClick={addPrayer} disabled={saving || !prayerTitle.trim() || !prayerText.trim()}>
                   <Save className="w-4 h-4 ml-2" />
                   إضافة
@@ -587,7 +588,7 @@ export default function AdminPanel() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Eye className="w-4 h-4 text-primary" />
-                  الأدعية والزيارات المضافة
+                  الأدعية والزيارات والخطب المضافة
                   <Badge variant="secondary" className="text-[10px] mr-auto">{prayers.length} عنصر</Badge>
                 </CardTitle>
               </CardHeader>
@@ -595,7 +596,7 @@ export default function AdminPanel() {
                 {loading ? spinner : (
                   <ScrollArea className="max-h-[400px]">
                     <div className="space-y-2">
-                      {prayers.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">لم تتم إضافة أي أدعية أو زيارات بعد</p>}
+                      {prayers.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">لم تتم إضافة أي عناصر بعد</p>}
                       {prayers.map((prayer) => (
                         <div key={prayer.id} className="flex items-start gap-3 p-3 rounded-lg bg-card/50 border border-border/30">
                           <div className="flex-1 min-w-0">
