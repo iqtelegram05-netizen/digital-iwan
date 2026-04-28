@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAppStore, type View } from '@/store/appStore';
+import { useAppStore, type View, type UserProfile } from '@/store/appStore';
 import SplashScreen from '@/components/SplashScreen';
 import GeometricBackground from '@/components/GeometricBackground';
 import IslamicPatternBg from '@/components/IslamicPatternBg';
@@ -32,17 +32,56 @@ export default function Home() {
     splashComplete,
     setSheetOpen,
     setSplashComplete,
+    setUser,
   } = useAppStore();
+
+  // معالجة تسجيل الدخول من Google - يُنفذ دائماً عند تحميل الصفحة
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const authSuccess = params.get('auth_success');
+
+    if (authSuccess) {
+      try {
+        const userData: UserProfile = JSON.parse(atob(authSuccess));
+        if (userData.email) {
+          localStorage.setItem('iwan_user', JSON.stringify(userData));
+          setUser(userData);
+          setCurrentView('profile');
+        }
+      } catch {
+        // تجاهل خطأ فك التشفير
+      }
+      // تنظيف URL
+      window.history.replaceState({}, '', '/');
+    }
+
+    // استعادة المستخدم من localStorage إذا لم يكن موجوداً
+    const savedUser = localStorage.getItem('iwan_user');
+    if (savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        if (parsed && parsed.email) {
+          setUser(parsed);
+        }
+      } catch {
+        localStorage.removeItem('iwan_user');
+      }
+    }
+  }, [setUser, setCurrentView]);
 
   // Auto-complete splash after 4.5 seconds as fallback
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!splashComplete) {
         setSplashComplete(true);
+        // إذا لم يكن هناك view محدد، اذهب للدردشة
+        if (currentView === 'splash') {
+          setCurrentView('chat');
+        }
       }
     }, 4500);
     return () => clearTimeout(timer);
-  }, [splashComplete, setSplashComplete]);
+  }, [splashComplete, setSplashComplete, currentView, setCurrentView]);
 
   // Listen for admin access via special sequence
   useEffect(() => {
@@ -73,13 +112,9 @@ export default function Home() {
             transition={{ duration: 1 }}
             className="fixed inset-0 z-0"
           >
-            {/* Cosmic pattern (bottom layer) */}
             <div className="cosmic-pattern" />
-            {/* Hex grid overlay */}
             <div className="hex-grid-overlay" />
-            {/* Islamic floating symbols */}
             <IslamicPatternBg />
-            {/* Geometric shapes with parallax */}
             <GeometricBackground />
           </motion.div>
         )}
@@ -87,20 +122,16 @@ export default function Home() {
 
       {/* Main App */}
       <AnimatePresence>
-        {splashComplete && (
+        {splashComplete && currentView !== 'splash' && (
           <motion.div
             className="relative z-10 flex flex-col h-full min-h-0"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
           >
-            {/* Header */}
             <Header onMenuClick={() => setSheetOpen(true)} />
-
-            {/* Side Drawer */}
             <SideDrawer />
 
-            {/* Main Content */}
             <main className="flex-1 flex flex-col overflow-hidden pb-0">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -156,7 +187,6 @@ export default function Home() {
               </div>
             </nav>
 
-            {/* Footer */}
             <Footer />
           </motion.div>
         )}

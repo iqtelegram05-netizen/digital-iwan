@@ -5,25 +5,30 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get('code');
   const error = searchParams.get('error');
+  const origin = request.nextUrl.origin;
 
   if (error) {
-    return NextResponse.redirect(`${request.nextUrl.origin}/?auth_error=${encodeURIComponent(error)}`);
+    return NextResponse.redirect(`${origin}/?auth_error=${encodeURIComponent(error)}`);
   }
 
   if (!code) {
-    return NextResponse.redirect(`${request.nextUrl.origin}/?auth_error=no_code`);
+    return NextResponse.redirect(`${origin}/?auth_error=no_code`);
   }
 
   try {
+    const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET || '';
+    const redirectUri = `${origin}/auth/google/callback`;
+
     // تبادل الكود بـ tokens
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         code,
-        client_id: process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
-        client_secret: process.env.GOOGLE_CLIENT_SECRET || '',
-        redirect_uri: `${request.nextUrl.origin}/auth/google/callback`,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
         grant_type: 'authorization_code',
       }),
     });
@@ -31,7 +36,8 @@ export async function GET(request: NextRequest) {
     const tokenData = await tokenRes.json();
 
     if (!tokenData.id_token) {
-      return NextResponse.redirect(`${request.nextUrl.origin}/?auth_error=no_token`);
+      console.error('No id_token in response:', JSON.stringify(tokenData));
+      return NextResponse.redirect(`${origin}/?auth_error=no_token`);
     }
 
     // فك تشفير JWT
@@ -44,13 +50,15 @@ export async function GET(request: NextRequest) {
     const googleId = payload.sub;
 
     if (!email) {
-      return NextResponse.redirect(`${request.nextUrl.origin}/?auth_error=no_email`);
+      return NextResponse.redirect(`${origin}/?auth_error=no_email`);
     }
 
-    // حفظ/تحديث المستخدم في قاعدة البيانات
-    let user;
+    // حفظ/تحديث المستخدم في قاعدة البيانات (مع تجاهل الأخطاء)
+    let userId = googleId;
+    let userRole = 'user';
+
     try {
-      user = await db.user.findUnique({ where: { email } });
+      let user = await db.user.findUnique({ where: { email } });
       if (!user) {
         user = await db.user.create({ data: { email, name, avatar, lastLogin: new Date() } });
       } else {
@@ -59,12 +67,12 @@ export async function GET(request: NextRequest) {
           data: { lastLogin: new Date(), ...(name ? { name } : {}), ...(avatar ? { avatar } : {}) },
         });
       }
-    } catch {
-      // إذا فشلت قاعدة البيانات (مثل Vercel)، نتجاوز
+      userId = user.id;
+      userRole = user.role;
+    } catch (dbError) {
+      console.error('DB error (non-critical):', dbError);
+      // نتجاوز خطأ قاعدة البيانات
     }
-
-    const userId = user?.id || googleId;
-    const userRole = user?.role || 'user';
 
     // إعادة التوجيه مع بيانات المستخدم
     const userData = JSON.stringify({
@@ -77,11 +85,10 @@ export async function GET(request: NextRequest) {
       lastLogin: new Date().toISOString(),
     });
 
-    // تشفير base64 للبيانات
     const encoded = Buffer.from(userData).toString('base64');
-    return NextResponse.redirect(`${request.nextUrl.origin}/?auth_success=${encodeURIComponent(encoded)}`);
+    return NextResponse.redirect(`${origin}/?auth_success=${encodeURIComponent(encoded)}`);
   } catch (err) {
     console.error('Google auth callback error:', err);
-    return NextResponse.redirect(`${request.nextUrl.origin}/?auth_error=server_error`);
+    return NextResponse.redirect(`${origin}/?auth_error=server_error`);
   }
 }
