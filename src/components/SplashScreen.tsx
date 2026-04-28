@@ -165,7 +165,7 @@ export default function SplashScreen() {
             <motion.img
               src={LOGO_URL}
               alt="قلم كود"
-              className="w-28 h-28 sm:w-36 sm:h-36 object-contain"
+              className="w-48 h-48 sm:w-60 sm:h-60 object-contain"
               animate={{ rotate: [0, 2, -2, 0] }}
               transition={{ duration: 4, delay: 2.5, repeat: Infinity, ease: 'easeInOut' }}
             />
