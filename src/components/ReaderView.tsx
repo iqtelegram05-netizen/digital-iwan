@@ -204,20 +204,18 @@ export default function ReaderView() {
     <div className="flex flex-col h-full">
       {/* Header Bar */}
       <motion.div
-        className="shrink-0 px-3 sm:px-4 pt-2 pb-2 glass-card border-b border-primary/10"
+        className="shrink-0 px-3 sm:px-4 pt-2 pb-2 glass-card border-b border-primary/10 overflow-hidden"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <CrystalButton
-              variant="outline"
-              size="sm"
-              className="shrink-0 border-primary/20 hover:bg-primary/10"
+        <div className="flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+            <button
+              className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border border-primary/20 hover:bg-primary/10 transition-colors"
               onClick={() => setCurrentView('chat')}
             >
-              <ArrowRight className="w-4 h-4" />
-            </CrystalButton>
+              <ArrowRight className="w-4 h-4 text-foreground/70" />
+            </button>
             <div className="min-w-0">
               <p className="text-sm font-bold truncate">{readerItem.title}</p>
               {readerItem.subtitle && (
@@ -226,28 +224,30 @@ export default function ReaderView() {
             </div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20">
+            <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20">
               <CategoryIcon className="w-3 h-3 text-primary" />
               <span className="text-[10px] text-primary font-medium">{readerItem.category}</span>
             </div>
-            <CrystalButton
-              variant="outline"
-              size="sm"
-              className={`border-primary/20 hover:bg-primary/10 ${showControls ? 'bg-primary/10 border-primary/40' : ''}`}
+            <button
+              className={`shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border transition-colors ${
+                showControls
+                  ? 'bg-primary/10 border-primary/40 text-primary'
+                  : 'border-primary/20 hover:bg-primary/10 text-foreground/70'
+              }`}
               onClick={() => { setShowControls(!showControls); setActiveTab('font'); }}
             >
               <AnimatePresence mode="wait">
                 {showControls ? (
-                  <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
+                  <motion.span key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} className="flex items-center justify-center">
                     <X className="w-4 h-4" />
-                  </motion.div>
+                  </motion.span>
                 ) : (
-                  <motion.div key="settings" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
+                  <motion.span key="settings" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} className="flex items-center justify-center">
                     <Type className="w-4 h-4" />
-                  </motion.div>
+                  </motion.span>
                 )}
               </AnimatePresence>
-            </CrystalButton>
+            </button>
           </div>
         </div>
       </motion.div>

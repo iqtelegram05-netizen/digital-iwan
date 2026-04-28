@@ -693,7 +693,7 @@
 }
 
 .btn-3d:hover {
-  transform: perspective(500px) translateZ(8px) scale(1.02);
+  transform: perspective(500px) translateZ(8px);
 }
 
 .btn-3d:active {

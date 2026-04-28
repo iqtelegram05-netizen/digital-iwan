@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import { BookOpen, Compass, Mic, Calendar, Clock, Menu } from 'lucide-react';
+import { BookOpen, Compass, Mic, Calendar, Clock } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import QiblaCompass from './QiblaCompass';
 import { type ReaderItem } from '@/store/appStore';
@@ -84,9 +84,8 @@ export default function SideDrawer() {
   return (
     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
       <SheetContent side="right" className="w-[90vw] max-w-md p-0 bg-background/95 backdrop-blur-xl">
-        <SheetHeader className="p-4 pb-0 border-b border-border/20">
+        <SheetHeader className="p-4 pb-0 pr-10 border-b border-border/20">
           <SheetTitle className="flex items-center gap-2 text-primary text-lg">
-            <Menu className="w-5 h-5" />
             القائمة الرئيسية
           </SheetTitle>
           <SheetDescription className="text-xs text-muted-foreground">

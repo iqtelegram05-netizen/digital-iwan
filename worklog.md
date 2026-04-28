@@ -357,3 +357,26 @@ User reported that old placeholder sermons/prayers/API keys were not deleted fro
 - "خطب" category already existed in VALID_CATEGORIES
 - AdminPanel already had "خطب" as a SelectItem option
 - User needs to deploy and click "مسح البيانات" button to clear old data
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix design errors - X close button overlapping with Menu icon, button overflow
+
+Work Log:
+- Analyzed uploaded screenshot using VLM to identify exact design issues
+- Found Sheet component X close button at absolute top-4 right-4 overlapping with Menu icon in SideDrawer SheetTitle (both positioned at top-right in RTL)
+- Fixed SideDrawer: removed redundant Menu icon from SheetTitle, added pr-10 padding to accommodate Sheet X button
+- Fixed Sheet X button: repositioned from right-4 to left-4 for RTL (top-left corner, away from content flow)
+- Styled Sheet X button with proper design: rounded-lg border, bg-card/80, backdrop-blur
+- Fixed ReaderView header: replaced CrystalButton with plain buttons (fixed 32x32px size) to prevent 3D overflow
+- Hidden category badge on mobile (hidden sm:flex) to save space
+- Added overflow-hidden to ReaderView header container
+- Reduced btn-3d hover scale from 1.02 to none (removed scale) to prevent visual overflow
+- Verified build compiles successfully
+
+Stage Summary:
+- Sheet X close button no longer overlaps with Menu icon
+- ReaderView header buttons use fixed 32x32px size, no 3D overflow
+- Category badge hidden on mobile to prevent header crowding
+- 3D button hover effect no longer causes scale overflow
+- All changes build successfully
