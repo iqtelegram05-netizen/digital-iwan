@@ -1,21 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// POST: Login or Logout
+// POST: Login (Google or manual) or Logout
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, name, userId, action } = body;
-
-    if (!email) {
-      return NextResponse.json(
-        { error: 'البريد الإلكتروني مطلوب' },
-        { status: 400 }
-      );
-    }
+    const { email, name, avatar, action } = body;
 
     // Logout action
     if (action === 'logout') {
+      const userId = body.userId;
       if (!userId) {
         return NextResponse.json(
           { error: 'معرف المستخدم مطلوب لتسجيل الخروج' },
@@ -42,6 +36,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'تم تسجيل الخروج بنجاح' });
     }
 
+    if (!email) {
+      return NextResponse.json(
+        { error: 'البريد الإلكتروني مطلوب' },
+        { status: 400 }
+      );
+    }
+
     // Login action - create user if not exists
     let user = await db.user.findUnique({ where: { email } });
 
@@ -51,16 +52,18 @@ export async function POST(request: NextRequest) {
         data: {
           email,
           name: name || null,
+          avatar: avatar || null,
           lastLogin: new Date(),
         },
       });
     } else {
-      // Update last login
+      // Update last login and info
       user = await db.user.update({
         where: { id: user.id },
         data: {
           lastLogin: new Date(),
           ...(name ? { name } : {}),
+          ...(avatar ? { avatar } : {}),
         },
       });
     }

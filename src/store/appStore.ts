@@ -23,6 +23,16 @@ interface ModeChatState {
   isLoading: boolean;
 }
 
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string | null;
+  avatar: string | null;
+  role: string;
+  isBlocked: boolean;
+  lastLogin: string | null;
+}
+
 interface AppState {
   // Views
   currentView: View;
@@ -60,6 +70,10 @@ interface AppState {
   // Sheet open
   sheetOpen: boolean;
   setSheetOpen: (open: boolean) => void;
+
+  // User auth
+  user: UserProfile | null;
+  setUser: (user: UserProfile | null) => void;
 }
 
 const emptyChatState: ModeChatState = {
@@ -140,4 +154,7 @@ export const useAppStore = create<AppState>((set) => ({
 
   sheetOpen: false,
   setSheetOpen: (open) => set({ sheetOpen: open }),
+
+  user: null,
+  setUser: (user) => set({ user }),
 }));
