@@ -101,7 +101,7 @@ export default function SideDrawer() {
             ))}
           </TabsList>
 
-          <ScrollArea className="h-[calc(100vh-140px)] px-3 pb-6">
+          <ScrollArea className="h-[calc(100dvh-140px)] px-3 pb-6">
             {/* Prayers Tab - Dynamic from API */}
             <TabsContent value="prayers" className="mt-0 space-y-4">
               <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">الأدعية</h3>

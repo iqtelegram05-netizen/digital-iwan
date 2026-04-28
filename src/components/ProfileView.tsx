@@ -233,8 +233,8 @@ export default function ProfileView() {
   // ======== شاشة تسجيل الدخول ========
   if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center h-full px-4 py-8 max-w-md mx-auto overflow-y-auto">
-        <motion.div className="w-full text-center" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
+      <div className="flex flex-col items-center h-full px-4 py-8 max-w-md mx-auto overflow-y-auto">
+        <motion.div className="w-full text-center my-auto" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
           <motion.div
             className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center mx-auto mb-6 sky-glow"
             animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 3, repeat: Infinity }}

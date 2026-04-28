@@ -149,7 +149,7 @@ export default function Home() {
             <Header onMenuClick={() => setSheetOpen(true)} />
             <SideDrawer />
 
-            <main className="flex-1 flex flex-col overflow-hidden pb-0">
+            <main className="flex-1 flex flex-col overflow-hidden min-h-0 pb-0">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentView}

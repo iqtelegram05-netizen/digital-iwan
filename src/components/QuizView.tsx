@@ -106,9 +106,9 @@ export default function QuizView() {
   // Category Selection
   if (!quizCategory || quizQuestions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full px-3 sm:px-4 py-4 sm:py-8 overflow-y-auto">
+      <div className="flex flex-col items-center h-full px-3 sm:px-4 py-4 sm:py-8 overflow-y-auto">
         <motion.div
-          className="flex flex-col items-center gap-4 sm:gap-6 w-full max-w-md"
+          className="flex flex-col items-center gap-4 sm:gap-6 w-full max-w-md my-auto"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -150,9 +150,9 @@ export default function QuizView() {
   if (showResults && quizScore !== null) {
     const grade = getGrade(quizScore);
     return (
-      <div className="flex flex-col items-center justify-center h-full px-3 sm:px-4 py-4 sm:py-8 overflow-y-auto">
+      <div className="flex flex-col items-center h-full px-3 sm:px-4 py-4 sm:py-8 overflow-y-auto">
         <motion.div
-          className="flex flex-col items-center gap-4 sm:gap-6 w-full max-w-md"
+          className="flex flex-col items-center gap-4 sm:gap-6 w-full max-w-md my-auto"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
         >
