@@ -60,7 +60,7 @@ export default function Home() {
   }, [setCurrentView]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
+    <div className="h-dvh flex flex-col bg-background relative overflow-hidden">
       {/* Splash Screen */}
       <SplashScreen />
 
@@ -89,7 +89,7 @@ export default function Home() {
       <AnimatePresence>
         {splashComplete && (
           <motion.div
-            className="relative z-10 flex flex-col min-h-screen"
+            className="relative z-10 flex flex-col h-dvh"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}

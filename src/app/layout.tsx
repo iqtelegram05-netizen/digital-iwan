@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -10,11 +10,19 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "قلم كود - المساعد الذكي",
-  description: "قلم كود - المساعد الذكي للعلوم الإسلامية. أسئلة، محاورات، اختبارات ومزيد.",
+  title: "الإيوان الرقمي - أول ذكاء اصطناعي عراقي",
+  description: "الإيوان الرقمي - المساعد الذكي للعلوم الإسلامية. أسئلة، محاورات، اختبارات ومزيد.",
   icons: {
     icon: "https://www.image2url.com/r2/default/images/1777330045986-560b3c15-7c7b-4c2f-af23-6499ce631950.png",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+  userScalable: false,
 };
 
 export default function RootLayout({
