@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import ZAI from 'z-ai-web-dev-sdk';
+import { selectKey, reportSuccess, reportFailure } from '@/lib/loadBalancer';
 
 const SYSTEM_PROMPTS: Record<string, string> = {
   chat: `أنت مساعد ذكي متخصص في العلوم الإسلامية واللغة العربية والفلسفة والمنطق والفقه. تقدم إجابات مدروسة ودقيقة. عندما يتم تحديد عالم معين، استشهد بمنهجه وآرائه. أجب باللغة العربية.`,
@@ -17,29 +18,26 @@ interface ChatRequestBody {
   scholar?: string;
 }
 
+// Max retries with different keys
+const MAX_RETRIES = 3;
+
 export async function POST(request: NextRequest) {
   try {
     const body: ChatRequestBody = await request.json();
     const { message, sessionId, mode = 'chat', scholar } = body;
 
     if (!message || typeof message !== 'string') {
-      return NextResponse.json(
-        { error: 'الرسالة مطلوبة' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'الرسالة مطلوبة' }, { status: 400 });
     }
 
     if (message.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'الرسالة لا يمكن أن تكون فارغة' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'الرسالة لا يمكن أن تكون فارغة' }, { status: 400 });
     }
 
     const validModes = ['chat', 'debate', 'teacher'];
     if (!validModes.includes(mode)) {
       return NextResponse.json(
-        { error: 'وضع غير صالح. الوضع يجب أن يكون: chat, debate, أو teacher' },
+        { error: 'وضع غير صالح' },
         { status: 400 }
       );
     }
@@ -53,9 +51,7 @@ export async function POST(request: NextRequest) {
     // Get or create session
     let session;
     if (sessionId) {
-      session = await db.chatSession.findUnique({
-        where: { id: sessionId },
-      });
+      session = await db.chatSession.findUnique({ where: { id: sessionId } });
     }
 
     if (!session) {
@@ -81,27 +77,78 @@ export async function POST(request: NextRequest) {
     const previousMessages = await db.message.findMany({
       where: { sessionId: session.id },
       orderBy: { createdAt: 'asc' },
-      take: 11, // current + 10 previous
+      take: 11,
     });
 
-    // Build message history for ZAI
+    // Build message history
     const chatHistory = previousMessages.map((msg) => ({
       role: msg.role as 'user' | 'assistant' | 'system',
       content: msg.content,
     }));
 
-    // Call ZAI SDK
-    const zai = await ZAI.create();
-    const completion = await zai.chat.completions.create({
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...chatHistory,
-      ],
-      temperature: mode === 'debate' ? 0.7 : 0.8,
-      max_tokens: 2048,
-    });
+    // ===== LOAD BALANCER: Try with API keys =====
+    let aiResponse = '';
+    let usedKey = false;
+    let lastError = '';
 
-    const aiResponse = completion.choices?.[0]?.message?.content || 'عذرًا، لم أتمكن من توليد إجابة. يرجى المحاولة مرة أخرى.';
+    // Try up to MAX_RETRIES with different keys
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      const selectedKey = await selectKey();
+
+      if (!selectedKey) {
+        // No keys available, fall back to default ZAI
+        break;
+      }
+
+      try {
+        const zai = await ZAI.create();
+        const completion = await zai.chat.completions.create({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            ...chatHistory,
+          ],
+          temperature: mode === 'debate' ? 0.7 : 0.8,
+          max_tokens: 2048,
+        });
+
+        aiResponse = completion.choices?.[0]?.message?.content || '';
+        if (aiResponse) {
+          // Success! Report it
+          const tokensUsed = completion.usage?.total_tokens || 0;
+          await reportSuccess(selectedKey.id, tokensUsed);
+          usedKey = true;
+          break;
+        }
+      } catch (err: unknown) {
+        lastError = err instanceof Error ? err.message : String(err);
+        const result = await reportFailure(selectedKey.id, lastError, 'retry');
+
+        if (!result.shouldRetry || !result.nextKey) {
+          break;
+        }
+        // Loop continues with next key
+      }
+    }
+
+    // Fallback: use default ZAI if no keys worked
+    if (!aiResponse) {
+      try {
+        const zai = await ZAI.create();
+        const completion = await zai.chat.completions.create({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            ...chatHistory,
+          ],
+          temperature: mode === 'debate' ? 0.7 : 0.8,
+          max_tokens: 2048,
+        });
+        aiResponse = completion.choices?.[0]?.message?.content || 'عذرًا، لم أتمكن من توليد إجابة.';
+      } catch {
+        aiResponse = lastError
+          ? `عذرًا، حدث خطأ في الخدمة: ${lastError.slice(0, 100)}`
+          : 'عذرًا، لم أتمكن من توليد إجابة. يرجى المحاولة لاحقاً.';
+      }
+    }
 
     // Store assistant message
     await db.message.create({
@@ -116,11 +163,12 @@ export async function POST(request: NextRequest) {
       message: aiResponse,
       sessionId: session.id,
       mode: session.mode,
+      loadBalanced: usedKey,
     });
   } catch (error) {
     console.error('Chat API Error:', error);
     return NextResponse.json(
-      { error: 'حدث خطأ أثناء معالجة طلبك. يرجى المحاولة مرة أخرى.' },
+      { error: 'حدث خطأ أثناء معالجة طلبك' },
       { status: 500 }
     );
   }
@@ -133,26 +181,18 @@ export async function GET(request: NextRequest) {
     const sessionId = searchParams.get('sessionId');
 
     if (!sessionId) {
-      return NextResponse.json(
-        { error: 'معرف الجلسة مطلوب' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'معرف الجلسة مطلوب' }, { status: 400 });
     }
 
     const session = await db.chatSession.findUnique({
       where: { id: sessionId },
       include: {
-        messages: {
-          orderBy: { createdAt: 'asc' },
-        },
+        messages: { orderBy: { createdAt: 'asc' } },
       },
     });
 
     if (!session) {
-      return NextResponse.json(
-        { error: 'الجلسة غير موجودة' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'الجلسة غير موجودة' }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -173,9 +213,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Chat GET Error:', error);
-    return NextResponse.json(
-      { error: 'حدث خطأ أثناء جلب سجل المحادثة' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'خطأ في جلب السجل' }, { status: 500 });
   }
 }

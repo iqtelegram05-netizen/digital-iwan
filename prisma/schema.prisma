@@ -93,9 +93,42 @@ model Prayer {
   id          String   @id @default(cuid())
   title       String
   subtitle    String?
-  category    String   @default("دعاء") // "دعاء" or "زيارة"
+  category    String   @default("دعاء") // "دعاء" or "زيارة" or "خطب"
   text        String
   isPublished Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model ApiProvider {
+  id        String   @id @default(cuid())
+  name      String   @unique // "gemini", "groq", "deepseek", "openai", etc
+  label     String   // "Google Gemini", "Groq", etc
+  baseUrl   String?  // custom base URL for the provider
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  keys ApiKey[]
+}
+
+model ApiKey {
+  id              String   @id @default(cuid())
+  providerId      String
+  encryptedKey    String   // AES encrypted API key
+  keyFingerprint  String?  // first 8 chars for identification
+  label           String?  // optional friendly label
+  status          String   @default("active") // "active", "standby", "exhausted", "cooldown"
+  tokensUsed      Int      @default(0)
+  tokensLimit     Int?     // daily limit (optional)
+  requestCount    Int      @default(0)
+  lastUsedAt      DateTime?
+  lastErrorAt     DateTime?
+  lastError       String?  // last error message
+  cooldownUntil   DateTime? // when key can be re-activated
+  priority        Int      @default(0) // higher = used first
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  provider ApiProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 }

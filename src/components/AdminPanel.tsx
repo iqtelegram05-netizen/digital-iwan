@@ -33,6 +33,13 @@ import {
   Save,
   Eye,
   ArrowRight,
+  Zap,
+  Activity,
+  Clock,
+  RotateCcw,
+  AlertTriangle,
+  Server,
+  Gauge,
 } from 'lucide-react';
 
 // ========== Types ==========
@@ -75,6 +82,50 @@ interface PrayerItem {
   isPublished: boolean;
 }
 
+// Load Balancer types
+interface LBKey {
+  id: string;
+  keyFingerprint: string | null;
+  label: string | null;
+  status: string;
+  tokensUsed: number;
+  tokensLimit: number | null;
+  requestCount: number;
+  lastUsedAt: string | null;
+  lastError: string | null;
+  lastErrorAt: string | null;
+  cooldownUntil: string | null;
+  priority: number;
+  createdAt: string;
+}
+
+interface LBProvider {
+  id: string;
+  name: string;
+  label: string;
+  baseUrl: string | null;
+  isActive: boolean;
+  keys: LBKey[];
+}
+
+interface LBStats {
+  total: number;
+  active: number;
+  standby: number;
+  cooldown: number;
+  exhausted: number;
+  totalTokens: number;
+  totalRequests: number;
+  providers: LBProvider[];
+}
+
+const KEY_STATUS: Record<string, { label: string; color: string }> = {
+  active: { label: 'يعمل', color: 'bg-emerald-500 text-white' },
+  standby: { label: 'احتياطي', color: 'bg-sky-500 text-white' },
+  exhausted: { label: 'مستهلك', color: 'bg-orange-500 text-white' },
+  cooldown: { label: 'تبريد', color: 'bg-red-500 text-white' },
+};
+
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   active: { label: 'يعمل', color: 'bg-sky-500 text-white' },
   waiting: { label: 'قيد الانتظار', color: 'bg-yellow-500 text-white' },
@@ -87,7 +138,7 @@ const ROLE_CONFIG: Record<string, { label: string; color: string }> = {
   user: { label: 'مستخدم', color: 'bg-gray-500 text-white' },
 };
 
-type AdminTab = 'keys' | 'users' | 'prayers';
+type AdminTab = 'keys' | 'users' | 'prayers' | 'loadbalancer';
 
 export default function AdminPanel() {
   const { setCurrentView } = useAppStore();
@@ -110,13 +161,19 @@ export default function AdminPanel() {
   const [prayerCategory, setPrayerCategory] = useState('دعاء');
   const [prayerText, setPrayerText] = useState('');
 
+  // Load Balancer state
+  const [lbStats, setLbStats] = useState<LBStats | null>(null);
+  const [bulkText, setBulkText] = useState('');
+  const [showBulkInput, setShowBulkInput] = useState(false);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [adminRes, usersRes, prayersRes] = await Promise.all([
+      const [adminRes, usersRes, prayersRes, keysRes] = await Promise.all([
         fetch('/api/admin'),
         fetch('/api/admin/users'),
         fetch('/api/prayers?all=true'),
+        fetch('/api/keys'),
       ]);
       if (adminRes.ok) setData(await adminRes.json());
       if (usersRes.ok) {
@@ -126,6 +183,9 @@ export default function AdminPanel() {
       if (prayersRes.ok) {
         const pData = await prayersRes.json();
         setPrayers(pData.prayers || []);
+      }
+      if (keysRes.ok) {
+        setLbStats(await keysRes.json());
       }
     } catch {
       // silent
@@ -288,6 +348,74 @@ export default function AdminPanel() {
   // ========== Clear All Data ==========
   const [cleanResult, setCleanResult] = useState<string | null>(null);
 
+  // ========== Load Balancer Actions ==========
+  const lbAction = async (body: Record<string, unknown>) => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (json.stats) setLbStats(json.stats);
+      if (json.message) alert(json.message);
+      return json;
+    } catch (err) {
+      alert('خطأ في الاتصال');
+      return null;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const lbUpdate = async (body: Record<string, unknown>) => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/keys', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (json.stats) setLbStats(json.stats);
+      return json;
+    } catch {
+      return null;
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const lbDelete = async (body: Record<string, unknown>) => {
+    if (!confirm('هل أنت متأكد؟')) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/keys', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (json.stats) setLbStats(json.stats);
+      if (json.message) alert(json.message);
+    } catch {
+      alert('خطأ في الحذف');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleBulkAdd = async () => {
+    if (!bulkText.trim()) return;
+    const result = await lbAction({ action: 'bulkAdd', text: bulkText });
+    if (result) {
+      setBulkText('');
+      setShowBulkInput(false);
+      await fetchData();
+    }
+  };
+
   const clearAllData = async () => {
     if (!confirm('هل أنت متأكد من حذف جميع الأدعية والزيارات والخطب ومفاتيح API؟\nهذا الإجراء لا يمكن التراجع عنه.')) return;
     setSaving(true);
@@ -371,6 +499,7 @@ export default function AdminPanel() {
         {/* Tab Selector */}
         <div className="flex gap-2 overflow-x-auto pb-1">
           {([
+            { id: 'loadbalancer', label: 'موزّع الأحمال', icon: Zap },
             { id: 'keys', label: 'المفاتيح والروابط', icon: Key },
             { id: 'users', label: 'المستخدمون', icon: Users },
             { id: 'prayers', label: 'الأدعية والخطب', icon: BookOpen },
@@ -671,6 +800,176 @@ export default function AdminPanel() {
                 )}
               </CardContent>
             </Card>
+          </div>
+        )}
+
+        {/* ========== TAB: Load Balancer ========== */}
+        {activeTab === 'loadbalancer' && (
+          <div className="space-y-6">
+            {/* Stats Overview */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: 'يعمل', value: lbStats?.active || 0, icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                { label: 'احتياطي', value: lbStats?.standby || 0, icon: Clock, color: 'text-sky-500', bg: 'bg-sky-500/10' },
+                { label: 'تبريد', value: lbStats?.cooldown || 0, icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
+                { label: 'مستهلك', value: lbStats?.exhausted || 0, icon: Gauge, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+              ].map((s) => (
+                <Card key={s.label} className="glass-card border-primary/10">
+                  <CardContent className="p-3 text-center">
+                    <s.icon className={`w-5 h-5 mx-auto mb-1 ${s.color}`} />
+                    <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
+                    <p className="text-[10px] text-muted-foreground">{s.label}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Total Stats */}
+            <Card className="glass-card border-primary/10">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-around text-center">
+                  <div>
+                    <p className="text-lg font-bold text-primary">{lbStats?.total || 0}</p>
+                    <p className="text-[10px] text-muted-foreground">إجمالي المفاتيح</p>
+                  </div>
+                  <Separator orientation="vertical" className="h-10 bg-primary/10" />
+                  <div>
+                    <p className="text-lg font-bold text-primary">{(lbStats?.totalRequests || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">إجمالي الطلبات</p>
+                  </div>
+                  <Separator orientation="vertical" className="h-10 bg-primary/10" />
+                  <div>
+                    <p className="text-lg font-bold text-primary">{(lbStats?.totalTokens || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">Tokens مستهلكة</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Bulk Input */}
+            <Card className="glass-card border-primary/10">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Server className="w-4 h-4 text-primary" />
+                    إضافة مفاتيح
+                  </CardTitle>
+                  <div className="flex gap-2">
+                    <CrystalButton variant="outline" size="sm" className="text-[10px] gap-1 border-primary/20 hover:bg-primary/10" onClick={() => setShowBulkInput(!showBulkInput)}>
+                      <Plus className="w-3 h-3" />
+                      {showBulkInput ? 'إضافة يدوية' : 'لصق بالجملة'}
+                    </CrystalButton>
+                    <CrystalButton variant="outline" size="sm" className="text-[10px] gap-1 border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-600" onClick={() => lbUpdate({ action: 'reactivateAll' })} disabled={saving}>
+                      <RotateCcw className="w-3 h-3" />
+                      إعادة تفعيل
+                    </CrystalButton>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {showBulkInput ? (
+                  <>
+                    <Textarea
+                      value={bulkText}
+                      onChange={(e) => setBulkText(e.target.value)}
+                      placeholder="الصق مفاتيح API هنا...&#10;يمكنك لصق عدة مفاتيح مفصولة بسطر جديد أو فاصلة&#10;سيتم كشف نوع المزود تلقائياً (Gemini, Groq, DeepSeek, OpenAI, OpenRouter)"
+                      className="min-h-[100px] text-xs border-primary/20 bg-card/50 resize-none font-mono"
+                    />
+                    <div className="flex gap-2">
+                      <CrystalButton className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg" onClick={handleBulkAdd} disabled={saving || !bulkText.trim()}>
+                        <Save className="w-4 h-4 ml-2" />
+                        إضافة تلقائية
+                      </CrystalButton>
+                      <CrystalButton variant="outline" className="border-red-500/30 hover:bg-red-500/10 text-red-600 rounded-lg" onClick={() => lbDelete({ action: 'deleteAll' })} disabled={saving}>
+                        <Trash2 className="w-4 h-4 ml-1" />
+                        حذف الكل
+                      </CrystalButton>
+                    </div>
+                    <p className="text-[9px] text-muted-foreground text-center">يتم كشف المزود تلقائياً من شكل المفتاح وتشفيره قبل الحفظ</p>
+                  </>
+                ) : (
+                  <p className="text-xs text-muted-foreground text-center py-2">اضغط "لصق بالجملة" لإضافة مفاتيح متعددة دفعة واحدة</p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Keys by Provider */}
+            {lbStats?.providers && lbStats.providers.length > 0 ? (
+              lbStats.providers.map((provider) => (
+                <Card key={provider.id} className="glass-card border-primary/10">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Server className="w-4 h-4 text-primary" />
+                        {provider.label}
+                        <Badge variant="secondary" className="text-[9px]">{provider.keys.length} مفتاح</Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {!provider.isActive && <Badge variant="secondary" className="text-[9px] bg-red-500/20 text-red-600">معطّل</Badge>}
+                        <CrystalButton variant="outline" size="sm" className="h-6 text-[9px] border-red-500/30 hover:bg-red-500/10 text-red-600" onClick={() => lbDelete({ providerId: provider.id })}>
+                          <Trash2 className="w-3 h-3" />
+                        </CrystalButton>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ScrollArea className="max-h-[300px]">
+                      <div className="space-y-2">
+                        {provider.keys.length === 0 && (
+                          <p className="text-xs text-muted-foreground text-center py-3">لا توجد مفاتيح</p>
+                        )}
+                        {provider.keys.map((key) => {
+                          const statusConf = KEY_STATUS[key.status] || KEY_STATUS.active;
+                          const cooldownLeft = key.cooldownUntil
+                            ? Math.max(0, Math.ceil((new Date(key.cooldownUntil).getTime() - Date.now()) / 60000))
+                            : 0;
+                          return (
+                            <div key={key.id} className="p-2.5 rounded-lg bg-card/50 border border-border/30 space-y-1.5">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <Key className={`w-3.5 h-3.5 shrink-0 ${key.status === 'active' ? 'text-emerald-500' : 'text-muted-foreground'}`} />
+                                  <div className="min-w-0">
+                                    <p className="text-[11px] font-medium truncate">
+                                      {key.label || key.keyFingerprint || 'مفتاح'}
+                                    </p>
+                                    <p className="text-[9px] text-muted-foreground">
+                                      طلبات: {key.requestCount} | Tokens: {key.tokensUsed.toLocaleString()}
+                                      {key.lastUsedAt && ` | آخر استخدام: ${new Date(key.lastUsedAt).toLocaleTimeString('ar')}`}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <Badge variant="secondary" className={`text-[9px] px-1.5 py-0 ${statusConf.color}`}>
+                                    {statusConf.label}
+                                  </Badge>
+                                  {cooldownLeft > 0 && (
+                                    <span className="text-[8px] text-red-500 font-mono">{cooldownLeft}د</span>
+                                  )}
+                                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70 hover:text-destructive" onClick={() => lbDelete({ keyId: key.id })}>
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                              {key.lastError && (
+                                <p className="text-[9px] text-red-400/80 truncate">خطأ: {key.lastError}</p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card className="glass-card border-primary/10">
+                <CardContent className="p-8 text-center">
+                  <Zap className="w-10 h-10 text-primary/30 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">لم تتم إضافة أي مفاتيح بعد</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">الصق مفاتيح API في الأعلى لبدء استخدام نظام توزيع الأحمال</p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
 

@@ -128,6 +128,35 @@ export async function GET(request: NextRequest) {
         "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
+      CREATE TABLE IF NOT EXISTS "ApiProvider" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "name" TEXT NOT NULL,
+        "label" TEXT NOT NULL,
+        "baseUrl" TEXT,
+        "isActive" BOOLEAN NOT NULL DEFAULT true,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE TABLE IF NOT EXISTS "ApiKey" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "providerId" TEXT NOT NULL,
+        "encryptedKey" TEXT NOT NULL,
+        "keyFingerprint" TEXT,
+        "label" TEXT,
+        "status" TEXT NOT NULL DEFAULT 'active',
+        "tokensUsed" INTEGER NOT NULL DEFAULT 0,
+        "tokensLimit" INTEGER,
+        "requestCount" INTEGER NOT NULL DEFAULT 0,
+        "lastUsedAt" TIMESTAMP(3),
+        "lastErrorAt" TIMESTAMP(3),
+        "lastError" TEXT,
+        "cooldownUntil" TIMESTAMP(3),
+        "priority" INTEGER NOT NULL DEFAULT 0,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "ApiKey_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "ApiProvider" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS "ApiProvider_name_key" ON "ApiProvider"("name");
       CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
     `;
 
@@ -149,7 +178,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: 'تم إنشاء جميع الجداول بنجاح',
-      tables: ['User', 'LoginLog', 'ChatSession', 'Message', 'QuizResult', 'UserProfile', 'OwnerSettings', 'Prayer'],
+      tables: ['User', 'LoginLog', 'ChatSession', 'Message', 'QuizResult', 'UserProfile', 'OwnerSettings', 'Prayer', 'ApiProvider', 'ApiKey'],
       userCount,
     });
   } catch (error) {
