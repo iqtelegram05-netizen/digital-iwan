@@ -175,7 +175,7 @@ export default function SplashScreen() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 2.5, duration: 0.8 }}
             >
-              قلم كود
+              الإيوان الرقمي
             </motion.h1>
             <motion.p
               className={`${subtitleColor} text-sm`}
@@ -183,7 +183,7 @@ export default function SplashScreen() {
               animate={{ opacity: 1 }}
               transition={{ delay: 3, duration: 0.6 }}
             >
-              المساعد الذكي للعلوم الإسلامية
+              أول ذكاء اصطناعي عراقي
             </motion.p>
           </motion.div>
 
