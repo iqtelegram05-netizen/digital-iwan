@@ -286,22 +286,34 @@ export default function AdminPanel() {
   };
 
   // ========== Clear All Data ==========
+  const [cleanResult, setCleanResult] = useState<string | null>(null);
+
   const clearAllData = async () => {
     if (!confirm('هل أنت متأكد من حذف جميع الأدعية والزيارات والخطب ومفاتيح API؟\nهذا الإجراء لا يمكن التراجع عنه.')) return;
     setSaving(true);
+    setCleanResult(null);
     try {
       const res = await fetch('/api/setup/clean', { method: 'POST' });
       const json = await res.json();
+
+      // عرض كل التفاصيل
+      const lines = Object.entries(json.details || {}).map(([k, v]) => `${k}: ${v}`).join('\n');
+      setCleanResult(lines);
+
       if (json.success) {
-        // Re-fetch data after cleaning
         await fetchData();
-        const lines = Object.entries(json.details || {}).map(([k, v]) => `${k}: ${v}`).join('\n');
-        alert(`نتيجة المسح:\n${lines}`);
-      } else {
-        alert(`خطأ: ${json.error || 'غير معروف'}\n${json.details || ''}`);
       }
+
+      // نسخ النتيجة للحافظة لسهولة الإرسال
+      try {
+        await navigator.clipboard.writeText(`نتيجة المسح:\n${lines}`);
+      } catch { /* silent */ }
+
+      alert(`نتيجة المسح (تم نسخها):\n${lines}`);
     } catch (err) {
-      alert('خطأ في الاتصال: ' + (err instanceof Error ? err.message : String(err)));
+      const msg = 'خطأ في الاتصال: ' + (err instanceof Error ? err.message : String(err));
+      setCleanResult(msg);
+      alert(msg);
     } finally {
       setSaving(false);
     }
