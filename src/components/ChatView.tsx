@@ -210,27 +210,27 @@ export default function ChatView() {
         )}
       </div>
 
-      {/* Input area */}
+      {/* Input area - compact, stuck above tab bar */}
       <motion.div
-        className="sticky bottom-0 p-3 sm:p-4 bg-background/80 backdrop-blur-lg border-t border-border/30"
+        className="shrink-0 px-2 pt-2 pb-1 bg-background/80 backdrop-blur-lg border-t border-border/30"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <div className="flex gap-2 items-end max-w-3xl mx-auto">
+        <div className="flex gap-1.5 items-end max-w-3xl mx-auto">
           <Textarea
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={config.placeholder}
-            className="min-h-[44px] max-h-[120px] resize-none text-sm border-primary/20 bg-card/50 focus:ring-primary/30 rounded-xl"
+            className="min-h-[36px] max-h-[80px] resize-none text-sm border-primary/20 bg-card/50 focus:ring-primary/30 rounded-lg"
             rows={1}
             disabled={isLoading}
           />
           <CrystalButton
             size="icon"
-            className="shrink-0 h-11 w-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground"
+            className="shrink-0 h-9 w-9 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground"
             onClick={sendMessage}
             disabled={isLoading || !input.trim()}
           >
