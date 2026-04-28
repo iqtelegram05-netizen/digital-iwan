@@ -1,11 +1,58 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// نقطة نهاية لإنشاء الجداول تلقائياً في قاعدة البيانات
-// يُستدعى مرة واحدة فقط بعد ربط قاعدة البيانات
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const action = searchParams.get('action');
+
+  // مسح البيانات الوهمية
+  if (action === 'clean') {
+    try {
+      const results: Record<string, number> = {};
+
+      // حذف الأدعية/الزيارات/الخطب
+      try {
+        const r1 = await db.prayer.deleteMany({});
+        results['deletedPrayers'] = r1.count;
+      } catch { results['deletedPrayers'] = 0; }
+
+      // حذف إعدادات المالك (مفاتيح API + روابط RAG)
+      try {
+        const r2 = await db.ownerSettings.deleteMany({});
+        results['deletedSettings'] = r2.count;
+      } catch { results['deletedSettings'] = 0; }
+
+      // إعادة إنشاء إعدادات فارغة
+      try {
+        await db.ownerSettings.create({
+          data: {
+            ragLinks: JSON.stringify([]),
+            apiKeys: JSON.stringify(
+              Array.from({ length: 10 }, (_, i) => ({
+                key: '', status: 'waiting', name: `مفتاح ${i + 1}`, createdAt: '',
+              }))
+            ),
+          },
+        });
+        results['createdSettings'] = 1;
+      } catch { results['createdSettings'] = 0; }
+
+      return NextResponse.json({
+        success: true,
+        message: 'تم مسح جميع البيانات الوهمية بنجاح',
+        details: results,
+      });
+    } catch (error) {
+      return NextResponse.json({
+        success: false,
+        error: 'حدث خطأ أثناء مسح البيانات',
+        details: error instanceof Error ? error.message : String(error),
+      }, { status: 500 });
+    }
+  }
+
+  // إنشاء الجداول (الوضع الافتراضي)
   try {
-    // إنشاء جميع الجداول إذا لم تكن موجودة
     const sqlStatements = `
       CREATE TABLE IF NOT EXISTS "User" (
         "id" TEXT NOT NULL PRIMARY KEY,
@@ -84,17 +131,12 @@ export async function GET() {
       CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
     `;
 
-    // تنفيذ كل أمر SQL منفصل
-    const statements = sqlStatements
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
+    const statements = sqlStatements.split(';').map(s => s.trim()).filter(s => s.length > 0);
 
     for (const sql of statements) {
       try {
         await db.$executeRawUnsafe(sql);
       } catch (err: unknown) {
-        // تجاهل أخطاء "already exists" أو الفهرس الموجود
         const msg = err instanceof Error ? err.message : String(err);
         if (!msg.includes('already exists') && !msg.includes('duplicate') && !msg.includes('relation')) {
           console.warn('SQL warning:', msg);
@@ -102,7 +144,6 @@ export async function GET() {
       }
     }
 
-    // اختبار: قراءة المستخدمين
     const userCount = await db.user.count();
 
     return NextResponse.json({
@@ -112,14 +153,10 @@ export async function GET() {
       userCount,
     });
   } catch (error) {
-    console.error('Setup error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'حدث خطأ أثناء إنشاء الجداول',
-        details: error instanceof Error ? error.message : String(error),
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: false,
+      error: 'حدث خطأ أثناء إنشاء الجداول',
+      details: error instanceof Error ? error.message : String(error),
+    }, { status: 500 });
   }
 }
