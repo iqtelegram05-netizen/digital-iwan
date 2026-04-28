@@ -119,23 +119,32 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
+    const email = searchParams.get('email');
 
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'معرف المستخدم مطلوب' },
-        { status: 400 }
-      );
+    let user = null;
+
+    // البحث بالمعرّف أولاً، ثم بالبريد
+    if (userId) {
+      user = await db.user.findUnique({ where: { id: userId } });
     }
-
-    const user = await db.user.findUnique({
-      where: { id: userId },
-    });
-
+    if (!user && email) {
+      user = await db.user.findUnique({ where: { email } });
+    }
     if (!user) {
       return NextResponse.json(
         { error: 'المستخدم غير موجود' },
         { status: 404 }
       );
+    }
+
+    // تحديث دور المالك تلقائياً
+    const isOwner = OWNER_EMAILS.includes(user.email);
+    if (isOwner && user.role !== 'owner') {
+      await db.user.update({
+        where: { id: user.id },
+        data: { role: 'owner' },
+      });
+      user.role = 'owner';
     }
 
     if (user.isBlocked) {
