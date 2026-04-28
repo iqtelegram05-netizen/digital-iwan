@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GoogleLogin } from '@react-oauth/google';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,13 +10,32 @@ import CrystalButton from './CrystalButton';
 import { useAppStore, type UserProfile } from '@/store/appStore';
 import {
   User, Save, Sparkles, LogOut, Mail, Calendar, Shield,
-  ChevronLeft, AlertCircle
+  ChevronLeft, AlertCircle, Loader2
 } from 'lucide-react';
 
 const INTEREST_OPTIONS = [
   'عقائد', 'فقه', 'تفسير', 'حديث', 'تاريخ الإسلام',
   'فلسفة إسلامية', 'منطق', 'نحو', 'بلاغة', 'أصول الفقه',
 ];
+
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+
+// فك تشفير JWT
+function decodeJwt(token: string) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
 
 export default function ProfileView() {
   const { user, setUser } = useAppStore();
@@ -28,6 +46,7 @@ export default function ProfileView() {
   const [loading, setLoading] = useState(false);
   const [showFullProfile, setShowFullProfile] = useState(false);
   const [error, setError] = useState('');
+  const btnRef = useRef<HTMLDivElement>(null);
 
   // استعادة حالة المستخدم من localStorage عند التحميل
   useEffect(() => {
@@ -51,88 +70,78 @@ export default function ProfileView() {
     }
   }, [user]);
 
-  const saveUserLocally = useCallback((userData: UserProfile | null) => {
-    if (userData) {
-      localStorage.setItem('iwan_user', JSON.stringify(userData));
-      setUser(userData);
-    } else {
-      localStorage.removeItem('iwan_user');
-      setUser(null);
-    }
-  }, [setUser]);
+  // تهيئة Google GSI
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID || !btnRef.current || user) return;
 
-  const handleGoogleLogin = useCallback(async (credentialResponse: any) => {
+    // انتظار تحميل سكربت Google
+    const interval = setInterval(() => {
+      if ((window as any).google?.accounts?.id) {
+        clearInterval(interval);
+
+        (window as any).google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCredential,
+          auto_select: false,
+        });
+
+        (window as any).google.accounts.id.renderButton(btnRef.current, {
+          theme: 'outline',
+          size: 'large',
+          text: 'signin_with',
+          shape: 'pill',
+          width: 280,
+          locale: 'ar',
+        });
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const handleGoogleCredential = useCallback((response: any) => {
     setLoading(true);
     setError('');
 
     try {
-      // فك تشفير JWT token لاستخراج بيانات المستخدم
-      const token = credentialResponse.credential;
-      if (!token) {
-        setError('لم يتم استلام بيانات من Google');
+      const decoded = decodeJwt(response.credential);
+      if (!decoded || !decoded.email) {
+        setError('لم يتم العثور على بريد إلكتروني');
         setLoading(false);
         return;
       }
 
-      // فك تشفير base64 JWT
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-      const googleUser = JSON.parse(jsonPayload);
-
-      if (!googleUser.email) {
-        setError('لم يتم العثور على بريد إلكتروني في حساب Google');
-        setLoading(false);
-        return;
-      }
-
-      // حفظ المستخدم محلياً مباشرة من بيانات Google
       const userProfile: UserProfile = {
-        id: googleUser.sub || Date.now().toString(),
-        email: googleUser.email,
-        name: googleUser.name || null,
-        avatar: googleUser.picture || null,
+        id: decoded.sub || Date.now().toString(),
+        email: decoded.email,
+        name: decoded.name || null,
+        avatar: decoded.picture || null,
         role: 'user',
         isBlocked: false,
         lastLogin: new Date().toISOString(),
       };
-      saveUserLocally(userProfile);
 
-      // محاولة إرسال البيانات للسيرفر (في الخلفية)
+      // حفظ فوري في localStorage أولاً
+      localStorage.setItem('iwan_user', JSON.stringify(userProfile));
+      setUser(userProfile);
+      setLoading(false);
+
+      // إرسال للسيرفر في الخلفية
       fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: googleUser.email,
-          name: googleUser.name,
-          avatar: googleUser.picture,
+          email: decoded.email,
+          name: decoded.name,
+          avatar: decoded.picture,
         }),
-      }).then((loginRes) => loginRes.json()).then((loginData) => {
-        if (loginData.user) {
-          const updatedProfile: UserProfile = {
-            id: loginData.user.id,
-            email: loginData.user.email,
-            name: loginData.user.name,
-            avatar: loginData.user.avatar,
-            role: loginData.user.role,
-            isBlocked: loginData.user.isBlocked,
-            lastLogin: loginData.user.lastLogin,
-          };
-          saveUserLocally(updatedProfile);
-        }
       }).catch(() => {});
     } catch (err) {
-      console.error('Google login error:', err);
-      setError('حدث خطأ أثناء تسجيل الدخول. حاول مرة أخرى.');
-    } finally {
+      console.error('Google credential error:', err);
+      setError('حدث خطأ أثناء تسجيل الدخول');
       setLoading(false);
     }
-  }, [saveUserLocally]);
+  }, [setUser]);
 
   const handleLogout = useCallback(async () => {
     if (!user) return;
@@ -140,18 +149,21 @@ export default function ProfileView() {
       await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: user.email,
-          action: 'logout',
-          userId: user.id,
-        }),
+        body: JSON.stringify({ email: user.email, action: 'logout', userId: user.id }),
       });
     } catch {}
-    saveUserLocally(null);
+
+    // تسجيل خروج من Google
+    if ((window as any).google?.accounts?.id) {
+      (window as any).google.accounts.id.disableAutoSelect();
+    }
+
+    localStorage.removeItem('iwan_user');
+    setUser(null);
     setName('');
     setBio('');
     setInterests([]);
-  }, [user, saveUserLocally]);
+  }, [user, setUser]);
 
   const toggleInterest = (interest: string) => {
     setInterests((prev) =>
@@ -170,13 +182,8 @@ export default function ProfileView() {
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return 'غير محدد';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('ar-IQ', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateStr).toLocaleDateString('ar-IQ', {
+      year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
     });
   };
 
@@ -188,9 +195,7 @@ export default function ProfileView() {
           className="w-full text-center"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
         >
-          {/* أيقونة المستخدم */}
           <motion.div
             className="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-primary/10 border-2 border-primary/20 flex items-center justify-center mx-auto mb-6 sky-glow"
             animate={{ scale: [1, 1.05, 1] }}
@@ -201,7 +206,7 @@ export default function ProfileView() {
 
           <h2 className="text-lg sm:text-2xl font-bold text-foreground mb-2">الملف الشخصي</h2>
           <p className="text-xs sm:text-sm text-muted-foreground mb-8 leading-relaxed">
-            سجّل دخولك عبر حسابك في Google لحفظ تفضيلاتك ومتابعة تقدّمك في العلوم الإسلامية
+            سجّل دخولك عبر حسابك في Google لحفظ تفضيلاتك ومتابعة تقدّمك
           </p>
 
           {/* رسالة خطأ */}
@@ -219,22 +224,25 @@ export default function ProfileView() {
             )}
           </AnimatePresence>
 
-          {/* زر تسجيل الدخول عبر Google - مكون GoogleLogin مباشرة */}
-          <div className="flex justify-center">
-            <GoogleLogin
-              onSuccess={handleGoogleLogin}
-              onError={() => {
-                setError('فشل تسجيل الدخول بـ Google. حاول مرة أخرى.');
-              }}
-              text="signin_with"
-              shape="pill"
-              size="large"
-              width="280"
-              locale="ar"
-            />
+          {/* Google Login Button - يتم تحميله مباشرة من Google GSI */}
+          <div className="flex justify-center mb-4">
+            <div ref={btnRef}>
+              {loading && (
+                <div className="flex items-center justify-center gap-2 py-3 px-8">
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  <span className="text-sm text-muted-foreground">جارٍ تسجيل الدخول...</span>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* مميزات تسجيل الدخول */}
+          {!GOOGLE_CLIENT_ID && (
+            <p className="text-xs text-destructive/70 text-center">
+              Google Client ID غير مضبوط. يرجى إضافة NEXT_PUBLIC_GOOGLE_CLIENT_ID
+            </p>
+          )}
+
+          {/* مميزات */}
           <div className="mt-8 space-y-3 text-right">
             <p className="text-xs text-muted-foreground font-medium mb-3">مميزات تسجيل الدخول:</p>
             {[
@@ -269,7 +277,6 @@ export default function ProfileView() {
           animate={{ opacity: 1, y: 0 }}
         >
           <Card className="glass-card border-primary/10 overflow-hidden">
-            {/* صورة العرض والاسم */}
             <div className="relative h-24 sm:h-36 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent flex items-end pb-4 sm:pb-6 justify-center">
               <motion.div
                 className="absolute top-3 sm:top-6 left-1/2 -translate-x-1/2 rounded-full border-3 sm:border-4 border-primary/30 flex items-center justify-center sky-glow overflow-hidden bg-card/80"
@@ -290,9 +297,7 @@ export default function ProfileView() {
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(14,165,233,0.1),transparent)]" />
             </div>
 
-            {/* معلومات المستخدم */}
             <CardContent className="p-3 sm:p-6 space-y-4">
-              {/* الاسم والبريد */}
               <div className="text-center space-y-1 pt-2">
                 <h2 className="text-base sm:text-xl font-bold text-foreground">
                   {user.name || 'مستخدم'}
@@ -303,7 +308,6 @@ export default function ProfileView() {
                 </div>
               </div>
 
-              {/* معلومات الحساب */}
               <div className="grid grid-cols-1 gap-2">
                 <motion.div
                   className="flex items-center justify-between p-2.5 rounded-lg bg-card/50 border border-border/30"
@@ -332,7 +336,6 @@ export default function ProfileView() {
                 </motion.div>
               </div>
 
-              {/* زر تعديل */}
               {!showFullProfile && (
                 <motion.button
                   onClick={() => setShowFullProfile(true)}
@@ -354,7 +357,6 @@ export default function ProfileView() {
                     exit={{ opacity: 0, height: 0 }}
                     className="space-y-3 sm:space-y-4 overflow-hidden"
                   >
-                    {/* الاسم */}
                     <div className="space-y-1.5">
                       <Label className="text-xs sm:text-sm font-medium text-foreground/80">الاسم</Label>
                       <Input
@@ -365,7 +367,6 @@ export default function ProfileView() {
                       />
                     </div>
 
-                    {/* نبذة */}
                     <div className="space-y-1.5">
                       <Label className="text-xs sm:text-sm font-medium text-foreground/80">نبذة عنك</Label>
                       <Textarea
@@ -377,7 +378,6 @@ export default function ProfileView() {
                       />
                     </div>
 
-                    {/* الاهتمامات */}
                     <div className="space-y-2">
                       <Label className="text-xs sm:text-sm font-medium text-foreground/80">
                         الاهتمامات <span className="text-muted-foreground">(اختر حتى 5)</span>
@@ -404,7 +404,6 @@ export default function ProfileView() {
                       </div>
                     </div>
 
-                    {/* حفظ */}
                     <CrystalButton
                       className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2.5 sm:py-3 rounded-xl text-sm"
                       onClick={handleSave}
@@ -425,7 +424,6 @@ export default function ProfileView() {
                 )}
               </AnimatePresence>
 
-              {/* زر تسجيل الخروج */}
               <motion.button
                 onClick={handleLogout}
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-destructive/30 text-destructive/80 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50 transition-all text-sm"

@@ -3,7 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "next-themes";
-import GoogleAuthProviderWrapper from "@/components/GoogleAuthProvider";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +32,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <head>
+        <Script
+          src="https://accounts.google.com/gsi/client"
+          strategy="afterInteractive"
+        />
+      </head>
       <body
         className={`${geistSans.variable} antialiased bg-background text-foreground font-[family-name:var(--font-geist-sans)]`}
       >
@@ -41,10 +47,8 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange={false}
         >
-          <GoogleAuthProviderWrapper>
-            {children}
-            <Toaster />
-          </GoogleAuthProviderWrapper>
+          {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
