@@ -16,11 +16,11 @@ import Footer from '@/components/Footer';
 import { BookOpen, Swords, GraduationCap, Brain, User } from 'lucide-react';
 
 const TABS: { view: View; label: string; icon: React.ReactNode }[] = [
-  { view: 'chat', label: 'الأيوان العلمي', icon: <BookOpen className="w-5 h-5" /> },
-  { view: 'debate', label: 'المحاور', icon: <Swords className="w-5 h-5" /> },
-  { view: 'teacher', label: 'الأستاذ', icon: <GraduationCap className="w-5 h-5" /> },
-  { view: 'quiz', label: 'اختبر نفسك', icon: <Brain className="w-5 h-5" /> },
-  { view: 'profile', label: 'الملف الشخصي', icon: <User className="w-5 h-5" /> },
+  { view: 'chat', label: 'الأيوان', icon: <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" /> },
+  { view: 'debate', label: 'المحاور', icon: <Swords className="w-4 h-4 sm:w-5 sm:h-5" /> },
+  { view: 'teacher', label: 'الأستاذ', icon: <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" /> },
+  { view: 'quiz', label: 'اختبر', icon: <Brain className="w-4 h-4 sm:w-5 sm:h-5" /> },
+  { view: 'profile', label: 'الملف', icon: <User className="w-4 h-4 sm:w-5 sm:h-5" /> },
 ];
 
 const ADMIN_CODE = 'qalamadmin2024';
@@ -123,13 +123,13 @@ export default function Home() {
 
             {/* Bottom Tab Bar */}
             <nav className="sticky bottom-0 z-30 glass-card border-t border-border/20">
-              <div className="flex items-center justify-around px-1 py-1 max-w-2xl mx-auto">
+              <div className="flex items-center justify-around px-0.5 py-0.5 max-w-2xl mx-auto">
                 {TABS.map((tab) => {
                   const isActive = currentView === tab.view;
                   return (
                     <motion.button
                       key={tab.view}
-                      className="flex flex-col items-center gap-0.5 py-2 px-2 rounded-xl transition-all relative min-w-[60px]"
+                      className="flex flex-col items-center gap-0 py-1.5 sm:py-2 px-1 sm:px-2 rounded-lg sm:rounded-xl transition-all relative min-w-[48px] sm:min-w-[60px]"
                       onClick={() => setCurrentView(tab.view)}
                       whileTap={{ scale: 0.9 }}
                     >
@@ -144,7 +144,7 @@ export default function Home() {
                         {tab.icon}
                       </span>
                       <span
-                        className={`relative z-10 text-[9px] sm:text-[10px] font-medium ${
+                        className={`relative z-10 text-[8px] sm:text-[10px] font-medium leading-tight ${
                           isActive ? 'text-primary' : 'text-muted-foreground'
                         }`}
                       >

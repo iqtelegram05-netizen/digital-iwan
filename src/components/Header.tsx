@@ -32,7 +32,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
   return (
     <motion.header
-      className="sticky top-0 z-40 glass-card border-b border-border/50 px-3 sm:px-4 py-2"
+      className="sticky top-0 z-40 glass-card border-b border-border/50 px-2 sm:px-4 py-1 sm:py-2"
       initial={{ y: -60, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.2 }}
@@ -49,15 +49,15 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </Button>
 
         {/* Center: Scholar Selector */}
-        <div className="flex-1 mx-2 sm:mx-4 max-w-[280px]">
+        <div className="flex-1 mx-1 sm:mx-4 max-w-[200px] sm:max-w-[280px]">
           <Select value={selectedScholar || ''} onValueChange={setSelectedScholar}>
-            <SelectTrigger className="h-9 text-xs sm:text-sm border-primary/20 bg-primary/5 focus:ring-primary/30">
+            <SelectTrigger className="h-8 sm:h-9 text-[11px] sm:text-sm border-primary/20 bg-primary/5 focus:ring-primary/30">
               <div className="flex items-center gap-2 min-w-0">
-                <GraduationCap className="w-4 h-4 text-primary shrink-0" />
+                <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
                 <SelectValue placeholder="اختر عالماً" className="truncate" />
               </div>
             </SelectTrigger>
-            <SelectContent className="max-h-64">
+            <SelectContent className="max-h-48 sm:max-h-64">
               {SCHOLARS.map((scholar) => (
                 <SelectItem key={scholar} value={scholar} className="text-sm">
                   {scholar}

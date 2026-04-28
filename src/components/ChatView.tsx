@@ -10,19 +10,19 @@ import { Textarea } from '@/components/ui/textarea';
 const VIEW_CONFIG: Record<string, { title: string; icon: React.ReactNode; placeholder: string; mode: ChatMode }> = {
   chat: {
     title: 'الأيوان العلمي',
-    icon: <BookOpen className="w-5 h-5" />,
+    icon: <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />,
     placeholder: 'اسأل سؤالك في العلوم الإسلامية...',
     mode: 'chat',
   },
   debate: {
     title: 'المحاور الرقمي',
-    icon: <Swords className="w-5 h-5" />,
+    icon: <Swords className="w-4 h-4 sm:w-5 sm:h-5" />,
     placeholder: 'قدّم حجتك للنقاش...',
     mode: 'debate',
   },
   teacher: {
     title: 'الأستاذ الرقمي',
-    icon: <GraduationCap className="w-5 h-5" />,
+    icon: <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />,
     placeholder: 'اسأل أي موضوع تريد فهمه ببساطة...',
     mode: 'teacher',
   },
@@ -119,19 +119,19 @@ export default function ChatView() {
     <div className="flex flex-col h-full max-w-3xl mx-auto">
       {/* View Title */}
       <motion.div
-        className="flex items-center gap-2 px-4 py-3 text-primary"
+        className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-3 text-primary"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
         {config.icon}
-        <h2 className="text-lg font-bold">{config.title}</h2>
+        <h2 className="text-sm sm:text-lg font-bold">{config.title}</h2>
       </motion.div>
 
       {/* Clear chat button */}
       {messages.length > 0 && (
         <motion.div
-          className="px-4 pb-2 flex justify-end"
+          className="px-3 sm:px-4 pb-1 flex justify-end"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
@@ -148,18 +148,18 @@ export default function ChatView() {
       )}
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 sm:px-4 py-1 sm:py-2 space-y-3 sm:space-y-4">
         {messages.length === 0 && (
           <motion.div
-            className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4 py-16"
+            className="flex flex-col items-center justify-center h-full text-muted-foreground gap-3 sm:gap-4 py-8 sm:py-16"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary sky-glow">
+            <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary sky-glow">
               {config.icon}
             </div>
-            <p className="text-sm text-center max-w-xs">{config.placeholder}</p>
+            <p className="text-xs sm:text-sm text-center max-w-xs">{config.placeholder}</p>
           </motion.div>
         )}
 
@@ -174,11 +174,11 @@ export default function ChatView() {
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             >
               <div
-                className={`max-w-[85%] sm:max-w-[75%] px-4 py-3 ${
+                className={`max-w-[88%] sm:max-w-[75%] px-3 py-2 sm:px-4 sm:py-3 ${
                   msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-assistant'
                 }`}
               >
-                <p className="text-sm leading-relaxed arabic-text whitespace-pre-wrap">{msg.content}</p>
+                <p className="text-xs sm:text-sm leading-relaxed arabic-text whitespace-pre-wrap">{msg.content}</p>
                 {msg.sources && msg.sources.length > 0 && (
                   <div className="mt-2 pt-2 border-t border-primary/10">
                     <p className="text-[10px] text-primary/60 mb-1">المصادر:</p>
@@ -212,7 +212,7 @@ export default function ChatView() {
 
       {/* Input area - compact, stuck above tab bar */}
       <motion.div
-        className="shrink-0 px-2 pt-2 pb-1 bg-background/80 backdrop-blur-lg border-t border-border/30"
+        className="shrink-0 px-1.5 sm:px-2 pt-1.5 pb-0.5 sm:pb-1 bg-background/80 backdrop-blur-lg border-t border-border/30"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
@@ -224,17 +224,17 @@ export default function ChatView() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={config.placeholder}
-            className="min-h-[36px] max-h-[80px] resize-none text-sm border-primary/20 bg-card/50 focus:ring-primary/30 rounded-lg"
+            className="min-h-[32px] sm:min-h-[36px] max-h-[80px] resize-none text-xs sm:text-sm border-primary/20 bg-card/50 focus:ring-primary/30 rounded-lg"
             rows={1}
             disabled={isLoading}
           />
           <CrystalButton
             size="icon"
-            className="shrink-0 h-9 w-9 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground"
+            className="shrink-0 h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground"
             onClick={sendMessage}
             disabled={isLoading || !input.trim()}
           >
-            <Send className="w-4 h-4 rotate-180" />
+            <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 rotate-180" />
           </CrystalButton>
         </div>
       </motion.div>

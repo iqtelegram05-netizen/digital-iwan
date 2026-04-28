@@ -291,19 +291,19 @@ export default function AdminPanel() {
   );
 
   return (
-    <div className="flex flex-col px-4 py-6 min-h-[60vh] max-w-3xl mx-auto overflow-y-auto">
+    <div className="flex flex-col px-3 sm:px-4 py-3 sm:py-6 max-w-3xl mx-auto overflow-y-auto">
       <motion.div
-        className="w-full space-y-6"
+        className="w-full space-y-4 sm:space-y-6"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
       >
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center sky-glow">
-            <Shield className="w-6 h-6 text-primary" />
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center sky-glow">
+            <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl font-bold">لوحة التحكم</h2>
+            <h2 className="text-base sm:text-xl font-bold">لوحة التحكم</h2>
             <p className="text-xs text-muted-foreground">للمالك والمشرفين حصراً</p>
           </div>
         </div>
@@ -319,7 +319,7 @@ export default function AdminPanel() {
               key={tab.id}
               variant={activeTab === tab.id ? 'default' : 'outline'}
               size="sm"
-              className={`shrink-0 gap-1.5 text-xs rounded-lg ${activeTab === tab.id ? 'bg-primary text-primary-foreground' : 'border-primary/20 hover:bg-primary/10'}`}
+              className={`shrink-0 gap-1 sm:gap-1.5 text-[10px] sm:text-xs rounded-lg ${activeTab === tab.id ? 'bg-primary text-primary-foreground' : 'border-primary/20 hover:bg-primary/10'}`}
               onClick={() => setActiveTab(tab.id)}
             >
               <tab.icon className="w-3.5 h-3.5" />

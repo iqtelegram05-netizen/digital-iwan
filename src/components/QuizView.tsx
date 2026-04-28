@@ -62,7 +62,6 @@ export default function QuizView() {
     if (!quizCategory || quizQuestions.length === 0) return;
     setLoading(true);
     try {
-      // Convert answers object to array format expected by API
       const answersArray = Object.entries(quizAnswers).map(([questionId, selectedAnswer]) => ({
         questionId,
         selectedAnswer,
@@ -107,29 +106,29 @@ export default function QuizView() {
   // Category Selection
   if (!quizCategory || quizQuestions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 py-8 overflow-y-auto">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] sm:min-h-[60vh] px-3 sm:px-4 py-4 sm:py-8 overflow-y-auto">
         <motion.div
-          className="flex flex-col items-center gap-6 w-full max-w-md"
+          className="flex flex-col items-center gap-4 sm:gap-6 w-full max-w-md"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary sky-glow">
-            <Brain className="w-10 h-10" />
+          <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary sky-glow">
+            <Brain className="w-7 h-7 sm:w-10 sm:h-10" />
           </div>
-          <h2 className="text-xl font-bold text-foreground">اختبر نفسك</h2>
-          <p className="text-sm text-muted-foreground text-center">اختر تصنيفاً لبدء الاختبار</p>
+          <h2 className="text-base sm:text-xl font-bold text-foreground">اختبر نفسك</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground text-center">اختر تصنيفاً لبدء الاختبار</p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full mt-2">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full mt-1 sm:mt-2">
             {CATEGORIES.map((cat) => (
               <CrystalButton
                 key={cat.id}
                 variant="outline"
-                className="h-auto py-4 flex flex-col items-center gap-2 border-primary/20 hover:bg-primary/10 hover:border-primary/40 rounded-xl"
+                className="h-auto py-2.5 sm:py-4 flex flex-col items-center gap-1 sm:gap-2 border-primary/20 hover:bg-primary/10 hover:border-primary/40 rounded-xl"
                 onClick={() => startQuiz(cat.id)}
                 disabled={loading}
               >
-                <span className="text-2xl">{cat.icon}</span>
-                <span className="text-sm font-medium">{cat.label}</span>
+                <span className="text-xl sm:text-2xl">{cat.icon}</span>
+                <span className="text-[11px] sm:text-sm font-medium">{cat.label}</span>
               </CrystalButton>
             ))}
           </div>
@@ -151,37 +150,37 @@ export default function QuizView() {
   if (showResults && quizScore !== null) {
     const grade = getGrade(quizScore);
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 py-8 overflow-y-auto">
+      <div className="flex flex-col items-center justify-center min-h-[50vh] sm:min-h-[60vh] px-3 sm:px-4 py-4 sm:py-8 overflow-y-auto">
         <motion.div
-          className="flex flex-col items-center gap-6 w-full max-w-md"
+          className="flex flex-col items-center gap-4 sm:gap-6 w-full max-w-md"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
         >
-          <Trophy className="w-16 h-16 text-yellow-500" />
-          <h2 className="text-2xl font-bold">نتيجة الاختبار</h2>
+          <Trophy className="w-12 h-12 sm:w-16 sm:h-16 text-yellow-500" />
+          <h2 className="text-lg sm:text-2xl font-bold">نتيجة الاختبار</h2>
 
           <motion.div
-            className="text-6xl font-bold text-primary sky-glow-text"
+            className="text-5xl sm:text-6xl font-bold text-primary sky-glow-text"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, delay: 0.3 }}
           >
             {quizScore}
           </motion.div>
-          <p className="text-muted-foreground">من 100</p>
-          <Badge variant="secondary" className={`text-lg px-4 py-1 ${grade.color}`}>
+          <p className="text-muted-foreground text-sm">من 100</p>
+          <Badge variant="secondary" className={`text-base sm:text-lg px-3 sm:px-4 py-1 ${grade.color}`}>
             {grade.label}
           </Badge>
 
           {/* Answer review */}
-          <div className="w-full space-y-2 mt-4 max-h-64 overflow-y-auto">
+          <div className="w-full space-y-1.5 sm:space-y-2 mt-2 sm:mt-4 max-h-48 sm:max-h-64 overflow-y-auto">
             {quizQuestions.map((q, i) => {
               const userAnswer = quizAnswers[q.id];
               const isCorrect = userAnswer === q.correctAnswer;
               return (
                 <motion.div
                   key={q.id}
-                  className="flex items-start gap-2 p-3 rounded-lg bg-card/50 border border-border/30 text-sm"
+                  className="flex items-start gap-2 p-2 sm:p-3 rounded-lg bg-card/50 border border-border/30 text-xs sm:text-sm"
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + i * 0.1 }}
@@ -192,9 +191,9 @@ export default function QuizView() {
                     <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium mb-1">{q.question}</p>
+                    <p className="font-medium mb-0.5 sm:mb-1">{q.question}</p>
                     {!isCorrect && (
-                      <p className="text-xs text-sky-500">
+                      <p className="text-[10px] sm:text-xs text-sky-500">
                         الإجابة الصحيحة: {q.options[q.correctAnswer]}
                       </p>
                     )}
@@ -204,18 +203,18 @@ export default function QuizView() {
             })}
           </div>
 
-          <div className="flex gap-3 mt-4">
+          <div className="flex gap-2 sm:gap-3 mt-2 sm:mt-4">
             <CrystalButton
               variant="outline"
-              className="border-primary/20 hover:bg-primary/10"
+              className="border-primary/20 hover:bg-primary/10 text-xs sm:text-sm"
               onClick={() => startQuiz(quizCategory)}
             >
-              <RotateCcw className="w-4 h-4 ml-2" />
-              إعادة الاختبار
+              <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+              إعادة
             </CrystalButton>
-            <CrystalButton variant="outline" className="border-primary/20 hover:bg-primary/10" onClick={resetQuiz}>
-              <ArrowLeft className="w-4 h-4 ml-2" />
-              تغيير التصنيف
+            <CrystalButton variant="outline" className="border-primary/20 hover:bg-primary/10 text-xs sm:text-sm" onClick={resetQuiz}>
+              <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+              تصنيف آخر
             </CrystalButton>
           </div>
         </motion.div>
@@ -228,44 +227,44 @@ export default function QuizView() {
   const progress = ((currentQuestion + 1) / quizQuestions.length) * 100;
 
   return (
-    <div className="flex flex-col items-center px-4 py-6 min-h-[60vh] max-w-2xl mx-auto overflow-y-auto">
+    <div className="flex flex-col items-center px-3 sm:px-4 py-3 sm:py-6 min-h-[50vh] sm:min-h-[60vh] max-w-2xl mx-auto overflow-y-auto">
       {/* Progress */}
-      <div className="w-full mb-6">
-        <div className="flex justify-between text-xs text-muted-foreground mb-2">
+      <div className="w-full mb-3 sm:mb-6">
+        <div className="flex justify-between text-[11px] sm:text-xs text-muted-foreground mb-1 sm:mb-2">
           <span>السؤال {currentQuestion + 1} من {quizQuestions.length}</span>
           <span>{Math.round(progress)}%</span>
         </div>
-        <Progress value={progress} className="h-2 bg-primary/10" />
+        <Progress value={progress} className="h-1.5 sm:h-2 bg-primary/10" />
       </div>
 
       <AnimatePresence mode="wait">
         <motion.div
           key={question.id}
-          className="w-full flex flex-col gap-4"
+          className="w-full flex flex-col gap-3 sm:gap-4"
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -50 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
-          <h3 className="text-lg font-bold text-foreground leading-relaxed">{question.question}</h3>
+          <h3 className="text-sm sm:text-lg font-bold text-foreground leading-relaxed">{question.question}</h3>
 
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {question.options.map((option, idx) => {
               const isSelected = quizAnswers[question.id] === idx;
               return (
                 <CrystalButton
                   key={idx}
                   variant={isSelected ? 'default' : 'outline'}
-                  className={`w-full h-auto py-3 px-4 text-right justify-start text-sm rounded-xl transition-all ${
+                  className={`w-full h-auto py-2.5 sm:py-3 px-3 sm:px-4 text-right justify-start text-xs sm:text-sm rounded-xl transition-all ${
                     isSelected
                       ? 'bg-primary text-primary-foreground shadow-lg sky-glow'
                       : 'border-primary/20 hover:bg-primary/10 hover:border-primary/40'
                   }`}
                   onClick={() => setQuizAnswer(question.id, idx)}
                 >
-                  <span className="flex items-center gap-3">
+                  <span className="flex items-center gap-2 sm:gap-3">
                     <span
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                      className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold shrink-0 ${
                         isSelected
                           ? 'bg-white/20 text-primary-foreground'
                           : 'bg-primary/10 text-primary'
@@ -283,10 +282,10 @@ export default function QuizView() {
       </AnimatePresence>
 
       {/* Navigation */}
-      <div className="flex justify-between w-full mt-8">
+      <div className="flex justify-between w-full mt-4 sm:mt-8">
         <CrystalButton
           variant="outline"
-          className="border-primary/20 hover:bg-primary/10"
+          className="border-primary/20 hover:bg-primary/10 text-xs sm:text-sm"
           onClick={() => setCurrentQuestion((p) => Math.max(0, p - 1))}
           disabled={currentQuestion === 0}
         >
@@ -295,14 +294,14 @@ export default function QuizView() {
 
         {currentQuestion < quizQuestions.length - 1 ? (
           <CrystalButton
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm"
             onClick={() => setCurrentQuestion((p) => p + 1)}
           >
             التالي
           </CrystalButton>
         ) : (
           <CrystalButton
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm"
             onClick={submitQuiz}
             disabled={loading}
           >
