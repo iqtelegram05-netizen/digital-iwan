@@ -303,3 +303,22 @@
 
 ### Issues Encountered
 - None.
+
+---
+
+## Task 5: Fix Input Area Positioning (Bottom Anchor)
+**Agent:** main
+**Date:** 2026-04-28
+**Status:** ✅ Completed
+
+### Problem
+Text input area in all chat sections was floating in the middle of the screen instead of being anchored at the bottom above the navigation bar.
+
+### Fix Applied
+1. `src/app/page.tsx`: Changed `overflow-y-auto` to `overflow-hidden` on the motion.div view wrapper
+2. `src/components/QuizView.tsx`: Added `overflow-y-auto` to all 3 root container divs
+3. `src/components/ProfileView.tsx`: Added `overflow-y-auto` to root container div
+4. `src/components/AdminPanel.tsx`: Added `overflow-y-auto` to root container div
+
+### Build Status
+- Build: **Successful** ✅

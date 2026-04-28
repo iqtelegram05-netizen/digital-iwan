@@ -107,7 +107,7 @@ export default function QuizView() {
   // Category Selection
   if (!quizCategory || quizQuestions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 py-8">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 py-8 overflow-y-auto">
         <motion.div
           className="flex flex-col items-center gap-6 w-full max-w-md"
           initial={{ opacity: 0, y: 30 }}
@@ -151,7 +151,7 @@ export default function QuizView() {
   if (showResults && quizScore !== null) {
     const grade = getGrade(quizScore);
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 py-8">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 py-8 overflow-y-auto">
         <motion.div
           className="flex flex-col items-center gap-6 w-full max-w-md"
           initial={{ opacity: 0, scale: 0.9 }}
@@ -228,7 +228,7 @@ export default function QuizView() {
   const progress = ((currentQuestion + 1) / quizQuestions.length) * 100;
 
   return (
-    <div className="flex flex-col items-center px-4 py-6 min-h-[60vh] max-w-2xl mx-auto">
+    <div className="flex flex-col items-center px-4 py-6 min-h-[60vh] max-w-2xl mx-auto overflow-y-auto">
       {/* Progress */}
       <div className="w-full mb-6">
         <div className="flex justify-between text-xs text-muted-foreground mb-2">

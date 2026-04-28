@@ -105,7 +105,7 @@ export default function Home() {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentView}
-                  className="flex-1 overflow-y-auto"
+                  className="flex-1 overflow-hidden"
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}

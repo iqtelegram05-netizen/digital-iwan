@@ -37,7 +37,7 @@ export default function ProfileView() {
   };
 
   return (
-    <div className="flex flex-col items-center px-4 py-6 min-h-[60vh] max-w-lg mx-auto">
+    <div className="flex flex-col items-center px-4 py-6 min-h-[60vh] max-w-lg mx-auto overflow-y-auto">
       <motion.div
         className="w-full"
         initial={{ opacity: 0, y: 30 }}
