@@ -456,7 +456,7 @@ export default function AdminPanel() {
   );
 
   return (
-    <div className="flex flex-col px-3 sm:px-4 py-3 sm:py-6 max-w-3xl mx-auto overflow-y-auto">
+    <div className="flex flex-col h-full px-3 sm:px-4 py-3 sm:py-6 max-w-3xl mx-auto overflow-y-auto">
       <motion.div
         className="w-full space-y-4 sm:space-y-6"
         initial={{ opacity: 0, y: 30 }}
