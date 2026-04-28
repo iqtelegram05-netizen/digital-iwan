@@ -40,6 +40,56 @@ interface PrayerItem {
   text: string;
 }
 
+// ========== Reusable Prayer List Item ==========
+function PrayerListItem({
+  prayer,
+  Icon,
+  onClick,
+}: {
+  prayer: PrayerItem;
+  Icon: React.ElementType;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full p-3 rounded-xl bg-card/40 border border-primary/10 hover:bg-primary/10 hover:border-primary/30 transition-all text-right group"
+      style={{ display: 'grid', gridTemplateColumns: '40px 1fr 20px', gap: '10px', alignItems: 'center' }}
+    >
+      {/* Icon */}
+      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+        <Icon className="w-4 h-4 text-primary" />
+      </div>
+
+      {/* Text - guaranteed width via 1fr grid column */}
+      <div style={{ minWidth: 0, overflow: 'hidden' }}>
+        <p
+          className="text-sm font-medium text-foreground group-hover:text-primary transition-colors"
+          style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
+          {prayer.title}
+        </p>
+        {prayer.subtitle && (
+          <p
+            className="text-[10px] text-muted-foreground"
+            style={{ marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          >
+            {prayer.subtitle}
+          </p>
+        )}
+      </div>
+
+      {/* Arrow */}
+      <div className="text-primary/40 group-hover:text-primary transition-colors">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </div>
+    </button>
+  );
+}
+
 export default function SideDrawer() {
   const { sheetOpen, setSheetOpen, openReader } = useAppStore();
   const [prayers, setPrayers] = useState<PrayerItem[]>([]);
@@ -112,7 +162,7 @@ export default function SideDrawer() {
             ))}
           </TabsList>
 
-          <ScrollArea className="h-[calc(100dvh-140px)] px-3 pb-6">
+          <ScrollArea className="h-[calc(100dvh-140px)] px-3 pb-6" style={{ overflowX: 'hidden' } as React.CSSProperties}>
             {/* Prayers Tab */}
             <TabsContent value="prayers" className="mt-0 space-y-4">
               <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">الأدعية</h3>
@@ -123,34 +173,8 @@ export default function SideDrawer() {
                 </div>
               ) : duaItems.length > 0 ? (
                 <div className="space-y-2">
-                  {duaItems.map((prayer, idx) => (
-                    <motion.button
-                      key={prayer.id}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-card/40 border border-primary/10 hover:bg-primary/10 hover:border-primary/30 transition-all text-right group overflow-hidden"
-                      onClick={() => handleOpen(prayer)}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                        <BookOpen className="w-4 h-4 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0 overflow-hidden">
-                        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">{prayer.title}</p>
-                        {prayer.subtitle && (
-                          <p className="text-[10px] text-muted-foreground truncate mt-0.5">{prayer.subtitle}</p>
-                        )}
-                      </div>
-                      <motion.div
-                        className="shrink-0 text-primary/40 group-hover:text-primary transition-colors"
-                        whileHover={{ x: -3 }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="15 18 9 12 15 6" />
-                        </svg>
-                      </motion.div>
-                    </motion.button>
+                  {duaItems.map((prayer) => (
+                    <PrayerListItem key={prayer.id} prayer={prayer} Icon={BookOpen} onClick={() => handleOpen(prayer)} />
                   ))}
                 </div>
               ) : (
@@ -161,34 +185,8 @@ export default function SideDrawer() {
               <h3 className="text-sm font-bold text-foreground/80 mb-3">الزيارات</h3>
               {ziyaratItems.length > 0 ? (
                 <div className="space-y-2">
-                  {ziyaratItems.map((prayer, idx) => (
-                    <motion.button
-                      key={prayer.id}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-card/40 border border-primary/10 hover:bg-primary/10 hover:border-primary/30 transition-all text-right group overflow-hidden"
-                      onClick={() => handleOpen(prayer)}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                        <Compass className="w-4 h-4 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0 overflow-hidden">
-                        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">{prayer.title}</p>
-                        {prayer.subtitle && (
-                          <p className="text-[10px] text-muted-foreground truncate mt-0.5">{prayer.subtitle}</p>
-                        )}
-                      </div>
-                      <motion.div
-                        className="shrink-0 text-primary/40 group-hover:text-primary transition-colors"
-                        whileHover={{ x: -3 }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="15 18 9 12 15 6" />
-                        </svg>
-                      </motion.div>
-                    </motion.button>
+                  {ziyaratItems.map((prayer) => (
+                    <PrayerListItem key={prayer.id} prayer={prayer} Icon={Compass} onClick={() => handleOpen(prayer)} />
                   ))}
                 </div>
               ) : (
@@ -211,34 +209,8 @@ export default function SideDrawer() {
                 </div>
               ) : sermonItems.length > 0 ? (
                 <div className="space-y-2">
-                  {sermonItems.map((prayer, idx) => (
-                    <motion.button
-                      key={prayer.id}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-card/40 border border-primary/10 hover:bg-primary/10 hover:border-primary/30 transition-all text-right group overflow-hidden"
-                      onClick={() => handleOpen(prayer)}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                        <Mic className="w-4 h-4 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0 overflow-hidden">
-                        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">{prayer.title}</p>
-                        {prayer.subtitle && (
-                          <p className="text-[10px] text-muted-foreground truncate mt-0.5">{prayer.subtitle}</p>
-                        )}
-                      </div>
-                      <motion.div
-                        className="shrink-0 text-primary/40 group-hover:text-primary transition-colors"
-                        whileHover={{ x: -3 }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="15 18 9 12 15 6" />
-                        </svg>
-                      </motion.div>
-                    </motion.button>
+                  {sermonItems.map((prayer) => (
+                    <PrayerListItem key={prayer.id} prayer={prayer} Icon={Mic} onClick={() => handleOpen(prayer)} />
                   ))}
                 </div>
               ) : (

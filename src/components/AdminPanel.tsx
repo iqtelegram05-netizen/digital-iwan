@@ -773,17 +773,19 @@ export default function AdminPanel() {
                     <div className="space-y-2">
                       {prayers.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">لم تتم إضافة أي عناصر بعد</p>}
                       {prayers.map((prayer) => (
-                        <div key={prayer.id} className="flex items-start gap-3 p-3 rounded-lg bg-card/50 border border-border/30">
-                          <div className="flex-1 min-w-0">
+                        <div key={prayer.id} className="p-3 rounded-lg bg-card/50 border border-border/30" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'start' }}>
+                          <div style={{ minWidth: 0, overflow: 'hidden' }}>
                             <div className="flex items-center gap-2">
-                              <p className="text-xs font-medium">{prayer.title}</p>
-                              <Badge variant="secondary" className="text-[9px]">{prayer.category}</Badge>
+                              <p className="text-xs font-medium truncate" style={{ minWidth: 0 }}>{prayer.title}</p>
+                              <Badge variant="secondary" className="text-[9px] shrink-0">{prayer.category}</Badge>
                               {!prayer.isPublished && (
-                                <Badge variant="secondary" className="text-[9px] bg-yellow-500/20 text-yellow-600">مسودة</Badge>
+                                <Badge variant="secondary" className="text-[9px] bg-yellow-500/20 text-yellow-600 shrink-0">مسودة</Badge>
                               )}
                             </div>
-                            {prayer.subtitle && <p className="text-[10px] text-muted-foreground mt-0.5">{prayer.subtitle}</p>}
-                            <p className="text-[10px] text-muted-foreground mt-1 truncate max-w-full">{prayer.text.substring(0, 80)}...</p>
+                            {prayer.subtitle && (
+                              <p className="text-[10px] text-muted-foreground mt-0.5 truncate" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prayer.subtitle}</p>
+                            )}
+                            <p className="text-[10px] text-muted-foreground mt-1 truncate" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prayer.text.substring(0, 80)}...</p>
                           </div>
                           <div className="flex flex-col gap-1 shrink-0">
                             <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70 hover:text-destructive" onClick={() => deletePrayer(prayer.id)} disabled={saving}>
