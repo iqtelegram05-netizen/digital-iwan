@@ -42,6 +42,12 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --color-sky-glow: #0ea5e9;
+  /* Responsive breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
 }
 
 :root {
@@ -116,16 +122,26 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    box-sizing: border-box;
   }
-  html, body {
-    height: 100vh;
+  html {
+    height: 100%;
     height: 100dvh;
-    overflow: hidden;
-    overscroll-behavior: none;
   }
   body {
     @apply bg-background text-foreground;
+    height: 100%;
+    height: 100dvh;
+    margin: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
+}
+
+/* Safe viewport height with fallback for older mobile browsers */
+.safe-h-screen {
+  height: 100vh;
+  height: 100dvh;
 }
 
 /* ========================================
