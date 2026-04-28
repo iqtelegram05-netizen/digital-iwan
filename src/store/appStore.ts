@@ -1,7 +1,15 @@
 import { create } from 'zustand';
 
-export type View = 'splash' | 'chat' | 'debate' | 'teacher' | 'quiz' | 'profile' | 'admin';
+export type View = 'splash' | 'chat' | 'debate' | 'teacher' | 'quiz' | 'profile' | 'admin' | 'reader';
 export type ChatMode = 'chat' | 'debate' | 'teacher';
+
+export interface ReaderItem {
+  id: string;
+  title: string;
+  subtitle?: string;
+  category: string;
+  text: string;
+}
 
 export interface Message {
   id: string;
@@ -74,6 +82,11 @@ interface AppState {
   // User auth
   user: UserProfile | null;
   setUser: (user: UserProfile | null) => void;
+
+  // Reader
+  readerItem: ReaderItem | null;
+  setReaderItem: (item: ReaderItem | null) => void;
+  openReader: (item: ReaderItem) => void;
 }
 
 const emptyChatState: ModeChatState = {
@@ -157,4 +170,8 @@ export const useAppStore = create<AppState>((set) => ({
 
   user: null,
   setUser: (user) => set({ user }),
+
+  readerItem: null,
+  setReaderItem: (item) => set({ readerItem: item }),
+  openReader: (item) => set({ readerItem: item, currentView: 'reader', sheetOpen: false }),
 }));

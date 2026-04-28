@@ -11,6 +11,7 @@ import ChatView from '@/components/ChatView';
 import QuizView from '@/components/QuizView';
 import ProfileView from '@/components/ProfileView';
 import AdminPanel from '@/components/AdminPanel';
+import ReaderView from '@/components/ReaderView';
 import SideDrawer from '@/components/SideDrawer';
 import Footer from '@/components/Footer';
 import { BookOpen, Swords, GraduationCap, Brain, User } from 'lucide-react';
@@ -34,6 +35,8 @@ export default function Home() {
     setSplashComplete,
     setUser,
   } = useAppStore();
+
+  const isReaderView = currentView === 'reader';
 
   // معالجة تسجيل الدخول من Google - يُنفذ دائماً عند تحميل الصفحة
   useEffect(() => {
@@ -146,7 +149,7 @@ export default function Home() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
           >
-            <Header onMenuClick={() => setSheetOpen(true)} />
+            {!isReaderView && <Header onMenuClick={() => setSheetOpen(true)} />}
             <SideDrawer />
 
             <main className="flex-1 flex flex-col overflow-hidden min-h-0 pb-0">
@@ -165,11 +168,13 @@ export default function Home() {
                   {currentView === 'quiz' && <QuizView />}
                   {currentView === 'profile' && <ProfileView />}
                   {currentView === 'admin' && <AdminPanel />}
+                  {currentView === 'reader' && <ReaderView />}
                 </motion.div>
               </AnimatePresence>
             </main>
 
-            {/* Bottom Tab Bar */}
+            {/* Bottom Tab Bar - hidden in reader view */}
+            {!isReaderView && (
             <nav className="sticky bottom-0 z-30 glass-card border-t border-border/20">
               <div className="flex items-center justify-around px-0.5 py-0.5 max-w-2xl mx-auto">
                 {TABS.map((tab) => {
@@ -203,6 +208,7 @@ export default function Home() {
                 })}
               </div>
             </nav>
+            )}
 
             <Footer />
           </motion.div>

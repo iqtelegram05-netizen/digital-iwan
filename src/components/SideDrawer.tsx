@@ -1,15 +1,16 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import { BookOpen, Compass, Mic, Calendar, ChevronDown, Clock, Menu } from 'lucide-react';
+import { BookOpen, Compass, Mic, Calendar, Clock, Menu } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import QiblaCompass from './QiblaCompass';
+import { type ReaderItem } from '@/store/appStore';
 
 // ========== EVENTS DATA ==========
 const HIJRI_EVENTS = [
@@ -40,7 +41,7 @@ interface PrayerItem {
 }
 
 export default function SideDrawer() {
-  const { sheetOpen, setSheetOpen } = useAppStore();
+  const { sheetOpen, setSheetOpen, openReader } = useAppStore();
   const [prayers, setPrayers] = useState<PrayerItem[]>([]);
   const [prayersLoading, setPrayersLoading] = useState(true);
 
@@ -68,6 +69,17 @@ export default function SideDrawer() {
   const duaItems = prayers.filter((p) => p.category === 'دعاء');
   const ziyaratItems = prayers.filter((p) => p.category === 'زيارة');
   const sermonItems = prayers.filter((p) => p.category === 'خطب');
+
+  const handleOpen = (item: PrayerItem) => {
+    const readerItem: ReaderItem = {
+      id: item.id,
+      title: item.title,
+      subtitle: item.subtitle,
+      category: item.category,
+      text: item.text,
+    };
+    openReader(readerItem);
+  };
 
   return (
     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -102,7 +114,7 @@ export default function SideDrawer() {
           </TabsList>
 
           <ScrollArea className="h-[calc(100dvh-140px)] px-3 pb-6">
-            {/* Prayers Tab - Dynamic from API */}
+            {/* Prayers Tab */}
             <TabsContent value="prayers" className="mt-0 space-y-4">
               <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">الأدعية</h3>
               {prayersLoading ? (
@@ -111,9 +123,37 @@ export default function SideDrawer() {
                   جارٍ التحميل...
                 </div>
               ) : duaItems.length > 0 ? (
-                duaItems.map((prayer) => (
-                  <PrayerCard key={prayer.id} title={prayer.title} subtitle={prayer.subtitle || ''} text={prayer.text} />
-                ))
+                <div className="space-y-2">
+                  {duaItems.map((prayer, idx) => (
+                    <motion.button
+                      key={prayer.id}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-card/40 border border-primary/10 hover:bg-primary/10 hover:border-primary/30 transition-all text-right group"
+                      onClick={() => handleOpen(prayer)}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                        <BookOpen className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{prayer.title}</p>
+                        {prayer.subtitle && (
+                          <p className="text-[10px] text-muted-foreground truncate mt-0.5">{prayer.subtitle}</p>
+                        )}
+                      </div>
+                      <motion.div
+                        className="text-primary/40 group-hover:text-primary transition-colors"
+                        whileHover={{ x: -3 }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                      </motion.div>
+                    </motion.button>
+                  ))}
+                </div>
               ) : (
                 <p className="text-xs text-muted-foreground text-center py-4">لا توجد أدعية مضافة بعد. يمكن للمالك إضافتها من لوحة التحكم.</p>
               )}
@@ -121,9 +161,37 @@ export default function SideDrawer() {
               <Separator className="my-4 bg-primary/10" />
               <h3 className="text-sm font-bold text-foreground/80 mb-3">الزيارات</h3>
               {ziyaratItems.length > 0 ? (
-                ziyaratItems.map((prayer) => (
-                  <PrayerCard key={prayer.id} title={prayer.title} subtitle={prayer.subtitle || ''} text={prayer.text} />
-                ))
+                <div className="space-y-2">
+                  {ziyaratItems.map((prayer, idx) => (
+                    <motion.button
+                      key={prayer.id}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-card/40 border border-primary/10 hover:bg-primary/10 hover:border-primary/30 transition-all text-right group"
+                      onClick={() => handleOpen(prayer)}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                        <Compass className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{prayer.title}</p>
+                        {prayer.subtitle && (
+                          <p className="text-[10px] text-muted-foreground truncate mt-0.5">{prayer.subtitle}</p>
+                        )}
+                      </div>
+                      <motion.div
+                        className="text-primary/40 group-hover:text-primary transition-colors"
+                        whileHover={{ x: -3 }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                      </motion.div>
+                    </motion.button>
+                  ))}
+                </div>
               ) : (
                 <p className="text-xs text-muted-foreground text-center py-4">لا توجد زيارات مضافة بعد.</p>
               )}
@@ -134,7 +202,7 @@ export default function SideDrawer() {
               <QiblaCompass />
             </TabsContent>
 
-            {/* Sermons Tab - Dynamic from API */}
+            {/* Sermons Tab */}
             <TabsContent value="sermons" className="mt-0 space-y-4">
               <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">الخطب</h3>
               {prayersLoading ? (
@@ -143,9 +211,37 @@ export default function SideDrawer() {
                   جارٍ التحميل...
                 </div>
               ) : sermonItems.length > 0 ? (
-                sermonItems.map((prayer) => (
-                  <PrayerCard key={prayer.id} title={prayer.title} subtitle={prayer.subtitle || ''} text={prayer.text} />
-                ))
+                <div className="space-y-2">
+                  {sermonItems.map((prayer, idx) => (
+                    <motion.button
+                      key={prayer.id}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-card/40 border border-primary/10 hover:bg-primary/10 hover:border-primary/30 transition-all text-right group"
+                      onClick={() => handleOpen(prayer)}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                        <Mic className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">{prayer.title}</p>
+                        {prayer.subtitle && (
+                          <p className="text-[10px] text-muted-foreground truncate mt-0.5">{prayer.subtitle}</p>
+                        )}
+                      </div>
+                      <motion.div
+                        className="text-primary/40 group-hover:text-primary transition-colors"
+                        whileHover={{ x: -3 }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                      </motion.div>
+                    </motion.button>
+                  ))}
+                </div>
               ) : (
                 <p className="text-xs text-muted-foreground text-center py-4">لا توجد خطب مضافة بعد. يمكن للمالك إضافتها من لوحة التحكم.</p>
               )}
@@ -183,49 +279,5 @@ export default function SideDrawer() {
         </Tabs>
       </SheetContent>
     </Sheet>
-  );
-}
-
-// ========== Prayer Card Component ==========
-function PrayerCard({ title, subtitle, text }: { title: string; subtitle: string; text: string }) {
-  const [expanded, setExpanded] = useState(false);
-
-  return (
-    <motion.div
-      className="rounded-xl overflow-hidden border border-primary/10 bg-card/30"
-      layout
-    >
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full p-3 text-right flex items-start gap-3 hover:bg-primary/5 transition-colors"
-      >
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-foreground">{title}</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{subtitle}</p>
-        </div>
-        <motion.div
-          animate={{ rotate: expanded ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <ChevronDown className="w-4 h-4 text-primary shrink-0" />
-        </motion.div>
-      </button>
-
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            <div className="prayer-border mx-3 mb-3">
-              <p className="text-sm leading-[2.2] arabic-text text-foreground/80 whitespace-pre-wrap">{text}</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
   );
 }
