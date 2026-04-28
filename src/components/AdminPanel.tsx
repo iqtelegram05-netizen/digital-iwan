@@ -116,7 +116,7 @@ export default function AdminPanel() {
       const [adminRes, usersRes, prayersRes] = await Promise.all([
         fetch('/api/admin'),
         fetch('/api/admin/users'),
-        fetch('/api/prayers'),
+        fetch('/api/prayers?all=true'),
       ]);
       if (adminRes.ok) setData(await adminRes.json());
       if (usersRes.ok) {
@@ -285,6 +285,27 @@ export default function AdminPanel() {
     } catch { /* silent */ } finally { setSaving(false); }
   };
 
+  // ========== Clear All Data ==========
+  const clearAllData = async () => {
+    if (!confirm('هل أنت متأكد من حذف جميع الأدعية والزيارات والخطب ومفاتيح API؟\nهذا الإجراء لا يمكن التراجع عنه.')) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/setup/clean');
+      if (res.ok) {
+        const json = await res.json();
+        // Re-fetch data after cleaning
+        await fetchData();
+        alert(`تم المسح بنجاح!\n- أدعية/زيارات/خطب محذوفة: ${json.details?.deletedPrayers || 0}\n- إعدادات محذوفة: ${json.details?.deletedSettings || 0}`);
+      } else {
+        alert('حدث خطأ أثناء مسح البيانات');
+      }
+    } catch {
+      alert('حدث خطأ أثناء الاتصال بالخادم');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // ========== Loading Spinner ==========
   const spinner = (
     <div className="flex items-center justify-center py-6 text-muted-foreground text-sm">
@@ -311,15 +332,27 @@ export default function AdminPanel() {
               <p className="text-xs text-muted-foreground">للمالك والمشرفين حصراً</p>
             </div>
           </div>
-          <CrystalButton
-            variant="outline"
-            size="sm"
-            className="border-primary/20 hover:bg-primary/10 text-xs gap-1"
-            onClick={() => setCurrentView('profile')}
-          >
-            <ArrowRight className="w-4 h-4" />
-            العودة
-          </CrystalButton>
+          <div className="flex items-center gap-2">
+            <CrystalButton
+              variant="outline"
+              size="sm"
+              className="border-red-500/30 hover:bg-red-500/10 text-red-600 text-[10px] sm:text-xs gap-1"
+              onClick={clearAllData}
+              disabled={saving}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">مسح البيانات</span>
+            </CrystalButton>
+            <CrystalButton
+              variant="outline"
+              size="sm"
+              className="border-primary/20 hover:bg-primary/10 text-xs gap-1"
+              onClick={() => setCurrentView('profile')}
+            >
+              <ArrowRight className="w-4 h-4" />
+              العودة
+            </CrystalButton>
+          </div>
         </div>
 
         {/* Tab Selector */}

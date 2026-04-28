@@ -4,12 +4,17 @@ import { db } from '@/lib/db';
 const VALID_CATEGORIES = ['دعاء', 'زيارة', 'خطب'];
 
 // GET: Get all published prayers, optionally filtered by category
+// Pass ?all=true to get all prayers including drafts (for admin panel)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
+    const all = searchParams.get('all') === 'true';
 
-    const where: Record<string, unknown> = { isPublished: true };
+    const where: Record<string, unknown> = {};
+    if (!all) {
+      where.isPublished = true;
+    }
     if (category && VALID_CATEGORIES.includes(category)) {
       where.category = category;
     }
