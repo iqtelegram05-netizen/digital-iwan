@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { callAI, ChatMessage } from '@/lib/aiProvider';
 import { filterArabicText } from '@/lib/arabicFilter';
-import { canUserSend, getUserUsageInfo } from '@/lib/usageLimit';
+import { canUserSend, getUserUsageInfo, needsDailyReset } from '@/lib/usageLimit';
 
 // Catch unhandled errors to prevent process crash
 if (typeof process !== 'undefined') {
@@ -93,23 +93,49 @@ export async function POST(request: NextRequest) {
     const userId = body.userId;
     if (userId) {
       const user = await db.user.findUnique({ where: { id: userId } });
-      if (user && !canUserSend(user)) {
-        const usageInfo = getUserUsageInfo(user);
-        return NextResponse.json({
-          error: 'limit_reached',
-          message: 'وصلت للحد الأقصى من الرسائل المجانية. اشترك أو شاهد إعلانات للمتابعة.',
-          usageInfo,
-        }, { status: 403 });
-      }
+      if (user) {
+        // Auto-reset daily counter if 24h passed
+        const isPremium = user.role === 'owner' || user.role === 'supervisor' ||
+          (user.subscriptionExpiry && new Date(user.subscriptionExpiry) > new Date());
 
-      // Deduct usage after successful send
-      if (user && user.role !== 'owner' && user.role !== 'supervisor') {
-        const isPremium = user.subscriptionExpiry && new Date(user.subscriptionExpiry) > new Date();
-        if (!isPremium) {
-          if (user.bonusMessages > 0) {
-            await db.user.update({ where: { id: userId }, data: { bonusMessages: { decrement: 1 } } });
-          } else {
-            await db.user.update({ where: { id: userId }, data: { messagesUsed: { increment: 1 } } });
+        if (!isPremium && needsDailyReset(user.lastMessageResetDate)) {
+          await db.user.update({
+            where: { id: userId },
+            data: {
+              messagesUsed: 0,
+              lastMessageResetDate: new Date(),
+            },
+          });
+        }
+
+        // Re-fetch after potential reset
+        const freshUser = await db.user.findUnique({ where: { id: userId } });
+        if (freshUser && !canUserSend(freshUser)) {
+          const usageInfo = getUserUsageInfo(freshUser);
+          return NextResponse.json({
+            error: 'limit_reached',
+            message: 'وصلت للحد الأقصى من الرسائل المجانية اليومية. اشترك أو شاهد إعلانات للمتابعة.',
+            usageInfo,
+          }, { status: 403 });
+        }
+
+        // Deduct usage after successful send
+        if (freshUser && freshUser.role !== 'owner' && freshUser.role !== 'supervisor') {
+          const freshPremium = freshUser.subscriptionExpiry && new Date(freshUser.subscriptionExpiry) > new Date();
+          if (!freshPremium) {
+            if (freshUser.bonusMessages > 0) {
+              await db.user.update({ where: { id: userId }, data: { bonusMessages: { decrement: 1 } } });
+            } else {
+              // Ensure lastMessageResetDate is set on first message
+              const resetDate = freshUser.lastMessageResetDate || new Date();
+              await db.user.update({
+                where: { id: userId },
+                data: {
+                  messagesUsed: { increment: 1 },
+                  lastMessageResetDate: resetDate,
+                },
+              });
+            }
           }
         }
       }

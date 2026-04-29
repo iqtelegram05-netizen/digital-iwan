@@ -22,6 +22,7 @@ model User {
   messagesUsed     Int      @default(0)
   bonusMessages    Int      @default(0)
   subscriptionExpiry DateTime?
+  lastMessageResetDate DateTime? // 24h daily reset timer
   adsWatchedToday  Int      @default(0)
   adsWatchedTotal  Int      @default(0)
   lastAdDate       DateTime?
