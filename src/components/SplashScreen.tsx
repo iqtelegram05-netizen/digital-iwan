@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
 import { useTheme } from 'next-themes';
@@ -9,13 +10,20 @@ const LOGO_URL = 'https://www.image2url.com/r2/default/images/1777330045986-560b
 
 const ISLAMIC_SYMBOLS = ['☪', '﷽', '✦', '◆', '⬡', '✧', '◈', '✶', '◕', '⬢'];
 
+// Deterministic pseudo-random using seed (avoids hydration mismatch)
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed * 9301 + 49297) * 233280;
+  return x - Math.floor(x);
+}
+
+// Pre-computed shapes with deterministic values (no Math.random at module level)
 const floatingShapes = Array.from({ length: 16 }, (_, i) => ({
   id: i,
   type: (['circle', 'hexagon', 'triangle', 'diamond'] as const)[i % 4],
-  startX: (Math.random() - 0.5) * 250,
-  startY: (Math.random() - 0.5) * 250,
-  size: 12 + Math.random() * 40,
-  delay: Math.random() * 2,
+  startX: (seededRandom(i * 4) - 0.5) * 250,
+  startY: (seededRandom(i * 4 + 1) - 0.5) * 250,
+  size: 12 + seededRandom(i * 4 + 2) * 40,
+  delay: seededRandom(i * 4 + 3) * 2,
 }));
 
 export default function SplashScreen() {
@@ -23,6 +31,40 @@ export default function SplashScreen() {
   const { resolvedTheme } = useTheme();
   const { t } = useTranslation();
   const isDark = resolvedTheme === 'dark';
+  const [mounted, setMounted] = useState(false);
+
+  // Only render random-dependent content on client to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Pre-compute particles deterministically
+  const particles = useMemo(() =>
+    Array.from({ length: 30 }, (_, i) => ({
+      width: 2 + seededRandom(i * 5) * 5,
+      height: 2 + seededRandom(i * 5 + 1) * 5,
+      left: 5 + seededRandom(i * 5 + 2) * 90,
+      top: 5 + seededRandom(i * 5 + 3) * 90,
+      yEnd: 80 + seededRandom(i * 5 + 4) * 80,
+      xStart: (seededRandom(i * 3) - 0.5) * 50,
+      xEnd: (seededRandom(i * 3 + 1) - 0.5) * 70,
+      duration: 2.5 + seededRandom(i * 2) * 2,
+      delay: 0.2 + seededRandom(i * 2 + 1) * 1.5,
+      repeatDelay: seededRandom(i) * 1.5,
+    })),
+  []
+  );
+
+  const islamicSymbols = useMemo(() =>
+    ISLAMIC_SYMBOLS.map((symbol, i) => ({
+      symbol,
+      fontSize: 1.5 + seededRandom(i * 3) * 2,
+      left: 5 + seededRandom(i * 3 + 1) * 90,
+      duration: 6 + seededRandom(i * 3 + 2) * 6,
+      repeatDelay: seededRandom(i) * 3,
+    })),
+  []
+  );
 
   // Dynamic colors based on theme
   const particleColor = isDark ? 'bg-sky-500' : 'bg-sky-500';
@@ -46,40 +88,40 @@ export default function SplashScreen() {
           transition={{ duration: 0.8, ease: 'easeInOut' }}
         >
           {/* Particles */}
-          {Array.from({ length: 30 }).map((_, i) => (
+          {mounted && particles.map((p, i) => (
             <motion.div
               key={`particle-${i}`}
               className={`absolute rounded-full ${particleColor}`}
               style={{
-                width: 2 + Math.random() * 5,
-                height: 2 + Math.random() * 5,
-                left: `${5 + Math.random() * 90}%`,
-                top: `${5 + Math.random() * 90}%`,
+                width: p.width,
+                height: p.height,
+                left: `${p.left}%`,
+                top: `${p.top}%`,
               }}
               initial={{ opacity: 0, scale: 0 }}
               animate={{
                 opacity: [0, 0.8, 0],
                 scale: [0, 1, 0],
-                y: [0, -80 - Math.random() * 80],
-                x: [(Math.random() - 0.5) * 50, (Math.random() - 0.5) * 70],
+                y: [0, -p.yEnd],
+                x: [p.xStart, p.xEnd],
               }}
               transition={{
-                duration: 2.5 + Math.random() * 2,
-                delay: 0.2 + Math.random() * 1.5,
+                duration: p.duration,
+                delay: p.delay,
                 repeat: Infinity,
-                repeatDelay: Math.random() * 1.5,
+                repeatDelay: p.repeatDelay,
               }}
             />
           ))}
 
           {/* Islamic floating symbols during splash */}
-          {ISLAMIC_SYMBOLS.map((symbol, i) => (
+          {mounted && islamicSymbols.map((item, i) => (
             <motion.span
               key={`islamic-${i}`}
               className={`absolute ${symbolColor} select-none`}
               style={{
-                fontSize: `${1.5 + Math.random() * 2}rem`,
-                left: `${5 + Math.random() * 90}%`,
+                fontSize: `${item.fontSize}rem`,
+                left: `${item.left}%`,
               }}
               initial={{ y: '100vh', opacity: 0, rotate: 0 }}
               animate={{
@@ -88,14 +130,14 @@ export default function SplashScreen() {
                 rotate: 360,
               }}
               transition={{
-                duration: 6 + Math.random() * 6,
+                duration: item.duration,
                 delay: 0.5 + i * 0.4,
                 repeat: Infinity,
-                repeatDelay: Math.random() * 3,
+                repeatDelay: item.repeatDelay,
                 ease: 'linear',
               }}
             >
-              {symbol}
+              {item.symbol}
             </motion.span>
           ))}
 

@@ -1,8 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from 'next-themes';
+
+// Deterministic pseudo-random using seed (avoids hydration mismatch)
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed * 9301 + 49297) * 233280;
+  return x - Math.floor(x);
+}
 
 interface GeoShape {
   id: number;
@@ -20,6 +26,12 @@ export default function GeometricBackground() {
   const { resolvedTheme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const shapes = useMemo<GeoShape[]>(() => {
     const arr: GeoShape[] = [];
     const types: Array<'circle' | 'hexagon' | 'triangle' | 'diamond' | 'star'> = [
@@ -29,13 +41,13 @@ export default function GeometricBackground() {
       arr.push({
         id: i,
         type: types[i % types.length],
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: 15 + Math.random() * 65,
-        delay: Math.random() * 5,
-        duration: 6 + Math.random() * 10,
-        opacity: 0.04 + Math.random() * 0.1,
-        depthFactor: 1 + Math.floor(Math.random() * 4),
+        x: seededRandom(i * 7) * 100,
+        y: seededRandom(i * 7 + 1) * 100,
+        size: 15 + seededRandom(i * 7 + 2) * 65,
+        delay: seededRandom(i * 7 + 3) * 5,
+        duration: 6 + seededRandom(i * 7 + 4) * 10,
+        opacity: 0.04 + seededRandom(i * 7 + 5) * 0.1,
+        depthFactor: 1 + Math.floor(seededRandom(i * 7 + 6) * 4),
       });
     }
     return arr;
@@ -87,7 +99,7 @@ export default function GeometricBackground() {
 
   return (
     <div ref={containerRef} className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-      {shapes.map((shape) => (
+      {mounted && shapes.map((shape) => (
         <motion.div
           key={shape.id}
           className={`parallax-shape absolute geo-shape geo-shimmer ${getShapeClass(shape.type)}`}
