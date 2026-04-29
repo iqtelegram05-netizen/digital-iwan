@@ -8,16 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import CrystalButton from './CrystalButton';
 import { useAppStore, type UserProfile } from '@/store/appStore';
+import { useTranslation } from '@/i18n/useTranslation';
 import {
   User, Save, Sparkles, LogOut, Mail, Calendar, Shield,
   ChevronLeft, LogIn, Loader2, AlertCircle, CheckCircle2, Settings,
   Crown
 } from 'lucide-react';
-
-const INTEREST_OPTIONS = [
-  'عقائد', 'فقه', 'تفسير', 'حديث', 'تاريخ الإسلام',
-  'فلسفة إسلامية', 'منطق', 'نحو', 'بلاغة', 'أصول الفقه',
-];
 
 // بريد المالك - يُعيّن مباشرة في الواجهة
 const OWNER_EMAILS = ['iqtelegram05@gmail.com'];
@@ -46,6 +42,13 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
 
 export default function ProfileView() {
   const { user, setUser, setCurrentView } = useAppStore();
+  const { t, tSection } = useTranslation();
+
+  const interestOptions = tSection('profile.interestsList');
+  const INTEREST_OPTIONS = Array.isArray(interestOptions) && interestOptions.length > 0 
+    ? interestOptions 
+    : ['عقائد', 'فقه', 'تفسير', 'حديث', 'تاريخ الإسلام', 'فلسفة إسلامية', 'منطق', 'نحو', 'بلاغة', 'أصول الفقه'];
+
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [interests, setInterests] = useState<string[]>([]);
@@ -84,7 +87,7 @@ export default function ProfileView() {
     };
     script.onerror = () => {
       console.error('Failed to load Google GSI script');
-      setLoginError('فشل تحميل خدمة Google');
+      setLoginError(t('profile.googleLoadFailed'));
       setLoginStatus('error');
     };
     document.head.appendChild(script);
@@ -98,7 +101,7 @@ export default function ProfileView() {
     const google = (window as unknown as { google?: { accounts: { id: { initialize: (config: Record<string, unknown>) => void } } } }).google;
     if (!google || !google.accounts || !google.accounts.id) {
       console.error('Google GSI not available');
-      setLoginError('خدمة Google غير متوفرة');
+      setLoginError(t('profile.googleNotAvailable'));
       setLoginStatus('error');
       return;
     }
@@ -137,7 +140,7 @@ export default function ProfileView() {
     try {
       const payload = decodeJwtPayload(response.credential);
       if (!payload || !payload.email) {
-        throw new Error('فشل فك تشفير بيانات Google');
+        throw new Error(t('profile.decodeFailed'));
       }
 
       const userEmail = payload.email as string;
@@ -188,7 +191,7 @@ export default function ProfileView() {
       setLoginStatus('success');
     } catch (err) {
       console.error('Google login error:', err);
-      setLoginError(err instanceof Error ? err.message : 'حدث خطأ أثناء تسجيل الدخول');
+      setLoginError(err instanceof Error ? err.message : t('profile.loginError'));
       setLoginStatus('error');
       // إعادة المحاولة بعد 3 ثواني
       setTimeout(() => setLoginStatus('idle'), 3000);
@@ -224,7 +227,7 @@ export default function ProfileView() {
   };
 
   const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return 'غير محدد';
+    if (!dateStr) return t('profile.notSet');
     return new Date(dateStr).toLocaleDateString('ar-IQ', {
       year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
     });
@@ -242,9 +245,9 @@ export default function ProfileView() {
             <User className="w-9 h-9 sm:w-12 sm:h-12 text-primary" />
           </motion.div>
 
-          <h2 className="text-lg sm:text-2xl font-bold text-foreground mb-2">الملف الشخصي</h2>
+          <h2 className="text-lg sm:text-2xl font-bold text-foreground mb-2">{t('profile.title')}</h2>
           <p className="text-xs sm:text-sm text-muted-foreground mb-8 leading-relaxed">
-            سجّل دخولك عبر حسابك في Google لحفظ تفضيلاتك ومتابعة تقدّمك في العلوم الإسلامية
+            {t('profile.loginDescription')}
           </p>
 
           {/* حالة التحميل */}
@@ -254,7 +257,7 @@ export default function ProfileView() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             >
               <Loader2 className="w-5 h-5 text-primary animate-spin" />
-              <span className="text-sm text-primary">جارٍ تسجيل الدخول...</span>
+              <span className="text-sm text-primary">{t('profile.loginInProgress')}</span>
             </motion.div>
           )}
 
@@ -265,7 +268,7 @@ export default function ProfileView() {
               initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
             >
               <CheckCircle2 className="w-5 h-5 text-green-500" />
-              <span className="text-sm text-green-500">تم تسجيل الدخول بنجاح!</span>
+              <span className="text-sm text-green-500">{t('profile.loginSuccess')}</span>
             </motion.div>
           )}
 
@@ -335,7 +338,7 @@ export default function ProfileView() {
                 </svg>
                 <LogIn className="w-5 h-5 text-foreground/70 group-hover:text-primary transition-colors" />
                 <span className="text-sm sm:text-base font-medium text-foreground group-hover:text-primary transition-colors">
-                  تسجيل الدخول بـ Google
+                  {t('profile.loginWithGoogle')}
                 </span>
               </button>
             </motion.div>
@@ -343,8 +346,8 @@ export default function ProfileView() {
 
           {/* مميزات */}
           <div className="mt-8 space-y-3 text-right">
-            <p className="text-xs text-muted-foreground font-medium mb-3">مميزات تسجيل الدخول:</p>
-            {['حفظ محادثاتك واختباراتك', 'متابعة تقدّمك في العلوم الإسلامية', 'تخصيص تجربتك حسب اهتماماتك'].map((feature, i) => (
+            <p className="text-xs text-muted-foreground font-medium mb-3">{t('profile.features.title')}</p>
+            {[t('profile.features.saveChats'), t('profile.features.trackProgress'), t('profile.features.customize')].map((feature, i) => (
               <motion.div
                 key={i} className="flex items-center gap-2 text-xs sm:text-sm text-foreground/70"
                 initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.1 }}
@@ -371,7 +374,7 @@ export default function ProfileView() {
                 whileHover={{ scale: 1.05 }} style={{ width: '72px', height: '72px' }}
               >
                 {user.avatar ? (
-                  <img src={user.avatar} alt={user.name || 'المستخدم'} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
+                  <img src={user.avatar} alt={user.name || t('profile.user')} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
                 ) : (
                   <User className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
                 )}
@@ -381,7 +384,7 @@ export default function ProfileView() {
 
             <CardContent className="p-3 sm:p-6 space-y-4">
               <div className="text-center space-y-1 pt-2">
-                <h2 className="text-base sm:text-xl font-bold text-foreground">{user.name || 'مستخدم'}</h2>
+                <h2 className="text-base sm:text-xl font-bold text-foreground">{user.name || t('profile.user')}</h2>
                 <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
                   <Mail className="w-3 h-3" />
                   <span className="truncate max-w-[220px]">{user.email}</span>
@@ -392,23 +395,23 @@ export default function ProfileView() {
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-card/50 border border-border/30">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-primary/70" />
-                    <span className="text-xs text-muted-foreground">آخر دخول</span>
+                    <span className="text-xs text-muted-foreground">{t('profile.lastLogin')}</span>
                   </div>
                   <span className="text-xs font-medium">{formatDate(user.lastLogin)}</span>
                 </div>
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-card/50 border border-border/30">
                   <div className="flex items-center gap-2">
                     <Shield className="w-4 h-4 text-primary/70" />
-                    <span className="text-xs text-muted-foreground">حالة الحساب</span>
+                    <span className="text-xs text-muted-foreground">{t('profile.accountStatus')}</span>
                   </div>
-                  <span className="text-xs font-medium text-green-500">نشط</span>
+                  <span className="text-xs font-medium text-green-500">{t('profile.active')}</span>
                 </div>
               </div>
 
               {!showFullProfile && (
                 <button onClick={() => setShowFullProfile(true)} className="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-primary hover:text-primary/80 transition-colors">
                   <ChevronLeft className="w-3.5 h-3.5 rotate-180" />
-                  تعديل الملف الشخصي
+                  {t('profile.editProfile')}
                 </button>
               )}
 
@@ -416,15 +419,15 @@ export default function ProfileView() {
                 {showFullProfile && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-3 overflow-hidden">
                     <div className="space-y-1.5">
-                      <Label className="text-xs sm:text-sm font-medium text-foreground/80">الاسم</Label>
-                      <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="أدخل اسمك" className="text-sm border-primary/20 focus:ring-primary/30 bg-card/50 h-9 sm:h-10" />
+                      <Label className="text-xs sm:text-sm font-medium text-foreground/80">{t('profile.name')}</Label>
+                      <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('profile.namePlaceholder')} className="text-sm border-primary/20 focus:ring-primary/30 bg-card/50 h-9 sm:h-10" />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs sm:text-sm font-medium text-foreground/80">نبذة عنك</Label>
-                      <Textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="أخبرنا عن اهتماماتك العلمية..." className="min-h-[60px] resize-none text-sm border-primary/20 focus:ring-primary/30 bg-card/50" rows={2} />
+                      <Label className="text-xs sm:text-sm font-medium text-foreground/80">{t('profile.bio')}</Label>
+                      <Textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder={t('profile.bioPlaceholder')} className="min-h-[60px] resize-none text-sm border-primary/20 focus:ring-primary/30 bg-card/50" rows={2} />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs sm:text-sm font-medium text-foreground/80">الاهتمامات <span className="text-muted-foreground">(اختر حتى 5)</span></Label>
+                      <Label className="text-xs sm:text-sm font-medium text-foreground/80">{t('profile.interests')} <span className="text-muted-foreground">{t('profile.selectUpTo')}</span></Label>
                       <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {INTEREST_OPTIONS.map((interest) => {
                           const selected = interests.includes(interest);
@@ -437,7 +440,7 @@ export default function ProfileView() {
                       </div>
                     </div>
                     <CrystalButton className="w-full bg-primary text-primary-foreground hover:bg-primary/90 py-2.5 rounded-xl text-sm" onClick={handleSave}>
-                      {saved ? (<><Sparkles className="w-4 h-4 ml-2" />تم الحفظ بنجاح!</>) : (<><Save className="w-4 h-4 ml-2" />تحديث الملف الشخصي</>)}
+                      {saved ? (<><Sparkles className="w-4 h-4 ml-2" />{t('profile.saved')}</>) : (<><Save className="w-4 h-4 ml-2" />{t('profile.updateProfile')}</>)}
                     </CrystalButton>
                   </motion.div>
                 )}
@@ -452,13 +455,13 @@ export default function ProfileView() {
                 >
                   {user.role === 'owner' ? <Crown className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
                   <Settings className="w-4 h-4" />
-                  لوحة التحكم
+                  {t('profile.controlPanel')}
                 </motion.button>
               )}
 
               <motion.button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-destructive/30 text-destructive/80 hover:bg-destructive/10 hover:text-destructive transition-all text-sm" whileTap={{ scale: 0.97 }}>
                 <LogOut className="w-4 h-4" />
-                تسجيل الخروج
+                {t('profile.logout')}
               </motion.button>
             </CardContent>
           </Card>

@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
 import { useTheme } from 'next-themes';
+import { useTranslation } from '@/i18n/useTranslation';
 
 const LOGO_URL = 'https://www.image2url.com/r2/default/images/1777330045986-560b3c15-7c7b-4c2f-af23-6499ce631950.png';
 
@@ -20,6 +21,7 @@ const floatingShapes = Array.from({ length: 16 }, (_, i) => ({
 export default function SplashScreen() {
   const { splashComplete, setSplashComplete } = useAppStore();
   const { resolvedTheme } = useTheme();
+  const { t } = useTranslation();
   const isDark = resolvedTheme === 'dark';
 
   // Dynamic colors based on theme
@@ -164,7 +166,7 @@ export default function SplashScreen() {
           >
             <motion.img
               src={LOGO_URL}
-              alt="قلم كود"
+              alt="Qalam Code"
               className="w-72 h-72 sm:w-[360px] sm:h-[360px] object-contain"
               animate={{ rotate: [0, 2, -2, 0] }}
               transition={{ duration: 4, delay: 2.5, repeat: Infinity, ease: 'easeInOut' }}
@@ -175,7 +177,7 @@ export default function SplashScreen() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 2.5, duration: 0.8 }}
             >
-              الإيوان الرقمي
+              {t('app.title')}
             </motion.h1>
             <motion.p
               className={`${subtitleColor} text-sm`}
@@ -183,7 +185,7 @@ export default function SplashScreen() {
               animate={{ opacity: 1 }}
               transition={{ delay: 3, duration: 0.6 }}
             >
-              أول ذكاء اصطناعي عراقي
+              {t('app.subtitle')}
             </motion.p>
           </motion.div>
 

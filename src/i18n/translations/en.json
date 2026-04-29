@@ -15,7 +15,12 @@
     "prayers": "Supplications",
     "qibla": "Qibla",
     "sermons": "Sermons",
-    "events": "Events"
+    "events": "Events",
+    "iwan": "Iwan",
+    "debater": "Debater",
+    "teacher": "Teacher",
+    "quiz": "Quiz",
+    "profile": "Profile"
   },
   "prayers": {
     "title": "Supplications",
@@ -109,16 +114,8 @@
       "customize": "Customize your experience based on your interests"
     },
     "interestsList": [
-      "Beliefs",
-      "Fiqh",
-      "Tafsir",
-      "Hadith",
-      "Islamic History",
-      "Islamic Philosophy",
-      "Logic",
-      "Grammar",
-      "Rhetoric",
-      "Usul al-Fiqh"
+      "Beliefs", "Fiqh", "Tafsir", "Hadith", "Islamic History",
+      "Islamic Philosophy", "Logic", "Grammar", "Rhetoric", "Usul al-Fiqh"
     ]
   },
   "reader": {
@@ -133,6 +130,8 @@
     "showLess": "Show Less",
     "textColor": "Text Color",
     "fontSize": "Font Size",
+    "noText": "No text selected",
+    "back": "Back",
     "colors": {
       "default": "Default",
       "warm": "Warm",
@@ -155,28 +154,123 @@
       "3xl": "Giant"
     }
   },
-  "login": {
-    "title": "Digital Iwan",
-    "subtitle": "Sign in with your Google account",
-    "noEmail": "No email found",
-    "error": "An error occurred:",
-    "noClientId": "Google Client ID is not configured"
-  },
   "admin": {
     "title": "Control Panel",
-    "addPrayer": "Add Supplication",
-    "addSermon": "Add Sermon",
-    "addVisit": "Add Visit",
+    "ownerOnly": "For owners and supervisors only",
+    "clearData": "Clear Data",
+    "back": "Back",
+    "addPrayer": "Add supplication, visit, or sermon",
+    "addPrayerShort": "Add",
     "titleField": "Title",
     "subtitleField": "Short Description",
     "categoryField": "Category",
-    "textField": "Full Text",
+    "textField": "Text...",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
     "savedSuccess": "Saved successfully!",
-    "deleteConfirm": "Are you sure you want to delete?"
+    "deleteConfirm": "Are you sure you want to delete?",
+    "tabs": {
+      "loadBalancer": "Load Balancer",
+      "keysAndLinks": "Keys & Links",
+      "users": "Users",
+      "prayers": "Supplications & Sermons"
+    },
+    "ragLinks": {
+      "title": "Knowledge Base Links (RAG)",
+      "link": "link",
+      "noLinks": "No links yet",
+      "addPlaceholder": "https://example.com/knowledge"
+    },
+    "apiKeys": {
+      "title": "API Keys (10 slots)",
+      "active": "Active",
+      "waiting": "Waiting",
+      "consumed": "Consumed",
+      "addSwap": "Add / Swap Key",
+      "keyName": "Key Name",
+      "keyValue": "API Key Value",
+      "existing": "(exists)",
+      "empty": "(empty)",
+      "keyN": "Key {n}"
+    },
+    "usersMgmt": {
+      "title": "Registered Users",
+      "userN": "user",
+      "noUsers": "No registered users yet",
+      "noName": "No name",
+      "registered": "Registered:",
+      "logins": "Logins:",
+      "times": "times",
+      "lastLogin": "Last login:",
+      "unblock": "Unblock",
+      "block": "Block",
+      "promote": "Promote",
+      "banned": "Banned"
+    },
+    "roles": {
+      "owner": "Owner",
+      "supervisor": "Supervisor",
+      "user": "User"
+    },
+    "prayersMgmt": {
+      "title": "Added Supplications, Visits, and Sermons",
+      "itemN": "item",
+      "noItems": "No items added yet",
+      "draft": "Draft",
+      "categoryPrayer": "Supplication",
+      "categoryVisit": "Visit",
+      "categorySermon": "Sermon"
+    },
+    "loadBalancer": {
+      "activeKeys": "Active",
+      "standbyKeys": "Standby",
+      "cooldownKeys": "Cooldown",
+      "exhaustedKeys": "Exhausted",
+      "totalKeys": "Total Keys",
+      "totalRequests": "Total Requests",
+      "tokensUsed": "Tokens Used",
+      "addKeys": "Add Keys",
+      "pasteBulk": "Paste Bulk",
+      "manualAdd": "Manual Add",
+      "reactivateAll": "Reactivate All",
+      "deleteAll": "Delete All",
+      "autoSave": "Auto Add",
+      "autoDetect": "Provider is auto-detected from the key format and encrypted before saving",
+      "pressPaste": "Press \"Paste Bulk\" to add multiple keys at once",
+      "disabled": "Disabled",
+      "keyN": "key",
+      "connectionError": "Connection error",
+      "deleteError": "Delete error",
+      "confirmDelete": "Are you sure?",
+      "confirmClearAll": "Are you sure you want to delete all supplications, visits, sermons, and API keys?\nThis action cannot be undone.",
+      "clearResult": "Clear Result",
+      "clearResultCopied": "Clear Result (copied)",
+      "bulkPlaceholder": "Paste API keys here...\nYou can paste multiple keys separated by newline or comma\nProvider type will be auto-detected (Gemini, Groq, DeepSeek, OpenAI, OpenRouter)",
+      "noKeys": "No keys",
+      "requests": "Requests",
+      "minutesShort": "m",
+      "refreshData": "Refresh Data"
+    }
+  },
+  "footer": {
+    "text": "Developed by"
+  },
+  "qibla": {
+    "north": "North",
+    "northEast": "North East",
+    "east": "East",
+    "southEast": "South East",
+    "south": "South",
+    "southWest": "South West",
+    "west": "West",
+    "northWest": "North West",
+    "calculating": "Determining direction...",
+    "locationError": "Unable to access your location. Please enable location services.",
+    "calculationError": "An error occurred while calculating the Qibla direction.",
+    "retry": "Try Again",
+    "compassLabels": ["N", "E", "S", "W"]
   },
   "common": {
     "loading": "Loading...",

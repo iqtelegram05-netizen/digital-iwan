@@ -2,22 +2,26 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from '@/i18n/useTranslation';
 
 export default function QiblaCompass() {
   const [direction, setDirection] = useState<number | null>(null);
   const [bearing, setBearing] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t, tSection } = useTranslation();
+
+  const compassLabels = tSection('qibla.compassLabels') as string[];
 
   const getBearingName = (deg: number): string => {
-    if (deg >= 337.5 || deg < 22.5) return 'شمال';
-    if (deg >= 22.5 && deg < 67.5) return 'شمال شرق';
-    if (deg >= 67.5 && deg < 112.5) return 'شرق';
-    if (deg >= 112.5 && deg < 157.5) return 'جنوب شرق';
-    if (deg >= 157.5 && deg < 202.5) return 'جنوب';
-    if (deg >= 202.5 && deg < 247.5) return 'جنوب غرب';
-    if (deg >= 247.5 && deg < 292.5) return 'غرب';
-    return 'شمال غرب';
+    if (deg >= 337.5 || deg < 22.5) return t('qibla.north');
+    if (deg >= 22.5 && deg < 67.5) return t('qibla.northEast');
+    if (deg >= 67.5 && deg < 112.5) return t('qibla.east');
+    if (deg >= 112.5 && deg < 157.5) return t('qibla.southEast');
+    if (deg >= 157.5 && deg < 202.5) return t('qibla.south');
+    if (deg >= 202.5 && deg < 247.5) return t('qibla.southWest');
+    if (deg >= 247.5 && deg < 292.5) return t('qibla.west');
+    return t('qibla.northWest');
   };
 
   const calculateQibla = useCallback(async () => {
@@ -45,20 +49,22 @@ export default function QiblaCompass() {
       setBearing(getBearingName(data.direction));
     } catch (err) {
       if (err instanceof GeolocationPositionError) {
-        setError('تعذر الوصول إلى موقعك. يرجى تفعيل خدمات الموقع.');
+        setError(t('qibla.locationError'));
       } else {
-        setError('حدث خطأ في حساب اتجاه القبلة.');
+        setError(t('qibla.calculationError'));
       }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     calculateQibla();
   }, [calculateQibla]);
 
   const compassDeg = direction !== null ? direction : 0;
+
+  const labels = compassLabels.length === 4 ? compassLabels : ['N', 'E', 'S', 'W'];
 
   return (
     <div className="flex flex-col items-center gap-6 py-4">
@@ -69,7 +75,7 @@ export default function QiblaCompass() {
         <div className="absolute inset-2 rounded-full border border-primary/10" />
 
         {/* Direction marks */}
-        {['ش', 'شرق', 'ج', 'غرب'].map((label, i) => {
+        {labels.map((label, i) => {
           const angle = i * 90;
           return (
             <div
@@ -145,7 +151,7 @@ export default function QiblaCompass() {
       {loading && (
         <div className="flex items-center gap-2 text-primary text-sm">
           <motion.div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin-slow" />
-          جارٍ تحديد الاتجاه...
+          {t('qibla.calculating')}
         </div>
       )}
 
@@ -156,7 +162,7 @@ export default function QiblaCompass() {
             onClick={calculateQibla}
             className="text-primary text-sm underline hover:text-primary/80"
           >
-            إعادة المحاولة
+            {t('qibla.retry')}
           </button>
         </div>
       )}

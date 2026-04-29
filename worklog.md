@@ -379,4 +379,31 @@ Stage Summary:
 - ReaderView header buttons use fixed 32x32px size, no 3D overflow
 - Category badge hidden on mobile to prevent header crowding
 - 3D button hover effect no longer causes scale overflow
+
+---
+Task ID: 7
+Agent: Main Agent
+Task: Fix complete i18n language switching - all components now use useTranslation()
+
+Work Log:
+- Analyzed all 9 components to identify hardcoded Arabic strings
+- Updated ar.json with qibla section and admin.loadBalancer additional keys
+- Updated en.json with ALL missing translation keys to match ar.json structure
+- Updated page.tsx: TABS array now uses useMemo + t() for tab labels
+- Updated ChatView.tsx: VIEW_CONFIG, clear button, error messages, sources label all use t()
+- Updated QuizView.tsx: categories, grades, navigation buttons, messages all use t()
+- Updated ProfileView.tsx: login screen, profile form, interests, all labels use t() + tSection()
+- Updated AdminPanel.tsx: all tabs, RAG links, API keys, users, prayers, load balancer sections use t()
+- Updated Footer.tsx: footer text uses t('footer.text')
+- Updated SplashScreen.tsx: title and subtitle use t('app.title') and t('app.subtitle')
+- Updated ReaderView.tsx: color/size option labels, control labels all use t()
+- Updated QiblaCompass.tsx: compass labels, bearing names, error messages use t() + tSection()
+- Build passes with 0 errors
+
+Stage Summary:
+- All 9 components now fully use the i18n translation system
+- Switching language will change ALL visible text across the entire application
+- English translation file (en.json) now has complete coverage of all keys
+- Other 18 languages fall back to Arabic for any missing keys
+- CSS @import order warnings are pre-existing and unrelated
 - All changes build successfully

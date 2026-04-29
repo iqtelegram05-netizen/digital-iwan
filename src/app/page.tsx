@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore, type View, type UserProfile } from '@/store/appStore';
 import SplashScreen from '@/components/SplashScreen';
@@ -15,14 +15,7 @@ import ReaderView from '@/components/ReaderView';
 import SideDrawer from '@/components/SideDrawer';
 import Footer from '@/components/Footer';
 import { BookOpen, Swords, GraduationCap, Brain, User } from 'lucide-react';
-
-const TABS: { view: View; label: string; icon: React.ReactNode }[] = [
-  { view: 'chat', label: 'الأيوان', icon: <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" /> },
-  { view: 'debate', label: 'المحاور', icon: <Swords className="w-4 h-4 sm:w-5 sm:h-5" /> },
-  { view: 'teacher', label: 'الأستاذ', icon: <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" /> },
-  { view: 'quiz', label: 'اختبر', icon: <Brain className="w-4 h-4 sm:w-5 sm:h-5" /> },
-  { view: 'profile', label: 'الملف', icon: <User className="w-4 h-4 sm:w-5 sm:h-5" /> },
-];
+import { useTranslation } from '@/i18n/useTranslation';
 
 const ADMIN_CODE = 'qalamadmin2024';
 
@@ -36,7 +29,17 @@ export default function Home() {
     setUser,
   } = useAppStore();
 
+  const { t } = useTranslation();
+
   const isReaderView = currentView === 'reader';
+
+  const TABS = useMemo(() => [
+    { view: 'chat' as View, label: t('tabs.iwan'), icon: <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    { view: 'debate' as View, label: t('tabs.debater'), icon: <Swords className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    { view: 'teacher' as View, label: t('tabs.teacher'), icon: <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    { view: 'quiz' as View, label: t('tabs.quiz'), icon: <Brain className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    { view: 'profile' as View, label: t('tabs.profile'), icon: <User className="w-4 h-4 sm:w-5 sm:h-5" /> },
+  ], [t]);
 
   // معالجة تسجيل الدخول من Google - يُنفذ دائماً عند تحميل الصفحة
   useEffect(() => {

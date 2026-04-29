@@ -244,11 +244,33 @@
       "connectionError": "خطأ في الاتصال",
       "deleteError": "خطأ في الحذف",
       "confirmDelete": "هل أنت متأكد؟",
-      "confirmClearAll": "هل أنت متأكد من حذف جميع الأدعية والزيارات والخطب ومفاتيح API؟\nهذا الإجراء لا يمكن التراجع عنه."
+      "confirmClearAll": "هل أنت متأكد من حذف جميع الأدعية والزيارات والخطب ومفاتيح API؟\nهذا الإجراء لا يمكن التراجع عنه.",
+      "clearResult": "نتيجة المسح",
+      "clearResultCopied": "نتيجة المسح (تم نسخها)",
+      "bulkPlaceholder": "الصق مفاتيح API هنا...\nيمكنك لصق عدة مفاتيح مفصولة بسطر جديد أو فاصلة\nسيتم كشف نوع المزود تلقائياً (Gemini, Groq, DeepSeek, OpenAI, OpenRouter)",
+      "noKeys": "لا توجد مفاتيح",
+      "requests": "طلبات",
+      "minutesShort": "د",
+      "refreshData": "تحديث البيانات"
     }
   },
   "footer": {
     "text": "تم تطوير البرنامج بواسطة فريق"
+  },
+  "qibla": {
+    "north": "شمال",
+    "northEast": "شمال شرق",
+    "east": "شرق",
+    "southEast": "جنوب شرق",
+    "south": "جنوب",
+    "southWest": "جنوب غرب",
+    "west": "غرب",
+    "northWest": "شمال غرب",
+    "calculating": "جارٍ تحديد الاتجاه...",
+    "locationError": "تعذر الوصول إلى موقعك. يرجى تفعيل خدمات الموقع.",
+    "calculationError": "حدث خطأ في حساب اتجاه القبلة.",
+    "retry": "إعادة المحاولة",
+    "compassLabels": ["ش", "شرق", "ج", "غرب"]
   },
   "common": {
     "loading": "جارٍ التحميل...",

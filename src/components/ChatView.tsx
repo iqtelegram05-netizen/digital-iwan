@@ -6,27 +6,7 @@ import { useAppStore, type Message, type ChatMode } from '@/store/appStore';
 import { Send, Trash2, BookOpen, Swords, GraduationCap } from 'lucide-react';
 import CrystalButton from './CrystalButton';
 import { Textarea } from '@/components/ui/textarea';
-
-const VIEW_CONFIG: Record<string, { title: string; icon: React.ReactNode; placeholder: string; mode: ChatMode }> = {
-  chat: {
-    title: 'الأيوان العلمي',
-    icon: <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />,
-    placeholder: 'اسأل سؤالك في العلوم الإسلامية...',
-    mode: 'chat',
-  },
-  debate: {
-    title: 'المحاور الرقمي',
-    icon: <Swords className="w-4 h-4 sm:w-5 sm:h-5" />,
-    placeholder: 'قدّم حجتك للنقاش...',
-    mode: 'debate',
-  },
-  teacher: {
-    title: 'الأستاذ الرقمي',
-    icon: <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />,
-    placeholder: 'اسأل أي موضوع تريد فهمه ببساطة...',
-    mode: 'teacher',
-  },
-};
+import { useTranslation } from '@/i18n/useTranslation';
 
 export default function ChatView() {
   const {
@@ -39,7 +19,30 @@ export default function ChatView() {
     selectedScholar,
   } = useAppStore();
 
-  const config = VIEW_CONFIG[currentView] || VIEW_CONFIG.chat;
+  const { t } = useTranslation();
+
+  const getViewConfig = () => ({
+    chat: {
+      title: t('chat.scientificIwan'),
+      icon: <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />,
+      placeholder: t('chat.askQuestion'),
+      mode: 'chat' as ChatMode,
+    },
+    debate: {
+      title: t('chat.digitalDebater'),
+      icon: <Swords className="w-4 h-4 sm:w-5 sm:h-5" />,
+      placeholder: t('chat.presentArgument'),
+      mode: 'debate' as ChatMode,
+    },
+    teacher: {
+      title: t('chat.digitalTeacher'),
+      icon: <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />,
+      placeholder: t('chat.askAnyTopic'),
+      mode: 'teacher' as ChatMode,
+    },
+  });
+
+  const config = getViewConfig()[currentView] || getViewConfig().chat;
   const chatMode = config.mode;
   const modeState = chatState[chatMode];
   const { messages, sessionId, isLoading } = modeState;
@@ -88,7 +91,7 @@ export default function ChatView() {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.message || 'عذراً، حدث خطأ في المعالجة.',
+        content: data.message || t('chat.errorProcessing'),
         sources: data.sources,
       };
 
@@ -97,12 +100,12 @@ export default function ChatView() {
       addMessage(chatMode, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.',
+        content: t('chat.errorConnection'),
       });
     } finally {
       setIsLoading(chatMode, false);
     }
-  }, [input, isLoading, addMessage, chatMode, sessionId, selectedScholar, setSessionId, setIsLoading]);
+  }, [input, isLoading, addMessage, chatMode, sessionId, selectedScholar, setSessionId, setIsLoading, t]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -142,7 +145,7 @@ export default function ChatView() {
             onClick={handleClearMessages}
           >
             <Trash2 className="w-3.5 h-3.5 ml-1" />
-            مسح المحادثة
+            {t('chat.clearChat')}
           </CrystalButton>
         </motion.div>
       )}
@@ -181,7 +184,7 @@ export default function ChatView() {
                 <p className="text-xs sm:text-sm leading-relaxed arabic-text whitespace-pre-wrap">{msg.content}</p>
                 {msg.sources && msg.sources.length > 0 && (
                   <div className="mt-2 pt-2 border-t border-primary/10">
-                    <p className="text-[10px] text-primary/60 mb-1">المصادر:</p>
+                    <p className="text-[10px] text-primary/60 mb-1">{t('chat.sources')}</p>
                     {msg.sources.map((src, i) => (
                       <p key={i} className="text-[10px] text-primary/50">
                         • {src}

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
 import CrystalButton from './CrystalButton';
+import { useTranslation } from '@/i18n/useTranslation';
 import {
   ArrowRight,
   Type,
@@ -105,36 +106,36 @@ const FONT_OPTIONS = [
   { id: 'fantasy', label: 'خيالي', family: 'fantasy, cursive', cat: 'عامة' },
 ];
 
-// ========== Color Options ==========
-const COLOR_OPTIONS = [
-  { id: 'default', label: 'افتراضي', value: 'text-foreground/85', bg: 'bg-foreground' },
-  { id: 'warm', label: 'دافئ', value: 'text-amber-200/90', bg: 'bg-amber-200' },
-  { id: 'gold', label: 'ذهبي', value: 'text-yellow-300/90', bg: 'bg-yellow-300' },
-  { id: 'sky', label: 'سماوي', value: 'text-sky-200/90', bg: 'bg-sky-200' },
-  { id: 'emerald', label: 'زمردي', value: 'text-emerald-200/90', bg: 'bg-emerald-200' },
-  { id: 'rose', label: 'وردي', value: 'text-rose-200/90', bg: 'bg-rose-200' },
-  { id: 'purple', label: 'بنفسجي', value: 'text-purple-200/90', bg: 'bg-purple-200' },
-  { id: 'white', label: 'أبيض', value: 'text-white/95', bg: 'bg-white' },
-  { id: 'orange', label: 'برتقالي', value: 'text-orange-200/90', bg: 'bg-orange-200' },
-  { id: 'cyan', label: 'سماوي فاتح', value: 'text-cyan-200/90', bg: 'bg-cyan-200' },
-];
-
-// ========== Size Options ==========
-const SIZE_OPTIONS = [
-  { id: 'xs', label: 'صغير جداً', value: 'text-xs', lineHeight: 'leading-[1.8]' },
-  { id: 'sm', label: 'صغير', value: 'text-sm', lineHeight: 'leading-[2]' },
-  { id: 'md', label: 'متوسط', value: 'text-base', lineHeight: 'leading-[2.2]' },
-  { id: 'lg', label: 'كبير', value: 'text-lg', lineHeight: 'leading-[2.5]' },
-  { id: 'xl', label: 'كبير جداً', value: 'text-xl', lineHeight: 'leading-[2.8]' },
-  { id: '2xl', label: 'ضخم', value: 'text-2xl', lineHeight: 'leading-[3]' },
-  { id: '3xl', label: 'عملاق', value: 'text-3xl', lineHeight: 'leading-[3.2]' },
-];
-
 // ========== Font Categories ==========
 const FONT_CATEGORIES = [...new Set(FONT_OPTIONS.map(f => f.cat))];
 
 export default function ReaderView() {
   const { readerItem, setCurrentView } = useAppStore();
+  const { t } = useTranslation();
+
+  const COLOR_OPTIONS = [
+    { id: 'default', label: t('reader.colors.default'), value: 'text-foreground/85', bg: 'bg-foreground' },
+    { id: 'warm', label: t('reader.colors.warm'), value: 'text-amber-200/90', bg: 'bg-amber-200' },
+    { id: 'gold', label: t('reader.colors.gold'), value: 'text-yellow-300/90', bg: 'bg-yellow-300' },
+    { id: 'sky', label: t('reader.colors.sky'), value: 'text-sky-200/90', bg: 'bg-sky-200' },
+    { id: 'emerald', label: t('reader.colors.emerald'), value: 'text-emerald-200/90', bg: 'bg-emerald-200' },
+    { id: 'rose', label: t('reader.colors.rose'), value: 'text-rose-200/90', bg: 'bg-rose-200' },
+    { id: 'purple', label: t('reader.colors.purple'), value: 'text-purple-200/90', bg: 'bg-purple-200' },
+    { id: 'white', label: t('reader.colors.white'), value: 'text-white/95', bg: 'bg-white' },
+    { id: 'orange', label: t('reader.colors.orange'), value: 'text-orange-200/90', bg: 'bg-orange-200' },
+    { id: 'cyan', label: t('reader.colors.cyan'), value: 'text-cyan-200/90', bg: 'bg-cyan-200' },
+  ];
+
+  const SIZE_OPTIONS = [
+    { id: 'xs', label: t('reader.sizes.xs'), value: 'text-xs', lineHeight: 'leading-[1.8]' },
+    { id: 'sm', label: t('reader.sizes.sm'), value: 'text-sm', lineHeight: 'leading-[2]' },
+    { id: 'md', label: t('reader.sizes.md'), value: 'text-base', lineHeight: 'leading-[2.2]' },
+    { id: 'lg', label: t('reader.sizes.lg'), value: 'text-lg', lineHeight: 'leading-[2.5]' },
+    { id: 'xl', label: t('reader.sizes.xl'), value: 'text-xl', lineHeight: 'leading-[2.8]' },
+    { id: '2xl', label: t('reader.sizes.2xl'), value: 'text-2xl', lineHeight: 'leading-[3]' },
+    { id: '3xl', label: t('reader.sizes.3xl'), value: 'text-3xl', lineHeight: 'leading-[3.2]' },
+  ];
+
   const [activeFont, setActiveFont] = useState('amiri');
   const [activeColor, setActiveColor] = useState('default');
   const [activeSize, setActiveSize] = useState('md');
@@ -178,9 +179,9 @@ export default function ReaderView() {
   if (!readerItem) {
     return (
       <div className="flex flex-col items-center justify-center h-full px-4">
-        <p className="text-muted-foreground text-sm">لم يتم تحديد نص</p>
+        <p className="text-muted-foreground text-sm">{t('reader.noText')}</p>
         <CrystalButton variant="outline" className="mt-4" onClick={() => setCurrentView('chat')}>
-          العودة
+          {t('reader.back')}
         </CrystalButton>
       </div>
     );
@@ -266,9 +267,9 @@ export default function ReaderView() {
               {/* Tab Selector */}
               <div className="flex gap-2">
                 {([
-                  { id: 'font' as const, label: 'الخط', icon: Type, count: FONT_OPTIONS.length },
-                  { id: 'color' as const, label: 'اللون', icon: Palette, count: COLOR_OPTIONS.length },
-                  { id: 'size' as const, label: 'الحجم', icon: Maximize2, count: SIZE_OPTIONS.length },
+                  { id: 'font' as const, label: t('reader.font'), icon: Type, count: FONT_OPTIONS.length },
+                  { id: 'color' as const, label: t('reader.color'), icon: Palette, count: COLOR_OPTIONS.length },
+                  { id: 'size' as const, label: t('reader.size'), icon: Maximize2, count: SIZE_OPTIONS.length },
                 ]).map((tab) => (
                   <button
                     key={tab.id}
@@ -294,13 +295,13 @@ export default function ReaderView() {
                     type="text"
                     value={fontSearch}
                     onChange={(e) => { setFontSearch(e.target.value); setShowAllFonts(false); }}
-                    placeholder="ابحث عن خط..."
+                    placeholder={t('reader.searchFont')}
                     className="w-full px-3 py-2 text-xs bg-card/50 border border-border/30 rounded-lg focus:outline-none focus:border-primary/40 text-foreground placeholder:text-muted-foreground/50"
                   />
 
                   {/* Current font preview */}
                   <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-primary/5 border border-primary/20">
-                    <span className="text-xs text-primary font-medium">الخط الحالي:</span>
+                    <span className="text-xs text-primary font-medium">{t('reader.currentFont')}</span>
                     <span className="text-sm font-bold text-primary" style={{ fontFamily: currentFont.family }}>
                       {currentFont.label}
                     </span>
@@ -314,7 +315,7 @@ export default function ReaderView() {
                         !fontSearch.trim() ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-card/50 border border-border/20 text-muted-foreground'
                       }`}
                     >
-                      الكل ({FONT_OPTIONS.length})
+                      {t('reader.all')} ({FONT_OPTIONS.length})
                     </button>
                     {FONT_CATEGORIES.map((cat) => {
                       const catCount = FONT_OPTIONS.filter(f => f.cat === cat).length;
@@ -367,7 +368,7 @@ export default function ReaderView() {
                       className="w-full py-2 text-xs text-primary font-medium flex items-center justify-center gap-1 rounded-lg border border-primary/20 hover:bg-primary/5 transition-all"
                     >
                       <ChevronDown className="w-3.5 h-3.5" />
-                      عرض المزيد ({filteredFonts.length - 20} خط إضافي)
+                      {t('reader.showMore')} ({filteredFonts.length - 20} {t('reader.additionalFonts')})
                     </button>
                   )}
                   {showAllFonts && filteredFonts.length > 20 && (
@@ -376,7 +377,7 @@ export default function ReaderView() {
                       className="w-full py-2 text-xs text-primary font-medium flex items-center justify-center gap-1 rounded-lg border border-primary/20 hover:bg-primary/5 transition-all"
                     >
                       <ChevronUp className="w-3.5 h-3.5" />
-                      عرض أقل
+                      {t('reader.showLess')}
                     </button>
                   )}
                 </div>
@@ -387,7 +388,7 @@ export default function ReaderView() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                     <Palette className="w-3.5 h-3.5" />
-                    لون النص
+                    {t('reader.textColor')}
                   </div>
                   <div className="grid grid-cols-5 gap-2">
                     {COLOR_OPTIONS.map((color) => (
@@ -418,7 +419,7 @@ export default function ReaderView() {
                     ) : (
                       <Minimize2 className="w-3.5 h-3.5" />
                     )}
-                    حجم الخط
+                    {t('reader.fontSize')}
                   </div>
                   <div className="space-y-2">
                     {SIZE_OPTIONS.map((size) => (

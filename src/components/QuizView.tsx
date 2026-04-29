@@ -7,14 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import CrystalButton from './CrystalButton';
 import { Brain, CheckCircle, XCircle, RotateCcw, Trophy, ArrowLeft } from 'lucide-react';
-
-const CATEGORIES = [
-  { id: 'عقائد', label: 'عقائد', icon: '🕌' },
-  { id: 'منطق', label: 'منطق', icon: '🧠' },
-  { id: 'علم', label: 'علم الكلام', icon: '📚' },
-  { id: 'نحو', label: 'نحو', icon: '✍️' },
-  { id: 'فقه', label: 'فقه', icon: '⚖️' },
-];
+import { useTranslation } from '@/i18n/useTranslation';
 
 export default function QuizView() {
   const {
@@ -27,6 +20,16 @@ export default function QuizView() {
     quizCategory,
     setQuizCategory,
   } = useAppStore();
+
+  const { t } = useTranslation();
+
+  const CATEGORIES = [
+    { id: 'عقائد', label: t('quiz.categories.beliefs'), icon: '🕌' },
+    { id: 'منطق', label: t('quiz.categories.logic'), icon: '🧠' },
+    { id: 'علم', label: t('quiz.categories.kalam'), icon: '📚' },
+    { id: 'نحو', label: t('quiz.categories.grammar'), icon: '✍️' },
+    { id: 'فقه', label: t('quiz.categories.fiqh'), icon: '⚖️' },
+  ];
 
   const [loading, setLoading] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -49,14 +52,14 @@ export default function QuizView() {
         setCurrentQuestion(0);
         setShowResults(false);
       } else {
-        setError('لم يتم إنشاء الأسئلة. يرجى المحاولة مرة أخرى.');
+        setError(t('quiz.noQuestions'));
       }
     } catch {
-      setError('حدث خطأ في الاتصال');
+      setError(t('quiz.connectionError'));
     } finally {
       setLoading(false);
     }
-  }, [setQuizQuestions, setQuizCategory]);
+  }, [setQuizQuestions, setQuizCategory, t]);
 
   const submitQuiz = useCallback(async () => {
     if (!quizCategory || quizQuestions.length === 0) return;
@@ -79,18 +82,18 @@ export default function QuizView() {
       setQuizScore(data.score);
       setShowResults(true);
     } catch {
-      setError('حدث خطأ في تسجيل الإجابات');
+      setError(t('quiz.submitError'));
     } finally {
       setLoading(false);
     }
-  }, [quizCategory, quizQuestions, quizAnswers, setQuizScore]);
+  }, [quizCategory, quizQuestions, quizAnswers, setQuizScore, t]);
 
   const getGrade = (score: number) => {
-    if (score >= 90) return { label: 'ممتاز', color: 'text-sky-500' };
-    if (score >= 80) return { label: 'جيد جداً', color: 'text-sky-400' };
-    if (score >= 70) return { label: 'جيد', color: 'text-yellow-500' };
-    if (score >= 50) return { label: 'مقبول', color: 'text-orange-500' };
-    return { label: 'يحتاج تحسين', color: 'text-red-500' };
+    if (score >= 90) return { label: t('quiz.grades.excellent'), color: 'text-sky-500' };
+    if (score >= 80) return { label: t('quiz.grades.veryGood'), color: 'text-sky-400' };
+    if (score >= 70) return { label: t('quiz.grades.good'), color: 'text-yellow-500' };
+    if (score >= 50) return { label: t('quiz.grades.pass'), color: 'text-orange-500' };
+    return { label: t('quiz.grades.needsImprovement'), color: 'text-red-500' };
   };
 
   const resetQuiz = () => {
@@ -115,8 +118,8 @@ export default function QuizView() {
           <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary sky-glow">
             <Brain className="w-7 h-7 sm:w-10 sm:h-10" />
           </div>
-          <h2 className="text-base sm:text-xl font-bold text-foreground">اختبر نفسك</h2>
-          <p className="text-xs sm:text-sm text-muted-foreground text-center">اختر تصنيفاً لبدء الاختبار</p>
+          <h2 className="text-base sm:text-xl font-bold text-foreground">{t('quiz.testYourself')}</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground text-center">{t('quiz.selectCategory')}</p>
 
           <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full mt-1 sm:mt-2">
             {CATEGORIES.map((cat) => (
@@ -136,7 +139,7 @@ export default function QuizView() {
           {loading && (
             <div className="flex items-center gap-2 text-primary text-sm">
               <motion.div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin-slow" />
-              جارٍ إنشاء الأسئلة...
+              {t('quiz.generatingQuestions')}
             </div>
           )}
 
@@ -157,7 +160,7 @@ export default function QuizView() {
           animate={{ opacity: 1, scale: 1 }}
         >
           <Trophy className="w-12 h-12 sm:w-16 sm:h-16 text-yellow-500" />
-          <h2 className="text-lg sm:text-2xl font-bold">نتيجة الاختبار</h2>
+          <h2 className="text-lg sm:text-2xl font-bold">{t('quiz.result')}</h2>
 
           <motion.div
             className="text-5xl sm:text-6xl font-bold text-primary sky-glow-text"
@@ -167,7 +170,7 @@ export default function QuizView() {
           >
             {quizScore}
           </motion.div>
-          <p className="text-muted-foreground text-sm">من 100</p>
+          <p className="text-muted-foreground text-sm">{t('quiz.outOf')}</p>
           <Badge variant="secondary" className={`text-base sm:text-lg px-3 sm:px-4 py-1 ${grade.color}`}>
             {grade.label}
           </Badge>
@@ -194,7 +197,7 @@ export default function QuizView() {
                     <p className="font-medium mb-0.5 sm:mb-1">{q.question}</p>
                     {!isCorrect && (
                       <p className="text-[10px] sm:text-xs text-sky-500">
-                        الإجابة الصحيحة: {q.options[q.correctAnswer]}
+                        {t('quiz.correctAnswer')} {q.options[q.correctAnswer]}
                       </p>
                     )}
                   </div>
@@ -210,11 +213,11 @@ export default function QuizView() {
               onClick={() => startQuiz(quizCategory)}
             >
               <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-              إعادة
+              {t('quiz.retry')}
             </CrystalButton>
             <CrystalButton variant="outline" className="border-primary/20 hover:bg-primary/10 text-xs sm:text-sm" onClick={resetQuiz}>
               <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-              تصنيف آخر
+              {t('quiz.anotherCategory')}
             </CrystalButton>
           </div>
         </motion.div>
@@ -231,7 +234,7 @@ export default function QuizView() {
       {/* Progress */}
       <div className="w-full mb-3 sm:mb-6">
         <div className="flex justify-between text-[11px] sm:text-xs text-muted-foreground mb-1 sm:mb-2">
-          <span>السؤال {currentQuestion + 1} من {quizQuestions.length}</span>
+          <span>{t('quiz.questionOf', { current: currentQuestion + 1, total: quizQuestions.length })}</span>
           <span>{Math.round(progress)}%</span>
         </div>
         <Progress value={progress} className="h-1.5 sm:h-2 bg-primary/10" />
@@ -289,7 +292,7 @@ export default function QuizView() {
           onClick={() => setCurrentQuestion((p) => Math.max(0, p - 1))}
           disabled={currentQuestion === 0}
         >
-          السابق
+          {t('quiz.previous')}
         </CrystalButton>
 
         {currentQuestion < quizQuestions.length - 1 ? (
@@ -297,7 +300,7 @@ export default function QuizView() {
             className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs sm:text-sm"
             onClick={() => setCurrentQuestion((p) => p + 1)}
           >
-            التالي
+            {t('quiz.next')}
           </CrystalButton>
         ) : (
           <CrystalButton
@@ -305,7 +308,7 @@ export default function QuizView() {
             onClick={submitQuiz}
             disabled={loading}
           >
-            {loading ? 'جارٍ التصحيح...' : 'إنهاء الاختبار'}
+            {loading ? t('quiz.grading') : t('quiz.finishQuiz')}
           </CrystalButton>
         )}
       </div>

@@ -18,6 +18,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import CrystalButton from './CrystalButton';
 import { useAppStore } from '@/store/appStore';
+import { useTranslation } from '@/i18n/useTranslation';
 import {
   Key,
   Link2,
@@ -119,29 +120,31 @@ interface LBStats {
   providers: LBProvider[];
 }
 
-const KEY_STATUS: Record<string, { label: string; color: string }> = {
-  active: { label: 'يعمل', color: 'bg-emerald-500 text-white' },
-  standby: { label: 'احتياطي', color: 'bg-sky-500 text-white' },
-  exhausted: { label: 'مستهلك', color: 'bg-orange-500 text-white' },
-  cooldown: { label: 'تبريد', color: 'bg-red-500 text-white' },
-};
-
-const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  active: { label: 'يعمل', color: 'bg-sky-500 text-white' },
-  waiting: { label: 'قيد الانتظار', color: 'bg-yellow-500 text-white' },
-  consumed: { label: 'مستهلك', color: 'bg-red-500 text-white' },
-};
-
-const ROLE_CONFIG: Record<string, { label: string; color: string }> = {
-  owner: { label: 'مالك', color: 'bg-purple-600 text-white' },
-  supervisor: { label: 'مشرف', color: 'bg-blue-600 text-white' },
-  user: { label: 'مستخدم', color: 'bg-gray-500 text-white' },
-};
-
 type AdminTab = 'keys' | 'users' | 'prayers' | 'loadbalancer';
 
 export default function AdminPanel() {
   const { setCurrentView } = useAppStore();
+  const { t } = useTranslation();
+
+  const KEY_STATUS: Record<string, { label: string; color: string }> = {
+    active: { label: t('admin.loadBalancer.activeKeys'), color: 'bg-emerald-500 text-white' },
+    standby: { label: t('admin.loadBalancer.standbyKeys'), color: 'bg-sky-500 text-white' },
+    exhausted: { label: t('admin.loadBalancer.exhaustedKeys'), color: 'bg-orange-500 text-white' },
+    cooldown: { label: t('admin.loadBalancer.cooldownKeys'), color: 'bg-red-500 text-white' },
+  };
+
+  const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+    active: { label: t('admin.apiKeys.active'), color: 'bg-sky-500 text-white' },
+    waiting: { label: t('admin.apiKeys.waiting'), color: 'bg-yellow-500 text-white' },
+    consumed: { label: t('admin.apiKeys.consumed'), color: 'bg-red-500 text-white' },
+  };
+
+  const ROLE_CONFIG: Record<string, { label: string; color: string }> = {
+    owner: { label: t('admin.roles.owner'), color: 'bg-purple-600 text-white' },
+    supervisor: { label: t('admin.roles.supervisor'), color: 'bg-blue-600 text-white' },
+    user: { label: t('admin.roles.user'), color: 'bg-gray-500 text-white' },
+  };
+
   const [activeTab, setActiveTab] = useState<AdminTab>('keys');
   const [data, setData] = useState<AdminData | null>(null);
   const [users, setUsers] = useState<AppUser[]>([]);
@@ -240,7 +243,7 @@ export default function AdminPanel() {
         body: JSON.stringify({
           action: 'addKey',
           key: newKeyValue.trim(),
-          name: newKeyName.trim() || `مفتاح ${parseInt(keySlotIndex) + 1}`,
+          name: newKeyName.trim() || `${t('admin.apiKeys.keyN', { n: parseInt(keySlotIndex) + 1 })}`,
           slotIndex: parseInt(keySlotIndex),
         }),
       });
@@ -264,7 +267,7 @@ export default function AdminPanel() {
           action: 'swapKey',
           slotIndex: index,
           newKey: newKeyValue.trim(),
-          newName: newKeyName.trim() || data?.apiKeys[index]?.name || `مفتاح ${index + 1}`,
+          newName: newKeyName.trim() || data?.apiKeys[index]?.name || `${t('admin.apiKeys.keyN', { n: index + 1 })}`,
         }),
       });
       if (res.ok) {
@@ -362,7 +365,7 @@ export default function AdminPanel() {
       if (json.message) alert(json.message);
       return json;
     } catch (err) {
-      alert('خطأ في الاتصال');
+      alert(t('admin.loadBalancer.connectionError'));
       return null;
     } finally {
       setSaving(false);
@@ -388,7 +391,7 @@ export default function AdminPanel() {
   };
 
   const lbDelete = async (body: Record<string, unknown>) => {
-    if (!confirm('هل أنت متأكد؟')) return;
+    if (!confirm(t('admin.loadBalancer.confirmDelete'))) return;
     setSaving(true);
     try {
       const res = await fetch('/api/keys', {
@@ -400,7 +403,7 @@ export default function AdminPanel() {
       if (json.stats) setLbStats(json.stats);
       if (json.message) alert(json.message);
     } catch {
-      alert('خطأ في الحذف');
+      alert(t('admin.loadBalancer.deleteError'));
     } finally {
       setSaving(false);
     }
@@ -417,7 +420,7 @@ export default function AdminPanel() {
   };
 
   const clearAllData = async () => {
-    if (!confirm('هل أنت متأكد من حذف جميع الأدعية والزيارات والخطب ومفاتيح API؟\nهذا الإجراء لا يمكن التراجع عنه.')) return;
+    if (!confirm(t('admin.loadBalancer.confirmClearAll'))) return;
     setSaving(true);
     setCleanResult(null);
     try {
@@ -434,12 +437,12 @@ export default function AdminPanel() {
 
       // نسخ النتيجة للحافظة لسهولة الإرسال
       try {
-        await navigator.clipboard.writeText(`نتيجة المسح:\n${lines}`);
+        await navigator.clipboard.writeText(`${t('admin.loadBalancer.clearResult')}:\n${lines}`);
       } catch { /* silent */ }
 
-      alert(`نتيجة المسح (تم نسخها):\n${lines}`);
+      alert(`${t('admin.loadBalancer.clearResultCopied')}:\n${lines}`);
     } catch (err) {
-      const msg = 'خطأ في الاتصال: ' + (err instanceof Error ? err.message : String(err));
+      const msg = t('admin.loadBalancer.connectionError') + ': ' + (err instanceof Error ? err.message : String(err));
       setCleanResult(msg);
       alert(msg);
     } finally {
@@ -451,7 +454,7 @@ export default function AdminPanel() {
   const spinner = (
     <div className="flex items-center justify-center py-6 text-muted-foreground text-sm">
       <motion.div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin-slow ml-2" />
-      جارٍ التحميل...
+      {t('common.loading')}
     </div>
   );
 
@@ -469,8 +472,8 @@ export default function AdminPanel() {
               <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <div>
-              <h2 className="text-base sm:text-xl font-bold">لوحة التحكم</h2>
-              <p className="text-xs text-muted-foreground">للمالك والمشرفين حصراً</p>
+              <h2 className="text-base sm:text-xl font-bold">{t('admin.title')}</h2>
+              <p className="text-xs text-muted-foreground">{t('admin.ownerOnly')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -482,7 +485,7 @@ export default function AdminPanel() {
               disabled={saving}
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">مسح البيانات</span>
+              <span className="hidden sm:inline">{t('admin.clearData')}</span>
             </CrystalButton>
             <CrystalButton
               variant="outline"
@@ -491,7 +494,7 @@ export default function AdminPanel() {
               onClick={() => setCurrentView('profile')}
             >
               <ArrowRight className="w-4 h-4" />
-              العودة
+              {t('admin.back')}
             </CrystalButton>
           </div>
         </div>
@@ -499,10 +502,10 @@ export default function AdminPanel() {
         {/* Tab Selector */}
         <div className="flex gap-2 overflow-x-auto pb-1">
           {([
-            { id: 'loadbalancer', label: 'موزّع الأحمال', icon: Zap },
-            { id: 'keys', label: 'المفاتيح والروابط', icon: Key },
-            { id: 'users', label: 'المستخدمون', icon: Users },
-            { id: 'prayers', label: 'الأدعية والخطب', icon: BookOpen },
+            { id: 'loadbalancer', label: t('admin.tabs.loadBalancer'), icon: Zap },
+            { id: 'keys', label: t('admin.tabs.keysAndLinks'), icon: Key },
+            { id: 'users', label: t('admin.tabs.users'), icon: Users },
+            { id: 'prayers', label: t('admin.tabs.prayers'), icon: BookOpen },
           ] as const).map((tab) => (
             <CrystalButton
               key={tab.id}
@@ -525,9 +528,9 @@ export default function AdminPanel() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Link2 className="w-4 h-4 text-primary" />
-                  روابط قاعدة المعرفة (RAG)
+                  {t('admin.ragLinks.title')}
                   {data?.stats && (
-                    <Badge variant="secondary" className="text-[10px] mr-auto">{data.stats.totalRagLinks} رابط</Badge>
+                    <Badge variant="secondary" className="text-[10px] mr-auto">{data.stats.totalRagLinks} {t('admin.ragLinks.link')}</Badge>
                   )}
                 </CardTitle>
               </CardHeader>
@@ -543,7 +546,7 @@ export default function AdminPanel() {
                           </Button>
                         </div>
                       ))}
-                      {data?.ragLinks.length === 0 && <p className="text-xs text-muted-foreground text-center py-3">لا توجد روابط بعد</p>}
+                      {data?.ragLinks.length === 0 && <p className="text-xs text-muted-foreground text-center py-3">{t('admin.ragLinks.noLinks')}</p>}
                     </div>
                     <div className="flex gap-2">
                       <Input value={newLink} onChange={(e) => setNewLink(e.target.value)} placeholder="https://example.com/knowledge" className="text-xs border-primary/20 bg-card/50" onKeyDown={(e) => e.key === 'Enter' && addLink()} />
@@ -561,12 +564,12 @@ export default function AdminPanel() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Key className="w-4 h-4 text-primary" />
-                  مفاتيح API (10 خانات)
+                  {t('admin.apiKeys.title')}
                   {data?.stats && (
                     <div className="flex gap-1 mr-auto">
-                      <Badge variant="secondary" className="text-[9px] bg-sky-500/20 text-sky-600">{data.stats.activeKeys} يعمل</Badge>
-                      <Badge variant="secondary" className="text-[9px] bg-yellow-500/20 text-yellow-600">{data.stats.waitingKeys} انتظار</Badge>
-                      <Badge variant="secondary" className="text-[9px] bg-red-500/20 text-red-600">{data.stats.consumedKeys} مستهلك</Badge>
+                      <Badge variant="secondary" className="text-[9px] bg-sky-500/20 text-sky-600">{data.stats.activeKeys} {t('admin.apiKeys.active')}</Badge>
+                      <Badge variant="secondary" className="text-[9px] bg-yellow-500/20 text-yellow-600">{data.stats.waitingKeys} {t('admin.apiKeys.waiting')}</Badge>
+                      <Badge variant="secondary" className="text-[9px] bg-red-500/20 text-red-600">{data.stats.consumedKeys} {t('admin.apiKeys.consumed')}</Badge>
                     </div>
                   )}
                 </CardTitle>
@@ -604,7 +607,7 @@ export default function AdminPanel() {
 
                     {/* Add/Swap Key Form */}
                     <div className="space-y-3">
-                      <p className="text-xs font-medium text-foreground/80">إضافة / تبديل مفتاح</p>
+                      <p className="text-xs font-medium text-foreground/80">{t('admin.apiKeys.addSwap')}</p>
                       <div className="flex gap-2">
                         <Select value={keySlotIndex} onValueChange={setKeySlotIndex}>
                           <SelectTrigger className="w-28 text-xs border-primary/20 bg-card/50">
@@ -613,18 +616,18 @@ export default function AdminPanel() {
                           <SelectContent>
                             {data?.apiKeys.map((k, i) => (
                               <SelectItem key={i} value={i.toString()} className="text-xs">
-                                {k.name} {k.key ? `(موجود)` : '(فارغ)'}
+                                {k.name} {k.key ? `(${t('admin.apiKeys.existing')})` : `(${t('admin.apiKeys.empty')})`}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-                        <Input value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} placeholder="اسم المفتاح" className="text-xs border-primary/20 bg-card/50 flex-1" />
+                        <Input value={newKeyName} onChange={(e) => setNewKeyName(e.target.value)} placeholder={t('admin.apiKeys.keyName')} className="text-xs border-primary/20 bg-card/50 flex-1" />
                       </div>
                       <div className="flex gap-2">
-                        <Input value={newKeyValue} onChange={(e) => setNewKeyValue(e.target.value)} placeholder="قيمة مفتاح API" className="text-xs border-primary/20 bg-card/50 flex-1" />
+                        <Input value={newKeyValue} onChange={(e) => setNewKeyValue(e.target.value)} placeholder={t('admin.apiKeys.keyValue')} className="text-xs border-primary/20 bg-card/50 flex-1" />
                         <CrystalButton size="sm" className="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg" onClick={() => swapKey(parseInt(keySlotIndex))} disabled={saving || !newKeyValue.trim()}>
                           <Save className="w-4 h-4 ml-1" />
-                          حفظ
+                          {t('admin.save')}
                         </CrystalButton>
                       </div>
                     </div>
@@ -641,15 +644,15 @@ export default function AdminPanel() {
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Users className="w-4 h-4 text-primary" />
-                المستخدمون المسجلون
-                <Badge variant="secondary" className="text-[10px] mr-auto">{users.length} مستخدم</Badge>
+                {t('admin.usersMgmt.title')}
+                <Badge variant="secondary" className="text-[10px] mr-auto">{users.length} {t('admin.usersMgmt.userN')}</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
               {loading ? spinner : (
                 <ScrollArea className="max-h-[500px]">
                   <div className="space-y-2">
-                    {users.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">لا يوجد مستخدمون مسجلون بعد</p>}
+                    {users.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">{t('admin.usersMgmt.noUsers')}</p>}
                     {users.map((user) => {
                       const role = ROLE_CONFIG[user.role] || ROLE_CONFIG.user;
                       return (
@@ -665,21 +668,21 @@ export default function AdminPanel() {
                                 {(user.name || user.email)[0].toUpperCase()}
                               </div>
                               <div className="min-w-0">
-                                <p className="text-sm font-medium truncate">{user.name || 'بدون اسم'}</p>
+                                <p className="text-sm font-medium truncate">{user.name || t('admin.usersMgmt.noName')}</p>
                                 <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                               <Badge variant="secondary" className={`text-[10px] px-2 py-0.5 ${role.color}`}>{role.label}</Badge>
-                              {user.isBlocked && <Badge variant="secondary" className="text-[10px] px-2 py-0.5 bg-red-500 text-white">محظور</Badge>}
+                              {user.isBlocked && <Badge variant="secondary" className="text-[10px] px-2 py-0.5 bg-red-500 text-white">{t('admin.usersMgmt.banned')}</Badge>}
                             </div>
                           </div>
 
                           <div className="flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
                             <div className="flex gap-3">
-                              <span>تسجيل: {new Date(user.createdAt).toLocaleDateString('ar')}</span>
-                              <span>دخول: {user.loginCount} مرة</span>
-                              {user.lastLogin && <span>آخر دخول: {new Date(user.lastLogin).toLocaleDateString('ar')}</span>}
+                              <span>{t('admin.usersMgmt.registered')} {new Date(user.createdAt).toLocaleDateString('ar')}</span>
+                              <span>{t('admin.usersMgmt.logins')} {user.loginCount} {t('admin.usersMgmt.times')}</span>
+                              {user.lastLogin && <span>{t('admin.usersMgmt.lastLogin')} {new Date(user.lastLogin).toLocaleDateString('ar')}</span>}
                             </div>
                           </div>
 
@@ -689,28 +692,28 @@ export default function AdminPanel() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="user" className="text-xs">مستخدم</SelectItem>
-                                <SelectItem value="supervisor" className="text-xs">مشرف</SelectItem>
-                                <SelectItem value="owner" className="text-xs">مالك</SelectItem>
+                                <SelectItem value="user" className="text-xs">{t('admin.roles.user')}</SelectItem>
+                                <SelectItem value="supervisor" className="text-xs">{t('admin.roles.supervisor')}</SelectItem>
+                                <SelectItem value="owner" className="text-xs">{t('admin.roles.owner')}</SelectItem>
                               </SelectContent>
                             </Select>
 
                             {user.isBlocked ? (
                               <CrystalButton variant="outline" size="sm" className="h-7 text-[10px] border-sky-500/30 hover:bg-sky-500/10 text-sky-600 rounded-lg" onClick={() => updateUser(user.id, { isBlocked: false })} disabled={saving}>
                                 <ShieldCheck className="w-3 h-3 ml-1" />
-                                رفع الحظر
+                                {t('admin.usersMgmt.unblock')}
                               </CrystalButton>
                             ) : (
                               <CrystalButton variant="outline" size="sm" className="h-7 text-[10px] border-red-500/30 hover:bg-red-500/10 text-red-600 rounded-lg" onClick={() => updateUser(user.id, { isBlocked: true })} disabled={saving}>
                                 <Ban className="w-3 h-3 ml-1" />
-                                حظر
+                                {t('admin.usersMgmt.block')}
                               </CrystalButton>
                             )}
 
                             {!user.isBlocked && user.role === 'user' && (
                               <CrystalButton variant="outline" size="sm" className="h-7 text-[10px] border-blue-500/30 hover:bg-blue-500/10 text-blue-600 rounded-lg" onClick={() => updateUser(user.id, { role: 'supervisor' })} disabled={saving}>
                                 <ShieldAlert className="w-3 h-3 ml-1" />
-                                رفع مشرف
+                                {t('admin.usersMgmt.promote')}
                               </CrystalButton>
                             )}
                           </div>
@@ -732,28 +735,28 @@ export default function AdminPanel() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-primary" />
-                  إضافة دعاء أو زيارة أو خطبة
+                  {t('admin.addPrayer')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex gap-2">
-                  <Input value={prayerTitle} onChange={(e) => setPrayerTitle(e.target.value)} placeholder="العنوان" className="text-xs border-primary/20 bg-card/50" />
-                  <Input value={prayerSubtitle} onChange={(e) => setPrayerSubtitle(e.target.value)} placeholder="وصف مختصر" className="text-xs border-primary/20 bg-card/50" />
+                  <Input value={prayerTitle} onChange={(e) => setPrayerTitle(e.target.value)} placeholder={t('admin.titleField')} className="text-xs border-primary/20 bg-card/50" />
+                  <Input value={prayerSubtitle} onChange={(e) => setPrayerSubtitle(e.target.value)} placeholder={t('admin.subtitleField')} className="text-xs border-primary/20 bg-card/50" />
                   <Select value={prayerCategory} onValueChange={setPrayerCategory}>
                     <SelectTrigger className="w-24 text-xs border-primary/20 bg-card/50">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="دعاء" className="text-xs">دعاء</SelectItem>
-                      <SelectItem value="زيارة" className="text-xs">زيارة</SelectItem>
-                      <SelectItem value="خطب" className="text-xs">خطب</SelectItem>
+                      <SelectItem value="دعاء" className="text-xs">{t('admin.prayersMgmt.categoryPrayer')}</SelectItem>
+                      <SelectItem value="زيارة" className="text-xs">{t('admin.prayersMgmt.categoryVisit')}</SelectItem>
+                      <SelectItem value="خطب" className="text-xs">{t('admin.prayersMgmt.categorySermon')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <Textarea value={prayerText} onChange={(e) => setPrayerText(e.target.value)} placeholder="النص..." className="min-h-[120px] text-xs border-primary/20 bg-card/50 resize-none" />
+                <Textarea value={prayerText} onChange={(e) => setPrayerText(e.target.value)} placeholder={t('admin.textField')} className="min-h-[120px] text-xs border-primary/20 bg-card/50 resize-none" />
                 <CrystalButton className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg" onClick={addPrayer} disabled={saving || !prayerTitle.trim() || !prayerText.trim()}>
                   <Save className="w-4 h-4 ml-2" />
-                  إضافة
+                  {t('admin.addPrayerShort')}
                 </CrystalButton>
               </CardContent>
             </Card>
@@ -763,15 +766,15 @@ export default function AdminPanel() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Eye className="w-4 h-4 text-primary" />
-                  الأدعية والزيارات والخطب المضافة
-                  <Badge variant="secondary" className="text-[10px] mr-auto">{prayers.length} عنصر</Badge>
+                  {t('admin.prayersMgmt.title')}
+                  <Badge variant="secondary" className="text-[10px] mr-auto">{prayers.length} {t('admin.prayersMgmt.itemN')}</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {loading ? spinner : (
                   <ScrollArea className="max-h-[400px]">
                     <div className="space-y-2">
-                      {prayers.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">لم تتم إضافة أي عناصر بعد</p>}
+                      {prayers.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">{t('admin.prayersMgmt.noItems')}</p>}
                       {prayers.map((prayer) => (
                         <div key={prayer.id} className="p-3 rounded-lg bg-card/50 border border-border/30" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'start' }}>
                           <div style={{ minWidth: 0, overflow: 'hidden' }}>
@@ -779,7 +782,7 @@ export default function AdminPanel() {
                               <p className="text-xs font-medium truncate" style={{ minWidth: 0 }}>{prayer.title}</p>
                               <Badge variant="secondary" className="text-[9px] shrink-0">{prayer.category}</Badge>
                               {!prayer.isPublished && (
-                                <Badge variant="secondary" className="text-[9px] bg-yellow-500/20 text-yellow-600 shrink-0">مسودة</Badge>
+                                <Badge variant="secondary" className="text-[9px] bg-yellow-500/20 text-yellow-600 shrink-0">{t('admin.prayersMgmt.draft')}</Badge>
                               )}
                             </div>
                             {prayer.subtitle && (
@@ -811,10 +814,10 @@ export default function AdminPanel() {
             {/* Stats Overview */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { label: 'يعمل', value: lbStats?.active || 0, icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-                { label: 'احتياطي', value: lbStats?.standby || 0, icon: Clock, color: 'text-sky-500', bg: 'bg-sky-500/10' },
-                { label: 'تبريد', value: lbStats?.cooldown || 0, icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
-                { label: 'مستهلك', value: lbStats?.exhausted || 0, icon: Gauge, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+                { label: t('admin.loadBalancer.activeKeys'), value: lbStats?.active || 0, icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                { label: t('admin.loadBalancer.standbyKeys'), value: lbStats?.standby || 0, icon: Clock, color: 'text-sky-500', bg: 'bg-sky-500/10' },
+                { label: t('admin.loadBalancer.cooldownKeys'), value: lbStats?.cooldown || 0, icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
+                { label: t('admin.loadBalancer.exhaustedKeys'), value: lbStats?.exhausted || 0, icon: Gauge, color: 'text-orange-500', bg: 'bg-orange-500/10' },
               ].map((s) => (
                 <Card key={s.label} className="glass-card border-primary/10">
                   <CardContent className="p-3 text-center">
@@ -832,17 +835,17 @@ export default function AdminPanel() {
                 <div className="flex items-center justify-around text-center">
                   <div>
                     <p className="text-lg font-bold text-primary">{lbStats?.total || 0}</p>
-                    <p className="text-[10px] text-muted-foreground">إجمالي المفاتيح</p>
+                    <p className="text-[10px] text-muted-foreground">{t('admin.loadBalancer.totalKeys')}</p>
                   </div>
                   <Separator orientation="vertical" className="h-10 bg-primary/10" />
                   <div>
                     <p className="text-lg font-bold text-primary">{(lbStats?.totalRequests || 0).toLocaleString()}</p>
-                    <p className="text-[10px] text-muted-foreground">إجمالي الطلبات</p>
+                    <p className="text-[10px] text-muted-foreground">{t('admin.loadBalancer.totalRequests')}</p>
                   </div>
                   <Separator orientation="vertical" className="h-10 bg-primary/10" />
                   <div>
                     <p className="text-lg font-bold text-primary">{(lbStats?.totalTokens || 0).toLocaleString()}</p>
-                    <p className="text-[10px] text-muted-foreground">Tokens مستهلكة</p>
+                    <p className="text-[10px] text-muted-foreground">{t('admin.loadBalancer.tokensUsed')}</p>
                   </div>
                 </div>
               </CardContent>
@@ -854,16 +857,16 @@ export default function AdminPanel() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Server className="w-4 h-4 text-primary" />
-                    إضافة مفاتيح
+                    {t('admin.loadBalancer.addKeys')}
                   </CardTitle>
                   <div className="flex gap-2">
                     <CrystalButton variant="outline" size="sm" className="text-[10px] gap-1 border-primary/20 hover:bg-primary/10" onClick={() => setShowBulkInput(!showBulkInput)}>
                       <Plus className="w-3 h-3" />
-                      {showBulkInput ? 'إضافة يدوية' : 'لصق بالجملة'}
+                      {showBulkInput ? t('admin.loadBalancer.manualAdd') : t('admin.loadBalancer.pasteBulk')}
                     </CrystalButton>
                     <CrystalButton variant="outline" size="sm" className="text-[10px] gap-1 border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-600" onClick={() => lbUpdate({ action: 'reactivateAll' })} disabled={saving}>
                       <RotateCcw className="w-3 h-3" />
-                      إعادة تفعيل
+                      {t('admin.loadBalancer.reactivateAll')}
                     </CrystalButton>
                   </div>
                 </div>
@@ -874,23 +877,23 @@ export default function AdminPanel() {
                     <Textarea
                       value={bulkText}
                       onChange={(e) => setBulkText(e.target.value)}
-                      placeholder="الصق مفاتيح API هنا...&#10;يمكنك لصق عدة مفاتيح مفصولة بسطر جديد أو فاصلة&#10;سيتم كشف نوع المزود تلقائياً (Gemini, Groq, DeepSeek, OpenAI, OpenRouter)"
+                      placeholder={t('admin.loadBalancer.bulkPlaceholder')}
                       className="min-h-[100px] text-xs border-primary/20 bg-card/50 resize-none font-mono"
                     />
                     <div className="flex gap-2">
                       <CrystalButton className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg" onClick={handleBulkAdd} disabled={saving || !bulkText.trim()}>
                         <Save className="w-4 h-4 ml-2" />
-                        إضافة تلقائية
+                        {t('admin.loadBalancer.autoSave')}
                       </CrystalButton>
                       <CrystalButton variant="outline" className="border-red-500/30 hover:bg-red-500/10 text-red-600 rounded-lg" onClick={() => lbDelete({ action: 'deleteAll' })} disabled={saving}>
                         <Trash2 className="w-4 h-4 ml-1" />
-                        حذف الكل
+                        {t('admin.loadBalancer.deleteAll')}
                       </CrystalButton>
                     </div>
-                    <p className="text-[9px] text-muted-foreground text-center">يتم كشف المزود تلقائياً من شكل المفتاح وتشفيره قبل الحفظ</p>
+                    <p className="text-[9px] text-muted-foreground text-center">{t('admin.loadBalancer.autoDetect')}</p>
                   </>
                 ) : (
-                  <p className="text-xs text-muted-foreground text-center py-2">اضغط "لصق بالجملة" لإضافة مفاتيح متعددة دفعة واحدة</p>
+                  <p className="text-xs text-muted-foreground text-center py-2">{t('admin.loadBalancer.pressPaste')}</p>
                 )}
               </CardContent>
             </Card>
@@ -904,10 +907,10 @@ export default function AdminPanel() {
                       <div className="flex items-center gap-2">
                         <Server className="w-4 h-4 text-primary" />
                         {provider.label}
-                        <Badge variant="secondary" className="text-[9px]">{provider.keys.length} مفتاح</Badge>
+                        <Badge variant="secondary" className="text-[9px]">{provider.keys.length} {t('admin.loadBalancer.keyN')}</Badge>
                       </div>
                       <div className="flex items-center gap-2">
-                        {!provider.isActive && <Badge variant="secondary" className="text-[9px] bg-red-500/20 text-red-600">معطّل</Badge>}
+                        {!provider.isActive && <Badge variant="secondary" className="text-[9px] bg-red-500/20 text-red-600">{t('admin.loadBalancer.disabled')}</Badge>}
                         <CrystalButton variant="outline" size="sm" className="h-6 text-[9px] border-red-500/30 hover:bg-red-500/10 text-red-600" onClick={() => lbDelete({ providerId: provider.id })}>
                           <Trash2 className="w-3 h-3" />
                         </CrystalButton>
@@ -918,7 +921,7 @@ export default function AdminPanel() {
                     <ScrollArea className="max-h-[300px]">
                       <div className="space-y-2">
                         {provider.keys.length === 0 && (
-                          <p className="text-xs text-muted-foreground text-center py-3">لا توجد مفاتيح</p>
+                          <p className="text-xs text-muted-foreground text-center py-3">{t('admin.loadBalancer.noKeys')}</p>
                         )}
                         {provider.keys.map((key) => {
                           const statusConf = KEY_STATUS[key.status] || KEY_STATUS.active;
@@ -932,11 +935,11 @@ export default function AdminPanel() {
                                   <Key className={`w-3.5 h-3.5 shrink-0 ${key.status === 'active' ? 'text-emerald-500' : 'text-muted-foreground'}`} />
                                   <div className="min-w-0">
                                     <p className="text-[11px] font-medium truncate">
-                                      {key.label || key.keyFingerprint || 'مفتاح'}
+                                      {key.label || key.keyFingerprint || t('admin.loadBalancer.keyN')}
                                     </p>
                                     <p className="text-[9px] text-muted-foreground">
-                                      طلبات: {key.requestCount} | Tokens: {key.tokensUsed.toLocaleString()}
-                                      {key.lastUsedAt && ` | آخر استخدام: ${new Date(key.lastUsedAt).toLocaleTimeString('ar')}`}
+                                      {t('admin.loadBalancer.requests')}: {key.requestCount} | Tokens: {key.tokensUsed.toLocaleString()}
+                                      {key.lastUsedAt && ` | ${new Date(key.lastUsedAt).toLocaleTimeString('ar')}`}
                                     </p>
                                   </div>
                                 </div>
@@ -945,7 +948,7 @@ export default function AdminPanel() {
                                     {statusConf.label}
                                   </Badge>
                                   {cooldownLeft > 0 && (
-                                    <span className="text-[8px] text-red-500 font-mono">{cooldownLeft}د</span>
+                                    <span className="text-[8px] text-red-500 font-mono">{cooldownLeft}{t('admin.loadBalancer.minutesShort')}</span>
                                   )}
                                   <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70 hover:text-destructive" onClick={() => lbDelete({ keyId: key.id })}>
                                     <Trash2 className="w-3 h-3" />
@@ -953,7 +956,7 @@ export default function AdminPanel() {
                                 </div>
                               </div>
                               {key.lastError && (
-                                <p className="text-[9px] text-red-400/80 truncate">خطأ: {key.lastError}</p>
+                                <p className="text-[9px] text-red-400/80 truncate">{t('admin.loadBalancer.connectionError')}: {key.lastError}</p>
                               )}
                             </div>
                           );
@@ -967,8 +970,8 @@ export default function AdminPanel() {
               <Card className="glass-card border-primary/10">
                 <CardContent className="p-8 text-center">
                   <Zap className="w-10 h-10 text-primary/30 mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground">لم تتم إضافة أي مفاتيح بعد</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">الصق مفاتيح API في الأعلى لبدء استخدام نظام توزيع الأحمال</p>
+                  <p className="text-sm text-muted-foreground">{t('admin.loadBalancer.pressPaste')}</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{t('admin.loadBalancer.pressPaste')}</p>
                 </CardContent>
               </Card>
             )}
@@ -979,7 +982,7 @@ export default function AdminPanel() {
         <div className="flex justify-center">
           <CrystalButton variant="outline" className="border-primary/20 hover:bg-primary/10" onClick={fetchData}>
             <RefreshCw className="w-4 h-4 ml-2" />
-            تحديث البيانات
+            {t('admin.loadBalancer.refreshData')}
           </CrystalButton>
         </div>
       </motion.div>
