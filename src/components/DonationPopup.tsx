@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, HandHeart } from 'lucide-react';
-import { useAppStore } from '@/store/appStore';
 
 interface DonationPopupProps {
   onDismiss: () => void;
@@ -11,19 +10,14 @@ interface DonationPopupProps {
 
 export default function DonationPopup({ onDismiss }: DonationPopupProps) {
   const [visible, setVisible] = useState(false);
-  const splashComplete = useAppStore((s) => s.splashComplete);
-  const scheduledRef = useRef(false);
 
   useEffect(() => {
-    if (scheduledRef.current) return;
-
-    // Show popup after splash completes (every page load — no session storage)
-    if (splashComplete) {
-      scheduledRef.current = true;
-      const timer = setTimeout(() => setVisible(true), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [splashComplete]);
+    // Show popup 5 seconds after page load (after splash screen ends ~4.5s)
+    const timer = setTimeout(() => {
+      setVisible(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleDismiss = () => {
     setVisible(false);
@@ -45,7 +39,7 @@ export default function DonationPopup({ onDismiss }: DonationPopupProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
             onClick={handleDismiss}
           />
 
@@ -55,7 +49,7 @@ export default function DonationPopup({ onDismiss }: DonationPopupProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 30 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="fixed inset-x-4 top-1/2 z-[101] -translate-y-1/2 mx-auto max-w-sm w-full"
+            className="fixed inset-x-4 top-1/2 z-[201] -translate-y-1/2 mx-auto max-w-sm w-full"
           >
             <div
               className="relative overflow-hidden rounded-3xl shadow-2xl"
