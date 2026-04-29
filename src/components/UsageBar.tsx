@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
 import type { UsageInfoData } from '@/lib/usageLimit';
-import { Tv, Gift, Crown, X, Clock, RefreshCw } from 'lucide-react';
+import { Tv, Gift, Crown, X, Clock, RefreshCw, Infinity } from 'lucide-react';
 import CrystalButton from './CrystalButton';
 import AdWatchModal from './AdWatchModal';
 
@@ -37,14 +37,40 @@ export default function UsageBar() {
   const [isExpired, setIsExpired] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const isAdmin = user?.role === 'owner' || user?.role === 'supervisor';
+  const isPremium = usageInfo?.isPremium || false;
+  const hasSubscription = isAdmin || isPremium;
+
+  // Fetch usage info for ALL logged-in users (including admins)
   const fetchUsage = useCallback(async () => {
-    if (!user || user.role === 'owner' || user.role === 'supervisor') return;
+    if (!user) return;
+    // For admins, set a default usageInfo directly without API call
+    if (user.role === 'owner' || user.role === 'supervisor') {
+      setUsageInfo({
+        messagesUsed: 0,
+        freeLimit: 25,
+        freeRemaining: 25,
+        bonusMessages: 0,
+        isPremium: true,
+        subscriptionExpiry: null,
+        adsWatchedToday: 0,
+        adsProgress: 0,
+        adsUntilBonus: 10,
+        ADS_FOR_BONUS: 10,
+        BONUS_MESSAGES: 5,
+        SUBSCRIPTION_PRICE: 10,
+        canSend: true,
+        isAdmin: true,
+        resetAt: null,
+        resetCountdown: 0,
+      });
+      return;
+    }
     try {
       const res = await fetch(`/api/usage?userId=${user.id}`);
       if (res.ok) {
         const data: UsageInfoData = await res.json();
         setUsageInfo(data);
-        // Initialize countdown from server
         setCountdown(data.resetCountdown || 0);
       }
     } catch {
@@ -56,17 +82,16 @@ export default function UsageBar() {
     fetchUsage();
   }, [fetchUsage]);
 
-  // Countdown timer - ticks every second
+  // Countdown timer - ticks every second (only for non-premium users)
   useEffect(() => {
-    if (!usageInfo || usageInfo.isPremium || usageInfo.isAdmin) return;
+    if (hasSubscription) return;
+    if (!usageInfo) return;
 
-    // Set initial countdown
     setCountdown(usageInfo.resetCountdown || 0);
 
     timerRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          // Timer expired - fetch fresh usage data (daily reset should happen)
           setIsExpired(true);
           fetchUsage();
           return 0;
@@ -81,7 +106,7 @@ export default function UsageBar() {
         timerRef.current = null;
       }
     };
-  }, [usageInfo?.isPremium, usageInfo?.isAdmin, usageInfo?.resetCountdown, fetchUsage]);
+  }, [hasSubscription, usageInfo?.resetCountdown, fetchUsage]);
 
   // Re-fetch when timer expires
   useEffect(() => {
@@ -97,37 +122,57 @@ export default function UsageBar() {
     fetchUsage();
   }, [fetchUsage]);
 
-  const isPremium = usageInfo?.isPremium || false;
-
-  // Don't show for admin/owner
-  if (!user || user.role === 'owner' || user.role === 'supervisor') return null;
+  // Don't render if not logged in
+  if (!user) return null;
+  // Don't render until usageInfo is loaded (prevents flash)
   if (!usageInfo) return null;
 
   const totalRemaining = usageInfo.freeRemaining + usageInfo.bonusMessages;
-  const usagePercent = ((usageInfo.freeLimit - usageInfo.freeRemaining) / usageInfo.freeLimit) * 100;
+  const usagePercent = usageInfo.freeLimit > 0
+    ? ((usageInfo.freeLimit - usageInfo.freeRemaining) / usageInfo.freeLimit) * 100
+    : 0;
 
   return (
     <>
-      {/* Usage Bar - always visible at top of chat area */}
+      {/* Usage Bar - visible for ALL logged-in users */}
       <motion.div
         className="mx-3 sm:mx-4 mt-1 mb-0 px-2.5 py-1.5 rounded-lg bg-card/60 border border-border/30 backdrop-blur-sm"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="flex items-center justify-between gap-2">
-          {/* Message Counter with Timer */}
+          {/* Message Counter */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            {isPremium ? (
-              <div className="flex items-center gap-1 text-yellow-500">
-                <Crown className="w-3 h-3" />
-                <span className="text-[10px] sm:text-xs font-medium">مشترك</span>
+            {hasSubscription ? (
+              /* Admin / Premium / Owner */
+              <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1 text-yellow-500">
+                  {isAdmin ? (
+                    <Infinity className="w-3.5 h-3.5" />
+                  ) : (
+                    <Crown className="w-3 h-3" />
+                  )}
+                  <span className="text-[10px] sm:text-xs font-bold">
+                    {isAdmin ? 'غير محدود' : 'مشترك'}
+                  </span>
+                </div>
+                {!isAdmin && usageInfo.subscriptionExpiry && (
+                  <span className="text-[8px] text-muted-foreground">
+                    ينتهي {new Date(usageInfo.subscriptionExpiry).toLocaleDateString('ar')}
+                  </span>
+                )}
               </div>
             ) : (
+              /* Regular user - show remaining questions */
               <>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
                     <div className="flex items-center gap-1.5">
-                      <span className={`text-[10px] sm:text-xs font-bold ${totalRemaining <= 3 ? 'text-red-500' : totalRemaining <= 10 ? 'text-orange-500' : 'text-primary'}`}>
+                      <span className={`text-[10px] sm:text-xs font-bold ${
+                        totalRemaining <= 3 ? 'text-red-500' :
+                        totalRemaining <= 10 ? 'text-orange-500' :
+                        'text-primary'
+                      }`}>
                         {totalRemaining}
                       </span>
                       <span className="text-[9px] sm:text-[10px] text-muted-foreground">
@@ -143,7 +188,7 @@ export default function UsageBar() {
                   {/* Progress bar */}
                   <div className="w-full h-1.5 bg-primary/10 rounded-full overflow-hidden">
                     <motion.div
-                      className={`h-full rounded-full ${
+                      className={`h-full rounded-full transition-colors duration-300 ${
                         usagePercent >= 90 ? 'bg-gradient-to-l from-red-500 to-red-400' :
                         usagePercent >= 70 ? 'bg-gradient-to-l from-orange-500 to-orange-400' :
                         'bg-gradient-to-l from-primary/80 to-primary/40'
@@ -158,8 +203,8 @@ export default function UsageBar() {
             )}
           </div>
 
-          {/* Watch Ad Button */}
-          {!isPremium && (
+          {/* Watch Ad Button - only for non-premium, non-admin users */}
+          {!hasSubscription && (
             <CrystalButton
               size="sm"
               className="shrink-0 h-6 px-2 text-[9px] sm:text-[10px] gap-1 bg-primary/10 hover:bg-primary/20 text-primary border-0"
@@ -171,8 +216,8 @@ export default function UsageBar() {
           )}
         </div>
 
-        {/* 24h Countdown Timer */}
-        {!isPremium && countdown > 0 && (
+        {/* 24h Countdown Timer - only for regular users */}
+        {!hasSubscription && countdown > 0 && (
           <div className="mt-1.5 flex items-center justify-between">
             <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
               <Clock className="w-2.5 h-2.5" />
@@ -181,7 +226,6 @@ export default function UsageBar() {
                 {formatCountdown(countdown)}
               </span>
             </div>
-            {/* Ad progress */}
             {usageInfo.adsUntilBonus < 10 && (
               <div className="flex items-center gap-0.5 text-[8px] text-green-500">
                 <Gift className="w-2.5 h-2.5" />
@@ -191,11 +235,11 @@ export default function UsageBar() {
           </div>
         )}
 
-        {/* Timer expired - show refresh message */}
-        {!isPremium && countdown === 0 && usageInfo.freeRemaining < usageInfo.freeLimit && (
+        {/* Timer expired message */}
+        {!hasSubscription && countdown === 0 && usageInfo.freeRemaining < usageInfo.freeLimit && (
           <div className="mt-1.5 flex items-center gap-1 text-[9px] text-green-500 animate-pulse">
             <RefreshCw className="w-2.5 h-2.5" />
-            <span>تم تجديد الأسئلة! أعد تحميل الصفحة.</span>
+            <span>تم تجديد الأسئلة!</span>
           </div>
         )}
       </motion.div>
@@ -203,9 +247,9 @@ export default function UsageBar() {
       {/* AdWatchModal */}
       <AdWatchModal open={showAdModal} onClose={handleAdModalClose} />
 
-      {/* Limit Reached Modal */}
+      {/* Limit Reached Modal - only for regular users */}
       <AnimatePresence>
-        {limitReachedModal && (
+        {!hasSubscription && limitReachedModal && (
           <motion.div
             className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
