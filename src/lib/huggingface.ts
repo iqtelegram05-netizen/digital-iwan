@@ -67,7 +67,7 @@ async function reactivateHFCooldownKeys(): Promise<void> {
 // ========== Daily Usage Tracker ==========
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
-async function trackUsage(type: 'cacheHits' | 'aiCalls' | 'hfCalls' | 'fallbackCalls' | 'failedCalls', tokens: number = 0): Promise<void> {
+export async function trackUsage(type: 'cacheHits' | 'aiCalls' | 'hfCalls' | 'fallbackCalls' | 'failedCalls', tokens: number = 0): Promise<void> {
   try {
     const date = todayStr();
     const update: Record<string, unknown> = { [type]: { increment: 1 }, totalRequests: { increment: 1 } };
