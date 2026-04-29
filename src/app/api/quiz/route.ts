@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
 import { callAI } from '@/lib/aiProvider';
 import { filterArabicText } from '@/lib/arabicFilter';
 
 const CATEGORY_PROMPTS: Record<string, string> = {
-  'عقائد': 'أسئلة في العقيدة الإسلامية تشمل أصول الإيمان والتوحيد وأسماء الله وصفاته والقضاء والقدر والإيمان بالملائكة والكتب والرسل واليوم الآخر',
-  'منطق': 'أسئلة في علم المنطق تشمل المقدمات والنتائج والقياس والبرهان والحدود والأقيسة المنطقية',
-  'علم': 'أسئلة في علوم القرآن والسنة وتفسير القرآن وعلوم الحديث ومصطلحاته',
-  'نحو': 'أسئلة في النحو العربي تشمل الإعراب والبناء والجمل وأنواعها والأفعال والأسماء والحروف',
-  'فقه': 'أسئلة في الفقه الإسلامي تشمل العبادات والمعاملات والأحوال الشخصية والأخلاق',
+  'عقائد': 'أصول الإيمان والتوحيد وأسماء الله وصفاته',
+  'منطق': 'المقدمات والنتائج والقياس والبرهان',
+  'علم': 'علوم القرآن والسنة والتفسير والحديث',
+  'نحو': 'الإعراب والبناء والجمل والأفعال والأسماء',
+  'فقه': 'العبادات والمعاملات والأحوال الشخصية',
 };
 
 const VALID_CATEGORIES = ['عقائد', 'منطق', 'علم', 'نحو', 'فقه'];
@@ -22,6 +23,44 @@ interface QuizQuestion {
   question: string;
   options: string[];
   correctAnswer: number;
+}
+
+// ===== QUIZ DB CACHE: same category quiz = 1 AI call =====
+const QUIZ_CACHE_KEY = 'quiz_cache';
+
+async function getDBCachedQuiz(category: string): Promise<string | null> {
+  const cached = await db.responseCache.findFirst({
+    where: { questionHash: `quiz:${category}`, mode: 'quiz' },
+  });
+  if (cached) {
+    await db.responseCache.update({
+      where: { id: cached.id },
+      data: { hitCount: { increment: 1 }, updatedAt: new Date() },
+    });
+    console.log(`[QUIZ CACHE HIT] category=${category}, hitCount=${cached.hitCount + 1}`);
+    return cached.answer;
+  }
+  return null;
+}
+
+async function setDBCachedQuiz(category: string, quizJson: string): Promise<void> {
+  try {
+    await db.responseCache.upsert({
+      where: { id: `quiz_${category}` },
+      update: { answer: quizJson, updatedAt: new Date() },
+      create: {
+        id: `quiz_${category}`,
+        questionHash: `quiz:${category}`,
+        mode: 'quiz',
+        question: category,
+        answer: quizJson,
+        hitCount: 0,
+      },
+    });
+    console.log(`[QUIZ CACHE] Stored quiz for category=${category}`);
+  } catch (err) {
+    console.error('[QUIZ CACHE] Store error:', err);
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -43,42 +82,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const categoryPrompt = CATEGORY_PROMPTS[category] || (isCustom ? `أسئلة في مجال: ${category}. غطِّ جوانب متنوعة من هذا الموضوع بأسئلة عميقة ومفيدة` : '');
-
-    const systemPrompt = `أنت خبير في توليد أسئلة اختبار في المجال التالي: ${categoryPrompt}. 
-قم بتوليد 10 أسئلة اختبار متعددة الخيارات (4 خيارات لكل سؤال). 
-الأسئلة يجب أن تكون عميقة وتختبر الفهم الحقيقي وليس مجرد الحفظ.
-كل خيار يجب أن يكون معقولًا ومقنعًا.
-
-╔══════════════════════════════════════════════════════╗
-║  قاعدة ذهبية: العربية فقط - لا استثناءات            ║
-╚══════════════════════════════════════════════════════╝
-
-- جميع الأسئلة والخيارات باللغة العربية حصرياً وبالكامل.
-- يحظر منعاً باتاً كتابة أي كلمة إنجليزية أو أجنبية.
-- أمثلة على المحظورات: concept→المفهوم، theory→النظرية، logic→المنطق، proof→الدليل، evidence→البرهان، argument→الحجة، definition→التعريف، meaning→المعنى، approach→المنهج، ranging→المدى.
-- لا تستخدم أي إيموجي أو رموز غريبة.
-- كل حرف في الأسئلة والخيارات يجب أن يكون عربياً.
-
-أجب فقط بصيغة JSON التالية بدون أي نص إضافي:
-{
-  "questions": [
-    {
-      "question": "نص السؤال",
-      "options": ["الخيار الأول", "الخيار الثاني", "الخيار الثالث", "الخيار الرابع"],
-      "correctAnswer": 0
+    // ===== CHECK DB CACHE FIRST =====
+    const cachedQuiz = await getDBCachedQuiz(category);
+    if (cachedQuiz) {
+      try {
+        const quizData = JSON.parse(cachedQuiz);
+        const questions: QuizQuestion[] = quizData.questions.map((q: { question: string; options: string[]; correctAnswer: number }, index: number) => ({
+          id: `q_${Date.now()}_${index}`,
+          question: filterArabicText(q.question),
+          options: q.options.slice(0, 4).map((opt: string) => filterArabicText(opt)),
+          correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
+        }));
+        if (questions.length >= 10) {
+          return NextResponse.json({
+            questions: questions.slice(0, 10),
+            category,
+            isCustom,
+            total: 10,
+            provider: 'cache',
+          });
+        }
+      } catch {
+        // Cache parse failed, generate new
+      }
     }
-  ]
-}
-حيث correctAnswer هو فهرس الإجابة الصحيحة (0، 1، 2، أو 3).`;
 
-    // Use the shared AI provider (load balancer → direct API → ZAI fallback)
+    const categoryPrompt = CATEGORY_PROMPTS[category] || (isCustom ? `مجال: ${category}` : '');
+
+    // ULTRA-COMPACT system prompt for quiz generation
+    const systemPrompt = `أنت خبير في توليد أسئلة اختبار: ${categoryPrompt}.
+أنشئ 10 أسئلة متعددة الخيارات (4 خيارات). الأسئلة عميقة. العربية فقط.
+أجب بصيغة JSON فقط:
+{"questions":[{"question":"نص","options":["أ","ب","ج","د"],"correctAnswer":0}]}`;
+
     const aiResult = await callAI(
       [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `أنشئ 10 أسئلة اختبار في تصنيف: ${category}. الأسئلة يجب أن تكون باللغة العربية.` },
+        { role: 'user', content: `أنشئ 10 أسئلة في: ${category}. العربية فقط.` },
       ],
-      { temperature: 0.8, maxTokens: 4096 }
+      { temperature: 0.8, maxTokens: 2048 }
     );
 
     const responseText = aiResult.content;
@@ -104,6 +146,11 @@ export async function POST(request: NextRequest) {
       } else {
         throw new Error('Failed to parse quiz response');
       }
+    }
+
+    // Store in DB cache for future requests
+    if (quizData.questions && quizData.questions.length >= 10) {
+      await setDBCachedQuiz(category, JSON.stringify(quizData));
     }
 
     // Validate, filter, and format questions
