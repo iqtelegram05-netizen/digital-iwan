@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAppStore } from '@/store/appStore';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Moon, Sun, GraduationCap, Languages, Plus, X, Check, Tv, Gift } from 'lucide-react';
+import { Menu, Moon, Sun, GraduationCap, Languages, Plus, X, Check, Tv, Gift, HandHeart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -202,6 +202,21 @@ export default function Header({ onMenuClick }: HeaderProps) {
             ))}
           </SelectContent>
         </Select>
+
+        {/* Donation Button - Permanent */}
+        <motion.button
+          className="shrink-0 flex items-center gap-1 h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg transition-all"
+          style={{
+            background: 'linear-gradient(135deg, rgba(220,38,38,0.15), rgba(220,38,38,0.08))',
+            border: '1px solid rgba(220,38,38,0.25)',
+          }}
+          onClick={() => window.location.href = '/donate'}
+          whileTap={{ scale: 0.92 }}
+          whileHover={{ scale: 1.03 }}
+        >
+          <HandHeart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500" />
+          <span className="text-[9px] sm:text-[10px] font-bold text-red-500 hidden sm:inline">اغاثة</span>
+        </motion.button>
 
         {/* Theme toggle */}
         <Button

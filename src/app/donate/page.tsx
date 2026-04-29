@@ -190,7 +190,7 @@ export default function DonatePage() {
               src="/donate-qr.png"
               alt="كي كارد للتبرع"
               fill
-              className="object-contain p-3"
+              className="object-contain p-4"
               priority
             />
           </div>
@@ -198,6 +198,31 @@ export default function DonatePage() {
           <p className="text-[10px] text-white/30">
             افتح تطبيق كي كارد وامسح الباركود
           </p>
+        </motion.div>
+
+        {/* Ki Card Reference Screenshot */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="rounded-2xl overflow-hidden"
+          style={{
+            border: '1.5px solid rgba(14,165,233,0.12)',
+            boxShadow: '0 0 20px rgba(14,165,233,0.06)',
+          }}
+        >
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-white/3 border-b border-white/5">
+            <CreditCard className="w-4 h-4 text-primary" />
+            <p className="text-xs font-bold text-white/70">شاشة كي كارد للتبرع</p>
+          </div>
+          <div className="relative w-full aspect-video bg-black/30">
+            <Image
+              src="/kicard-reference.png"
+              alt="شاشة تطبيق كي كارد"
+              fill
+              className="object-contain p-2"
+            />
+          </div>
         </motion.div>
 
         {/* Steps */}
