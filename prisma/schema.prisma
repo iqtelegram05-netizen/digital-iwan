@@ -123,6 +123,22 @@ model Prayer {
   updatedAt   DateTime @updatedAt
 }
 
+// Persistent Response Cache - same question = 1 AI call, saves tokens massively
+model ResponseCache {
+  id        String   @id @default(cuid())
+  questionHash String  // hash of normalized question + mode + scholar
+  mode      String   // "chat", "debate", "teacher", "research"
+  scholar   String?  // optional scholar name
+  question  String   // original question (for reference)
+  answer    String   // AI response
+  hitCount  Int      @default(0) // how many times served from cache
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([questionHash])
+  @@index([mode])
+}
+
 model ApiProvider {
   id        String   @id @default(cuid())
   name      String   @unique // "gemini", "groq", "deepseek", "openai", etc

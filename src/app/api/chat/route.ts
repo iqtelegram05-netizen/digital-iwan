@@ -10,47 +10,6 @@ if (typeof process !== 'undefined') {
   process.on('unhandledRejection', (reason) => console.error('UNHANDLED:', reason));
 }
 
-// ========== RESPONSE CACHE (in-memory, saves API calls) ==========
-const cache = new Map<string, { response: string; timestamp: number }>();
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
-const MAX_CACHE_SIZE = 500;
-
-function hashText(text: string): string {
-  // Simple fast hash - normalize whitespace and lowercase
-  const normalized = text.trim().replace(/\s+/g, ' ');
-  let hash = 0;
-  for (let i = 0; i < normalized.length; i++) {
-    const char = normalized.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash |= 0;
-  }
-  return `${hash}-${normalized.length}`;
-}
-
-function getCachedResponse(mode: string, question: string, scholar: string | null): string | null {
-  const key = `${mode}:${scholar || ''}:${hashText(question)}`;
-  const entry = cache.get(key);
-  if (entry && Date.now() - entry.timestamp < CACHE_TTL) {
-    console.log('[CACHE HIT]', key.slice(0, 30));
-    return entry.response;
-  }
-  // Remove expired entries
-  if (entry) cache.delete(key);
-  return null;
-}
-
-function setCachedResponse(mode: string, question: string, scholar: string | null, response: string): void {
-  const key = `${mode}:${scholar || ''}:${hashText(question)}`;
-  if (cache.size >= MAX_CACHE_SIZE) {
-    // Evict oldest 20%
-    const entries = [...cache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp);
-    for (let i = 0; i < Math.floor(MAX_CACHE_SIZE * 0.2); i++) {
-      cache.delete(entries[i][0]);
-    }
-  }
-  cache.set(key, { response, timestamp: Date.now() });
-}
-
 // ========== ULTRA-COMPACT SYSTEM PROMPTS (~30 tokens each) ==========
 const SYS = {
   chat: 'مساعد ذكي في العلوم الإسلامية والعربية والمنطق والفقه. أجب بالعربية فقط. لا تستخدم كلمة أجنبية.',
@@ -58,6 +17,141 @@ const SYS = {
   teacher: 'معلم يشرح المواضيع الصعبة بطريقة بسيطة يفهمها طفل. أجب بالعربية فقط.',
   research: 'باحث إسلامي يعرض آراء العلماء والمذاهب مع مصادرها. أجب بالعربية فقط.',
 };
+
+// ========== DATABASE CACHE: 100 similar questions = 1 AI call ==========
+
+// Normalize question: trim, lowercase, remove extra spaces, remove diacritics
+function normalizeQuestion(q: string): string {
+  return q
+    .trim()
+    .replace(/\s+/g, ' ')
+    // Remove Arabic diacritics (tashkeel)
+    .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED]/g, '')
+    // Normalize alef variants
+    .replace(/[أإآٱ]/g, 'ا')
+    // Normalize taa marbuta
+    .replace(/ة/g, 'ه')
+    // Normalize yaa
+    .replace(/ى/g, 'ي')
+    .toLowerCase();
+}
+
+// Create hash for cache lookup
+function questionHash(question: string, mode: string, scholar: string | null): string {
+  const normalized = normalizeQuestion(question);
+  const key = `${mode}:${scholar || ''}:${normalized}`;
+  // Simple hash
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    const char = key.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return `${hash}-${key.length}`;
+}
+
+// Check DB cache for a response
+async function getDBCachedResponse(
+  question: string,
+  mode: string,
+  scholar: string | null
+): Promise<string | null> {
+  const hash = questionHash(question, mode, scholar);
+  const normalized = normalizeQuestion(question);
+
+  // First: exact hash match
+  const exact = await db.responseCache.findFirst({
+    where: { questionHash: hash, mode },
+  });
+  if (exact) {
+    // Increment hit count and update timestamp
+    await db.responseCache.update({
+      where: { id: exact.id },
+      data: { hitCount: { increment: 1 }, updatedAt: new Date() },
+    });
+    console.log(`[DB CACHE HIT] exact match, hitCount=${exact.hitCount + 1}`);
+    return exact.answer;
+  }
+
+  // Second: fuzzy match - find questions with similar length and same mode
+  // Get recent caches for this mode
+  const recent = await db.responseCache.findMany({
+    where: { mode },
+    orderBy: { hitCount: 'desc' },
+    take: 50,
+  });
+
+  for (const cached of recent) {
+    const cachedNorm = normalizeQuestion(cached.question);
+    // Calculate similarity (simple word overlap)
+    const similarity = calculateSimilarity(normalized, cachedNorm);
+    if (similarity > 0.85) {
+      // High similarity - use cached answer
+      await db.responseCache.update({
+        where: { id: cached.id },
+        data: { hitCount: { increment: 1 }, updatedAt: new Date() },
+      });
+      console.log(`[DB CACHE HIT] fuzzy match (${(similarity * 100).toFixed(0)}%), hitCount=${cached.hitCount + 1}`);
+      return cached.answer;
+    }
+  }
+
+  return null;
+}
+
+// Simple word-level similarity between two Arabic sentences
+function calculateSimilarity(a: string, b: string): number {
+  const wordsA = new Set(a.split(' ').filter(w => w.length > 1));
+  const wordsB = new Set(b.split(' ').filter(w => w.length > 1));
+
+  if (wordsA.size === 0 || wordsB.size === 0) return 0;
+
+  let intersection = 0;
+  for (const word of wordsA) {
+    if (wordsB.has(word)) intersection++;
+  }
+
+  return (2 * intersection) / (wordsA.size + wordsB.size);
+}
+
+// Store response in DB cache
+async function setDBCachedResponse(
+  question: string,
+  mode: string,
+  scholar: string | null,
+  answer: string
+): Promise<void> {
+  const hash = questionHash(question, mode, scholar);
+  try {
+    await db.responseCache.create({
+      data: {
+        questionHash: hash,
+        mode,
+        scholar: scholar || null,
+        question: question.slice(0, 500), // store original question
+        answer,
+        hitCount: 0,
+      },
+    });
+    console.log('[DB CACHE] Stored new response');
+
+    // Cleanup: keep only 5000 most recent entries per mode
+    const count = await db.responseCache.count({ where: { mode } });
+    if (count > 5000) {
+      const old = await db.responseCache.findMany({
+        where: { mode },
+        orderBy: { hitCount: 'asc' },
+        take: count - 4000,
+        select: { id: true },
+      });
+      const ids = old.map(o => o.id);
+      await db.responseCache.deleteMany({ where: { id: { in: ids } } });
+      console.log(`[DB CACHE] Cleaned up ${ids.length} old entries`);
+    }
+  } catch (err) {
+    console.error('[DB CACHE] Store error:', err);
+  }
+}
 
 interface ChatRequestBody {
   message: string;
@@ -147,10 +241,10 @@ export async function POST(request: NextRequest) {
       data: { sessionId: session.id, role: 'user', content: message },
     });
 
-    // ===== CHECK RESPONSE CACHE FIRST (saves API call entirely) =====
-    const cached = getCachedResponse(mode, message, scholar || null);
-    if (cached) {
-      const filteredCached = filterArabicText(cached);
+    // ===== CHECK DATABASE CACHE FIRST (100 questions = 1 AI call) =====
+    const cachedAnswer = await getDBCachedResponse(message, mode, scholar || null);
+    if (cachedAnswer) {
+      const filteredCached = filterArabicText(cachedAnswer);
       await db.message.create({
         data: { sessionId: session.id, role: 'assistant', content: filteredCached },
       });
@@ -193,9 +287,9 @@ export async function POST(request: NextRequest) {
 
     const filteredContent = filterArabicText(aiResult.content);
 
-    // Store in cache
-    if (aiResult.loadBalanced && filteredContent) {
-      setCachedResponse(mode, message, scholar || null, filteredContent);
+    // Store in DATABASE cache (persistent, survives server restarts)
+    if (aiResult.loadBalanced && filteredContent && filteredContent.length > 20) {
+      await setDBCachedResponse(message, mode, scholar || null, filteredContent);
     }
 
     // Store assistant message in DB
