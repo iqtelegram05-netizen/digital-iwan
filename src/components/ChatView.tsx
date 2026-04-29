@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore, type Message, type ChatMode } from '@/store/appStore';
-import { Send, Trash2, BookOpen, Swords, GraduationCap } from 'lucide-react';
+import { Send, Trash2, BookOpen, Swords, GraduationCap, Search } from 'lucide-react';
 import CrystalButton from './CrystalButton';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/i18n/useTranslation';
@@ -31,7 +31,7 @@ export default function ChatView() {
     debate: {
       title: t('chat.digitalDebater'),
       icon: <Swords className="w-4 h-4 sm:w-5 sm:h-5" />,
-      placeholder: t('chat.presentArgument'),
+      placeholder: 'قدم رأيك أو حجتك للنقاش...',
       mode: 'debate' as ChatMode,
     },
     teacher: {
@@ -39,6 +39,12 @@ export default function ChatView() {
       icon: <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />,
       placeholder: t('chat.askAnyTopic'),
       mode: 'teacher' as ChatMode,
+    },
+    research: {
+      title: 'البحث الخارج',
+      icon: <Search className="w-4 h-4 sm:w-5 sm:h-5" />,
+      placeholder: 'ابحث عن مسألة فقهية أو عقدية من مصادر متعددة...',
+      mode: 'research' as ChatMode,
     },
   });
 

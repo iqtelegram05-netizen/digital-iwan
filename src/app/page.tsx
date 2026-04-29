@@ -14,7 +14,7 @@ import AdminPanel from '@/components/AdminPanel';
 import ReaderView from '@/components/ReaderView';
 import SideDrawer from '@/components/SideDrawer';
 import Footer from '@/components/Footer';
-import { BookOpen, Swords, GraduationCap, Brain, User } from 'lucide-react';
+import { BookOpen, Swords, GraduationCap, Brain, User, Search } from 'lucide-react';
 import { useTranslation } from '@/i18n/useTranslation';
 
 const ADMIN_CODE = 'qalamadmin2024';
@@ -36,6 +36,7 @@ export default function Home() {
   const TABS = useMemo(() => [
     { view: 'chat' as View, label: t('tabs.iwan'), icon: <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" /> },
     { view: 'debate' as View, label: t('tabs.debater'), icon: <Swords className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    { view: 'research' as View, label: 'بحث خارج', icon: <Search className="w-4 h-4 sm:w-5 sm:h-5" /> },
     { view: 'teacher' as View, label: t('tabs.teacher'), icon: <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" /> },
     { view: 'quiz' as View, label: t('tabs.quiz'), icon: <Brain className="w-4 h-4 sm:w-5 sm:h-5" /> },
     { view: 'profile' as View, label: t('tabs.profile'), icon: <User className="w-4 h-4 sm:w-5 sm:h-5" /> },
@@ -167,6 +168,7 @@ export default function Home() {
                 >
                   {currentView === 'chat' && <ChatView />}
                   {currentView === 'debate' && <ChatView />}
+                  {currentView === 'research' && <ChatView />}
                   {currentView === 'teacher' && <ChatView />}
                   {currentView === 'quiz' && <QuizView />}
                   {currentView === 'profile' && <ProfileView />}

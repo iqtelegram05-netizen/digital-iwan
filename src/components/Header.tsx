@@ -1,10 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { useAppStore } from '@/store/appStore';
 import { useTheme } from 'next-themes';
-import { motion } from 'framer-motion';
-import { Menu, Moon, Sun, GraduationCap, Languages } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, Moon, Sun, GraduationCap, Languages, Plus, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -16,12 +18,12 @@ import { LANGUAGES } from '@/i18n/languages';
 import { useTranslation } from '@/i18n/useTranslation';
 
 const SCHOLARS = [
-  'السيد علي السيستاني',
-  'الشيخ حسين البحاراني',
-  'السيد محمد باقر الصدر',
-  'الشيخ جعفر السبحاني',
+  'السيد السيستاني',
   'السيد كمال الحيدري',
-  'الشيخ علي الكوراني',
+  'السيد القزويني',
+  'السيد محمد صادق الصدر',
+  'الشيخ بشير النجفي',
+  'السيد الشيرازي',
 ];
 
 interface HeaderProps {
@@ -29,12 +31,26 @@ interface HeaderProps {
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
-  const { selectedScholar, setSelectedScholar } = useAppStore();
+  const { selectedScholar, setSelectedScholar, currentView } = useAppStore();
   const { theme, setTheme } = useTheme();
   const { t, lang, setLanguage } = useTranslation();
 
+  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [customScholar, setCustomScholar] = useState('');
+
   // Find current language info
   const currentLang = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
+
+  // Hide scholar selector in debate and research modes
+  const hideScholarSelector = currentView === 'debate' || currentView === 'research';
+
+  const handleAddCustomScholar = () => {
+    if (customScholar.trim()) {
+      setSelectedScholar(customScholar.trim());
+      setCustomScholar('');
+      setShowCustomInput(false);
+    }
+  };
 
   return (
     <motion.header
@@ -54,24 +70,96 @@ export default function Header({ onMenuClick }: HeaderProps) {
           <Menu className="w-5 h-5" />
         </Button>
 
-        {/* Scholar Selector */}
-        <div className="flex-1 mx-1 max-w-[160px] sm:max-w-[220px] min-w-0">
-          <Select value={selectedScholar || ''} onValueChange={setSelectedScholar}>
-            <SelectTrigger className="h-8 sm:h-9 text-[10px] sm:text-xs border-primary/20 bg-primary/5 focus:ring-primary/30">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <GraduationCap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary shrink-0" />
-                <SelectValue placeholder={t('header.selectScholar')} className="truncate" />
-              </div>
-            </SelectTrigger>
-            <SelectContent className="max-h-48 sm:max-h-64">
-              {SCHOLARS.map((scholar) => (
-                <SelectItem key={scholar} value={scholar} className="text-sm">
-                  {scholar}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Scholar Selector - hidden in debate/research modes */}
+        {!hideScholarSelector && (
+          <div className="flex-1 mx-1 max-w-[160px] sm:max-w-[220px] min-w-0">
+            <Select value={selectedScholar || ''} onValueChange={setSelectedScholar}>
+              <SelectTrigger className="h-8 sm:h-9 text-[10px] sm:text-xs border-primary/20 bg-primary/5 focus:ring-primary/30">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <GraduationCap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary shrink-0" />
+                  <SelectValue placeholder={t('header.selectScholar')} className="truncate" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="max-h-56 sm:max-h-72">
+                {SCHOLARS.map((scholar) => (
+                  <SelectItem key={scholar} value={scholar} className="text-xs sm:text-sm">
+                    {scholar}
+                  </SelectItem>
+                ))}
+                {/* Custom scholar option */}
+                <div className="border-t border-border/30 my-1">
+                  <div
+                    className="flex items-center gap-2 px-2 py-1.5 text-xs text-primary cursor-pointer hover:bg-primary/5 rounded-sm"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowCustomInput(true);
+                    }}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>بحث عن عالم آخر...</span>
+                  </div>
+                </div>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* Custom Scholar Input Overlay */}
+        <AnimatePresence>
+          {showCustomInput && (
+            <motion.div
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowCustomInput(false)}
+            >
+              <motion.div
+                className="bg-card border border-border/50 rounded-2xl p-5 max-w-sm w-full shadow-2xl"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-primary flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4" />
+                    بحث عن عالم
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                    onClick={() => setShowCustomInput(false)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  أدخل اسم العالم أو المرجع الذي تريد البحث عن آرائه. سيتم حفظه مؤقتاً لهذه الجلسة فقط.
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    value={customScholar}
+                    onChange={(e) => setCustomScholar(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddCustomScholar()}
+                    placeholder="مثال: الشيخ محمد الحسين آل كاشف الغطاء"
+                    className="text-xs border-primary/20 bg-card/50"
+                    autoFocus
+                  />
+                  <Button
+                    size="icon"
+                    className="shrink-0 h-9 w-9 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
+                    onClick={handleAddCustomScholar}
+                    disabled={!customScholar.trim()}
+                  >
+                    <Check className="w-4 h-4" />
+                  </Button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Language Selector */}
         <Select value={lang} onValueChange={setLanguage}>

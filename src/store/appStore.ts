@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
-export type View = 'splash' | 'chat' | 'debate' | 'teacher' | 'quiz' | 'profile' | 'admin' | 'reader';
-export type ChatMode = 'chat' | 'debate' | 'teacher';
+export type View = 'splash' | 'chat' | 'debate' | 'teacher' | 'research' | 'quiz' | 'profile' | 'admin' | 'reader';
+export type ChatMode = 'chat' | 'debate' | 'teacher' | 'research';
 
 export interface ReaderItem {
   id: string;
@@ -106,6 +106,7 @@ export const useAppStore = create<AppState>((set) => ({
     chat: { ...emptyChatState },
     debate: { ...emptyChatState },
     teacher: { ...emptyChatState },
+    research: { ...emptyChatState },
   },
 
   addMessage: (mode, message) =>
@@ -149,7 +150,7 @@ export const useAppStore = create<AppState>((set) => ({
       },
     })),
 
-  selectedScholar: 'السيد علي السيستاني',
+  selectedScholar: 'السيد السيستاني',
   setSelectedScholar: (scholar) => set({ selectedScholar: scholar }),
 
   quizQuestions: [],
