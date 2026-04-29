@@ -15,7 +15,12 @@
     "prayers": "الأدعية",
     "qibla": "القبلة",
     "sermons": "الخطب",
-    "events": "المناسبات"
+    "events": "المناسبات",
+    "iwan": "الأيوان",
+    "debater": "المحاور",
+    "teacher": "الأستاذ",
+    "quiz": "اختبر",
+    "profile": "الملف"
   },
   "prayers": {
     "title": "الأدعية",
@@ -125,6 +130,8 @@
     "showLess": "عرض أقل",
     "textColor": "لون النص",
     "fontSize": "حجم الخط",
+    "noText": "لم يتم تحديد نص",
+    "back": "العودة",
     "colors": {
       "default": "افتراضي",
       "warm": "دافئ",
@@ -147,28 +154,101 @@
       "3xl": "عملاق"
     }
   },
-  "login": {
-    "title": "الإيوان الرقمي",
-    "subtitle": "سجّل دخولك عبر حسابك في Google",
-    "noEmail": "لم يتم العثور على بريد إلكتروني",
-    "error": "حدث خطأ:",
-    "noClientId": "Google Client ID غير مضبوط"
-  },
   "admin": {
     "title": "لوحة التحكم",
-    "addPrayer": "إضافة دعاء",
-    "addSermon": "إضافة خطبة",
-    "addVisit": "إضافة زيارة",
+    "ownerOnly": "للمالك والمشرفين حصراً",
+    "clearData": "مسح البيانات",
+    "back": "العودة",
+    "addPrayer": "إضافة دعاء أو زيارة أو خطبة",
+    "addPrayerShort": "إضافة",
     "titleField": "العنوان",
     "subtitleField": "وصف مختصر",
     "categoryField": "التصنيف",
-    "textField": "النص الكامل",
+    "textField": "النص...",
     "save": "حفظ",
     "cancel": "إلغاء",
     "delete": "حذف",
     "edit": "تعديل",
     "savedSuccess": "تم الحفظ بنجاح!",
-    "deleteConfirm": "هل أنت متأكد من الحذف؟"
+    "deleteConfirm": "هل أنت متأكد من الحذف؟",
+    "tabs": {
+      "loadBalancer": "موزّع الأحمال",
+      "keysAndLinks": "المفاتيح والروابط",
+      "users": "المستخدمون",
+      "prayers": "الأدعية والخطب"
+    },
+    "ragLinks": {
+      "title": "روابط قاعدة المعرفة (RAG)",
+      "link": "رابط",
+      "noLinks": "لا توجد روابط بعد",
+      "addPlaceholder": "https://example.com/knowledge"
+    },
+    "apiKeys": {
+      "title": "مفاتيح API (10 خانات)",
+      "active": "يعمل",
+      "waiting": "انتظار",
+      "consumed": "مستهلك",
+      "addSwap": "إضافة / تبديل مفتاح",
+      "keyName": "اسم المفتاح",
+      "keyValue": "قيمة مفتاح API",
+      "existing": "(موجود)",
+      "empty": "(فارغ)",
+      "keyN": "مفتاح {n}"
+    },
+    "usersMgmt": {
+      "title": "المستخدمون المسجلون",
+      "userN": "مستخدم",
+      "noUsers": "لا يوجد مستخدمون مسجلون بعد",
+      "noName": "بدون اسم",
+      "registered": "تسجيل:",
+      "logins": "دخول:",
+      "times": "مرة",
+      "lastLogin": "آخر دخول:",
+      "unblock": "رفع الحظر",
+      "block": "حظر",
+      "promote": "رفع مشرف",
+      "banned": "محظور"
+    },
+    "roles": {
+      "owner": "مالك",
+      "supervisor": "مشرف",
+      "user": "مستخدم"
+    },
+    "prayersMgmt": {
+      "title": "الأدعية والزيارات والخطب المضافة",
+      "itemN": "عنصر",
+      "noItems": "لم تتم إضافة أي عناصر بعد",
+      "draft": "مسودة",
+      "categoryPrayer": "دعاء",
+      "categoryVisit": "زيارة",
+      "categorySermon": "خطب"
+    },
+    "loadBalancer": {
+      "activeKeys": "يعمل",
+      "standbyKeys": "احتياطي",
+      "cooldownKeys": "تبريد",
+      "exhaustedKeys": "مستهلك",
+      "totalKeys": "إجمالي المفاتيح",
+      "totalRequests": "إجمالي الطلبات",
+      "tokensUsed": "Tokens مستهلكة",
+      "addKeys": "إضافة مفاتيح",
+      "pasteBulk": "لصق بالجملة",
+      "manualAdd": "إضافة يدوية",
+      "reactivateAll": "إعادة تفعيل",
+      "deleteAll": "حذف الكل",
+      "autoSave": "إضافة تلقائية",
+      "autoDetect": "يتم كشف المزود تلقائياً من شكل المفتاح وتشفيره قبل الحفظ",
+      "pressPaste": "اضغط \"لصق بالجملة\" لإضافة مفاتيح متعددة دفعة واحدة",
+      "disabled": "معطّل",
+      "keyN": "مفتاح",
+      "connectionError": "خطأ في الاتصال",
+      "deleteError": "خطأ في الحذف",
+      "confirmDelete": "هل أنت متأكد؟",
+      "confirmClearAll": "هل أنت متأكد من حذف جميع الأدعية والزيارات والخطب ومفاتيح API؟\nهذا الإجراء لا يمكن التراجع عنه."
+    }
+  },
+  "footer": {
+    "text": "تم تطوير البرنامج بواسطة فريق"
   },
   "common": {
     "loading": "جارٍ التحميل...",
