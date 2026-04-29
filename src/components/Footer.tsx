@@ -13,8 +13,8 @@ export default function Footer() {
       transition={{ delay: 0.5 }}
     >
       <p className="text-xs text-muted-foreground">
-        {t('footer.text')}{' '}
-        <span className="text-primary font-medium">{t('app.title')}</span>
+        تم التطوير بواسطة{' '}
+        <span className="text-primary font-medium">سجاد علي العبيدي</span>
       </p>
     </motion.footer>
   );
