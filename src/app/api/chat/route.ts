@@ -3,6 +3,7 @@ import { db } from '@/lib/db';
 import { callAI, ChatMessage } from '@/lib/aiProvider';
 import { filterArabicText } from '@/lib/arabicFilter';
 import { canUserSend, getUserUsageInfo, needsDailyReset } from '@/lib/usageLimit';
+import { callHuggingFace, hasActiveHFKeys, trackUsage } from '@/lib/huggingface';
 
 // Catch unhandled errors
 if (typeof process !== 'undefined') {
@@ -244,6 +245,7 @@ export async function POST(request: NextRequest) {
     // ===== CHECK DATABASE CACHE FIRST (100 questions = 1 AI call) =====
     const cachedAnswer = await getDBCachedResponse(message, mode, scholar || null);
     if (cachedAnswer) {
+      await trackUsage('cacheHits');
       const filteredCached = filterArabicText(cachedAnswer);
       await db.message.create({
         data: { sessionId: session.id, role: 'assistant', content: filteredCached },
@@ -261,34 +263,77 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // ===== NO CACHE HIT - Call AI with MINIMAL tokens =====
-    // Send ONLY: system prompt + current question (NO history)
-    const apiMessages: ChatMessage[] = [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: message },
-    ];
+    // ===== NO CACHE HIT - Try HuggingFace FIRST, then Fallback to Gemini/Groq =====
+    await trackUsage('aiCalls');
 
-    let aiResult;
-    try {
-      aiResult = await callAI(apiMessages, {
-        temperature: mode === 'debate' ? 0.7 : 0.8,
-        maxTokens: 512,
-      });
-    } catch (aiError) {
-      console.error('AI Provider Error:', aiError);
-      const errMsg = aiError instanceof Error ? aiError.message : String(aiError);
-      aiResult = {
-        content: `عذرًا، خطأ: ${errMsg.slice(0, 80)}. حاول مرة أخرى.`,
-        provider: 'Error',
-        tokensUsed: 0,
-        loadBalanced: false,
-      };
+    let finalContent = '';
+    let finalProvider = '';
+    let finalLoadBalanced = false;
+    let usedFallback = false;
+
+    const useHF = await hasActiveHFKeys();
+
+    if (useHF) {
+      // ===== PRIMARY: HuggingFace (Qwen2.5-72B) =====
+      try {
+        console.log('[CHAT] Using HuggingFace as primary provider');
+        const hfResult = await callHuggingFace(systemPrompt, message, {
+          temperature: mode === 'debate' ? 0.7 : 0.8,
+          maxTokens: 512,
+        });
+
+        if (hfResult.content && !hfResult.usedFallback) {
+          finalContent = hfResult.content;
+          finalProvider = `HuggingFace (${hfResult.provider})`;
+          finalLoadBalanced = hfResult.loadBalanced;
+        } else if (hfResult.usedFallback) {
+          // HF returned fallback result - use it but mark as fallback
+          finalContent = hfResult.content;
+          finalProvider = 'Fallback';
+          finalLoadBalanced = hfResult.loadBalanced;
+          usedFallback = true;
+        }
+      } catch (hfError) {
+        console.error('[CHAT] HuggingFace failed, falling back:', hfError);
+        usedFallback = true;
+      }
     }
 
-    const filteredContent = filterArabicText(aiResult.content);
+    if (!finalContent) {
+      // ===== FALLBACK: Gemini / Groq / DeepSeek / OpenAI =====
+      console.log('[CHAT] Using fallback providers (Gemini/Groq)');
+      usedFallback = true;
+
+      const apiMessages: ChatMessage[] = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message },
+      ];
+
+      try {
+        const fallbackResult = await callAI(apiMessages, {
+          temperature: mode === 'debate' ? 0.7 : 0.8,
+          maxTokens: 512,
+        });
+        finalContent = fallbackResult.content;
+        finalProvider = fallbackResult.provider;
+        finalLoadBalanced = fallbackResult.loadBalanced;
+      } catch (aiError) {
+        console.error('AI Provider Error:', aiError);
+        const errMsg = aiError instanceof Error ? aiError.message : String(aiError);
+        finalContent = `عذرًا، خطأ: ${errMsg.slice(0, 80)}. حاول مرة أخرى.`;
+        finalProvider = 'Error';
+        finalLoadBalanced = false;
+      }
+    }
+
+    if (usedFallback) {
+      await trackUsage('fallbackCalls');
+    }
+
+    const filteredContent = filterArabicText(finalContent);
 
     // Store in DATABASE cache (persistent, survives server restarts)
-    if (aiResult.loadBalanced && filteredContent && filteredContent.length > 20) {
+    if (finalLoadBalanced && filteredContent && filteredContent.length > 20) {
       await setDBCachedResponse(message, mode, scholar || null, filteredContent);
     }
 
@@ -305,8 +350,8 @@ export async function POST(request: NextRequest) {
       message: filteredContent,
       sessionId: session.id,
       mode: session.mode,
-      loadBalanced: aiResult.loadBalanced,
-      provider: aiResult.provider,
+      loadBalanced: finalLoadBalanced,
+      provider: finalProvider,
       usageInfo: userId ? await (async () => {
         const u = await db.user.findUnique({ where: { id: userId } });
         return u ? getUserUsageInfo(u) : null;

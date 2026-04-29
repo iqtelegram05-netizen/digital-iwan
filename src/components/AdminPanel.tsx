@@ -42,6 +42,9 @@ import {
   Server,
   Gauge,
   Tv,
+  Cpu,
+  TrendingUp,
+  Database,
 } from 'lucide-react';
 
 // ========== Types ==========
@@ -134,7 +137,50 @@ interface AdminAd {
   createdAt: string;
 }
 
-type AdminTab = 'keys' | 'users' | 'prayers' | 'loadbalancer' | 'ads';
+// HuggingFace types
+interface HFKeyInfo {
+  id: string;
+  fingerprint: string;
+  label: string | null;
+  model: string;
+  status: string;
+  priority: number;
+  requestCount: number;
+  successCount: number;
+  failCount: number;
+  tokensUsed: number;
+  tokensLimit: number | null;
+  lastUsedAt: string | null;
+  lastError: string | null;
+  lastErrorAt: string | null;
+  cooldownUntil: string | null;
+}
+
+interface HFStats {
+  total: number;
+  active: number;
+  cooldown: number;
+  exhausted: number;
+  disabled: number;
+  totalTokens: number;
+  totalRequests: number;
+  totalSuccess: number;
+  totalFail: number;
+  keys: HFKeyInfo[];
+}
+
+interface DailyUsageInfo {
+  date: string;
+  totalRequests: number;
+  cacheHits: number;
+  aiCalls: number;
+  hfCalls: number;
+  fallbackCalls: number;
+  failedCalls: number;
+  totalTokens: number;
+}
+
+type AdminTab = 'keys' | 'users' | 'prayers' | 'loadbalancer' | 'ads' | 'huggingface';
 
 export default function AdminPanel() {
   const { setCurrentView } = useAppStore();
@@ -195,15 +241,25 @@ export default function AdminPanel() {
   const [adLinkUrl, setAdLinkUrl] = useState('');
   const [adPriority, setAdPriority] = useState('0');
 
+  // HuggingFace state
+  const [hfStats, setHfStats] = useState<HFStats | null>(null);
+  const [dailyUsage, setDailyUsage] = useState<DailyUsageInfo | null>(null);
+  const [hfBulkTokens, setHfBulkTokens] = useState('');
+  const [hfSingleToken, setHfSingleToken] = useState('');
+  const [hfSingleLabel, setHfSingleLabel] = useState('');
+  const [hfModelError, setHfModelError] = useState<string | null>(null);
+  const [hfModelSuccess, setHfModelSuccess] = useState<string | null>(null);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [adminRes, usersRes, prayersRes, keysRes, adsRes] = await Promise.all([
+      const [adminRes, usersRes, prayersRes, keysRes, adsRes, hfRes] = await Promise.all([
         fetch('/api/admin'),
         fetch('/api/admin/users'),
         fetch('/api/prayers?all=true'),
         fetch('/api/keys'),
         fetch('/api/admin/ads'),
+        fetch('/api/hf-keys'),
       ]);
       if (adminRes.ok) setData(await adminRes.json());
       if (usersRes.ok) {
@@ -220,6 +276,11 @@ export default function AdminPanel() {
       if (adsRes.ok) {
         const adsData = await adsRes.json();
         setAdminAds(adsData.ads || []);
+      }
+      if (hfRes.ok) {
+        const hfData = await hfRes.json();
+        if (hfData.hf) setHfStats(hfData.hf);
+        if (hfData.dailyUsage) setDailyUsage(hfData.dailyUsage);
       }
     } catch {
       // silent
@@ -557,6 +618,7 @@ export default function AdminPanel() {
             { id: 'users', label: t('admin.tabs.users'), icon: Users },
             { id: 'prayers', label: t('admin.tabs.prayers'), icon: BookOpen },
             { id: 'ads', label: 'إعلانات', icon: Tv },
+            { id: 'huggingface', label: 'HuggingFace', icon: Cpu },
           ] as { id: AdminTab; label: string; icon: typeof Key }[]).map((tab) => (
             <CrystalButton
               key={tab.id}
@@ -1263,6 +1325,171 @@ export default function AdminPanel() {
             {t('admin.loadBalancer.refreshData')}
           </CrystalButton>
         </div>
+
+        {/* ========== TAB: HuggingFace ========== */}
+        {activeTab === 'huggingface' && (
+          <div className="space-y-6">
+            {/* HF Stats Overview */}
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+              {[
+                { label: 'نشط', value: hfStats?.active || 0, icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                { label: 'إصدار', value: hfStats?.disabled || 0, icon: Gauge, color: 'text-gray-500', bg: 'bg-gray-500/10' },
+                { label: 'تجميد', value: hfStats?.cooldown || 0, icon: Clock, color: 'text-red-500', bg: 'bg-red-500/10' },
+                { label: 'مستنفد', value: hfStats?.exhausted || 0, icon: AlertTriangle, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+                { label: 'إجمالي التوكن', value: (hfStats?.totalTokens || 0).toLocaleString(), icon: Database, color: 'text-primary', bg: 'bg-primary/10' },
+              ].map((s) => (
+                <Card key={s.label} className="glass-card border-primary/10">
+                  <CardContent className="p-3 text-center">
+                    <s.icon className={`w-4 h-4 mx-auto mb-1 ${s.color}`} />
+                    <p className={`text-base font-bold ${s.color}`}>{s.value}</p>
+                    <p className="text-[9px] text-muted-foreground">{s.label}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Daily Usage Monitor */}
+            <Card className="glass-card border-primary/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                  مراقب الاستهلاك اليومي
+                  <Badge variant="secondary" className="text-[10px] mr-auto">{dailyUsage?.totalRequests || 0} طلب</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 text-center">
+                  {[
+                    { label: 'كاش', value: dailyUsage?.cacheHits || 0, color: 'text-emerald-500' },
+                    { label: 'HF', value: dailyUsage?.hfCalls || 0, color: 'text-blue-500' },
+                    { label: 'احتياطي', value: dailyUsage?.fallbackCalls || 0, color: 'text-orange-500' },
+                    { label: 'فاشل', value: dailyUsage?.failedCalls || 0, color: 'text-red-500' },
+                    { label: 'AI كلي', value: dailyUsage?.aiCalls || 0, color: 'text-purple-500' },
+                    { label: 'توكن', value: (dailyUsage?.totalTokens || 0).toLocaleString(), color: 'text-primary' },
+                  ].map((s) => (
+                    <div key={s.label}>
+                      <p className={`text-sm font-bold ${s.color}`}>{s.value}</p>
+                      <p className="text-[9px] text-muted-foreground">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+                {dailyUsage && dailyUsage.totalRequests > 0 && (
+                  <div className="mt-3 h-2 rounded-full bg-card/50 overflow-hidden flex">
+                    <div className="bg-emerald-500 h-full" style={{ width: `${(dailyUsage.cacheHits / dailyUsage.totalRequests) * 100}%` }} title={`كاش: ${dailyUsage.cacheHits}`} />
+                    <div className="bg-blue-500 h-full" style={{ width: `${(dailyUsage.hfCalls / dailyUsage.totalRequests) * 100}%` }} title={`HF: ${dailyUsage.hfCalls}`} />
+                    <div className="bg-orange-500 h-full" style={{ width: `${(dailyUsage.fallbackCalls / dailyUsage.totalRequests) * 100}%` }} title={`احتياطي: ${dailyUsage.fallbackCalls}`} />
+                    <div className="bg-red-500 h-full" style={{ width: `${(dailyUsage.failedCalls / dailyUsage.totalRequests) * 100}%` }} title={`فاشل: ${dailyUsage.failedCalls}`} />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Add HF Token */}
+            <Card className="glass-card border-primary/10">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Cpu className="w-4 h-4 text-primary" />
+                    إدارة مفاتيح HuggingFace
+                    <Badge variant="secondary" className="text-[10px] mr-auto">{hfStats?.total || 0} مفتاح</Badge>
+                  </CardTitle>
+                  <div className="flex gap-2">
+                    <CrystalButton variant="outline" size="sm" className="text-[10px] gap-1 border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-600" onClick={async () => { setSaving(true); const r = await fetch('/api/hf-keys', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reactivateAll' }) }); const d = await r.json(); setSaving(false); await fetchData(); }} disabled={saving}>
+                      <RotateCcw className="w-3 h-3" />
+                      إعادة تفعيل الكل
+                    </CrystalButton>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Add Single Token */}
+                <div className="flex gap-2">
+                  <Input value={hfSingleLabel} onChange={(e) => setHfSingleLabel(e.target.value)} placeholder="تسمية (اختياري)" className="text-xs border-primary/20 bg-card/50 w-28" />
+                  <Input value={hfSingleToken} onChange={(e) => setHfSingleToken(e.target.value)} placeholder="hf_xxxxxxxxxxxxxxxxxxxxxxxx" className="text-xs border-primary/20 bg-card/50 flex-1" />
+                  <CrystalButton size="sm" className="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg" onClick={async () => { if (!hfSingleToken.trim()) return; setSaving(true); const r = await fetch('/api/hf-keys', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'add', token: hfSingleToken.trim(), label: hfSingleLabel.trim() || undefined }) }); const d = await r.json(); setHfSingleToken(''); setHfSingleLabel(''); setSaving(false); await fetchData(); }} disabled={saving || !hfSingleToken.trim()}>
+                    <Plus className="w-4 h-4" />
+                  </CrystalButton>
+                </div>
+
+                {/* Bulk Add */}
+                <div className="space-y-2">
+                  <p className="text-[10px] text-muted-foreground">أو الصق عدة مفاتيح (مفتاح واحد لكل سطر):</p>
+                  <Textarea value={hfBulkTokens} onChange={(e) => setHfBulkTokens(e.target.value)} placeholder={'hf_token_1\nhf_token_2\nhf_token_3'} className="min-h-[80px] text-xs border-primary/20 bg-card/50 resize-none" />
+                  <CrystalButton variant="outline" className="w-full text-xs gap-1 border-primary/20 hover:bg-primary/10" onClick={async () => { if (!hfBulkTokens.trim()) return; setSaving(true); const tokens = hfBulkTokens.split('\n').map(t => t.trim()).filter(t => t.length > 10); const r = await fetch('/api/hf-keys', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'bulkAdd', tokens }) }); const d = await r.json(); setHfBulkTokens(''); setSaving(false); await fetchData(); alert(`تم إضافة: ${d.added || 0} | أخطاء: ${d.errors || 0}`); }} disabled={saving || !hfBulkTokens.trim()}>
+                    <Save className="w-3 h-3" />
+                    إضافة {hfBulkTokens.split('\n').filter(t => t.trim().length > 10).length} مفتاح
+                  </CrystalButton>
+                </div>
+
+                {hfModelSuccess && <p className="text-[10px] text-emerald-500">{hfModelSuccess}</p>}
+                {hfModelError && <p className="text-[10px] text-red-500">{hfModelError}</p>}
+
+                {/* Keys List */}
+                <ScrollArea className="max-h-[300px]">
+                  <div className="space-y-2">
+                    {(!hfStats || hfStats.keys.length === 0) && <p className="text-xs text-muted-foreground text-center py-4">لا توجد مفاتيح HuggingFace بعد. أضف مفاتيح أعلاه.</p>}
+                    {hfStats?.keys.map((key) => {
+                      const statusColors: Record<string, string> = {
+                        active: 'bg-emerald-500 text-white',
+                        cooldown: 'bg-red-500 text-white',
+                        exhausted: 'bg-orange-500 text-white',
+                        disabled: 'bg-gray-500 text-white',
+                      };
+                      const statusLabels: Record<string, string> = {
+                        active: 'نشط',
+                        cooldown: 'مجمد',
+                        exhausted: 'مستنفد',
+                        disabled: 'معطل',
+                      };
+                      const successRate = key.requestCount > 0 ? Math.round((key.successCount / key.requestCount) * 100) : 100;
+                      const barColor = successRate >= 90 ? 'bg-emerald-500' : successRate >= 70 ? 'bg-yellow-500' : 'bg-red-500';
+
+                      return (
+                        <motion.div key={key.id} className="p-3 rounded-xl bg-card/50 border border-border/30 space-y-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                <Cpu className="w-3 h-3 text-primary" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-[11px] font-medium truncate">{key.label || key.fingerprint}</p>
+                                <p className="text-[9px] text-muted-foreground">{key.model.split('/').pop()}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <Badge variant="secondary" className={`text-[9px] px-1.5 py-0.5 ${statusColors[key.status] || statusColors.disabled}`}>{statusLabels[key.status] || key.status}</Badge>
+                              <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70 hover:text-destructive" onClick={async () => { if (!confirm('حذف هذا المفتاح؟')) return; await fetch(`/api/hf-keys?keyId=${key.id}`, { method: 'DELETE' }); await fetchData(); }}>
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          {/* Success Rate Bar */}
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-1.5 rounded-full bg-card/80 overflow-hidden">
+                              <div className={`h-full ${barColor} rounded-full transition-all`} style={{ width: `${successRate}%` }} />
+                            </div>
+                            <span className="text-[9px] text-muted-foreground shrink-0">{successRate}%</span>
+                          </div>
+                          {/* Stats Row */}
+                          <div className="flex items-center gap-3 text-[9px] text-muted-foreground">
+                            <span>طلبات: {key.requestCount}</span>
+                            <span>نجاح: {key.successCount}</span>
+                            <span>فشل: {key.failCount}</span>
+                            <span>توكن: {key.tokensUsed.toLocaleString()}</span>
+                            {key.lastError && <span className="text-red-400 truncate max-w-[120px]" title={key.lastError}>{key.lastError.slice(0, 30)}</span>}
+                          </div>
+                          {key.cooldownUntil && new Date(key.cooldownUntil) > new Date() && (
+                            <p className="text-[9px] text-orange-400">مجمد حتى: {new Date(key.cooldownUntil).toLocaleTimeString('ar')}</p>
+                          )}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </motion.div>
     </div>
   );
