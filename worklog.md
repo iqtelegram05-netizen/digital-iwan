@@ -548,3 +548,35 @@ Stage Summary:
 - Free hf_xxx tokens should now work with Qwen/Qwen2.5-7B-Instruct
 - System deployed to https://digital-iwan.vercel.app
 - User needs to add valid hf_xxx tokens via admin panel for system to work
+---
+Task ID: 5
+Agent: Main Agent
+Task: Rewrite compass page with Absolute Orientation system (deviceorientationabsolute + iOS permission + HTTPS check)
+
+Work Log:
+- Read existing compass page at src/app/qibla/page.tsx and QiblaCompass.tsx
+- Analyzed current implementation using regular deviceorientation event
+- Identified issues: no deviceorientationabsolute support, no HTTPS check, button not prominent
+- Rewrote src/app/qibla/page.tsx with complete Absolute Orientation system:
+  1. Added HTTPS check with alert before attempting compass activation
+  2. Added DeviceOrientation API support check with alert
+  3. Added DeviceOrientationEvent.requestPermission() for iOS 13+
+  4. Added Geolocation API support check with alert
+  5. Primary listener: deviceorientationabsolute (Android magnetic sensor - absolute heading)
+  6. Secondary listener: deviceorientation (iOS webkitCompassHeading + Android absolute fallback)
+  7. Added 4-second timeout to detect if no heading received (sensor not available)
+  8. Added prominent 160px circular activation button with pulse animation
+  9. Added proper cleanup function via useRef for event listeners
+  10. Added compass heading display (phone direction vs Qibla direction)
+  11. Added permission denied state with retry button
+  12. Added compass active status indicator with "Absolute Orientation" label
+  13. Improved arrow transition speed (0.15s when active for smooth real-time tracking)
+- Committed and deployed to Vercel production
+
+Stage Summary:
+- Compass now uses Absolute Orientation API (deviceorientationabsolute) for Android magnetic sensor
+- iOS permission request properly handled via DeviceOrientationEvent.requestPermission()
+- Clear alerts shown for: no HTTPS, no sensor support, permission denied
+- Large prominent activation button (160px circle with pulse animation) in center of screen
+- All event listeners properly cleaned up on unmount
+- Deployed to: https://digital-iwan.vercel.app/qibla
