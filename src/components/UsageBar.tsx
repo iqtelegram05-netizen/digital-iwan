@@ -2,7 +2,8 @@
 
 import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAppStore, type UsageInfo } from '@/store/appStore';
+import { useAppStore } from '@/store/appStore';
+import type { UsageInfoData } from '@/lib/usageLimit';
 import { Tv, Gift, Crown, X } from 'lucide-react';
 import CrystalButton from './CrystalButton';
 
@@ -24,7 +25,7 @@ export default function UsageBar() {
     try {
       const res = await fetch(`/api/usage?userId=${user.id}`);
       if (res.ok) {
-        const data: UsageInfo = await res.json();
+        const data: UsageInfoData = await res.json();
         setUsageInfo(data);
       }
     } catch {

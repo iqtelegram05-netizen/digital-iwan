@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { UsageInfoData } from '@/lib/usageLimit';
 
 export type View = 'splash' | 'chat' | 'debate' | 'teacher' | 'research' | 'quiz' | 'profile' | 'admin' | 'reader';
 export type ChatMode = 'chat' | 'debate' | 'teacher' | 'research';
@@ -39,28 +40,6 @@ export interface UserProfile {
   role: string;
   isBlocked: boolean;
   lastLogin: string | null;
-  // Usage fields
-  messagesUsed?: number;
-  bonusMessages?: number;
-  subscriptionExpiry?: string | null;
-  isPremium?: boolean;
-}
-
-export interface UsageInfo {
-  messagesUsed: number;
-  freeLimit: number;
-  freeRemaining: number;
-  bonusMessages: number;
-  isPremium: boolean;
-  subscriptionExpiry: string | null;
-  adsWatchedToday: number;
-  adsProgress: number;
-  adsUntilBonus: number;
-  ADS_FOR_BONUS: number;
-  BONUS_MESSAGES: number;
-  SUBSCRIPTION_PRICE: number;
-  canSend: boolean;
-  isAdmin: boolean;
 }
 
 interface AppState {
@@ -106,8 +85,8 @@ interface AppState {
   setUser: (user: UserProfile | null) => void;
 
   // Usage tracking
-  usageInfo: UsageInfo | null;
-  setUsageInfo: (info: UsageInfo | null) => void;
+  usageInfo: UsageInfoData | null;
+  setUsageInfo: (info: UsageInfoData | null) => void;
   limitReachedModal: boolean;
   setLimitReachedModal: (open: boolean) => void;
   showAdReward: boolean;

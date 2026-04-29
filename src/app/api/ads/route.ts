@@ -1,22 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { ADS_FOR_BONUS, BONUS_MESSAGES } from '../usage/route';
+import { ADS_FOR_BONUS, BONUS_MESSAGES } from '@/lib/usageLimit';
 
 /**
- * GET: Get available ads (for display to users)
+ * GET: Get available ads
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const activeAds = await db.ad.findMany({
-      where: { isActive: true },
-      orderBy: { priority: 'desc' },
-    });
-
-    // Increment impressions for all shown ads
-    await db.ad.updateMany({
-      where: { isActive: true },
-      data: { impressions: { increment: 1 } },
-    });
+    let activeAds = [];
+    try {
+      activeAds = await db.ad.findMany({
+        where: { isActive: true },
+        orderBy: { priority: 'desc' },
+      });
+      // Increment impressions
+      if (activeAds.length > 0) {
+        await db.ad.updateMany({
+          where: { isActive: true },
+          data: { impressions: { increment: 1 } },
+        }).catch(() => {});
+      }
+    } catch {
+      // Table might not exist yet - return empty
+    }
 
     return NextResponse.json({
       ads: activeAds.map(ad => ({
@@ -37,7 +43,6 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST: Record that user watched an ad
- * After every ADS_FOR_BONUS ads, user gets BONUS_MESSAGES
  */
 export async function POST(request: NextRequest) {
   try {
@@ -53,21 +58,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'المستخدم غير موجود' }, { status: 404 });
     }
 
-    // Increment ad click
+    // Record ad click
     if (adId) {
-      await db.ad.update({
-        where: { id: adId },
-        data: { clicks: { increment: 1 } },
-      });
+      try {
+        await db.ad.update({
+          where: { id: adId },
+          data: { clicks: { increment: 1 } },
+        }).catch(() => {});
+      } catch {
+        // Ad table might not exist
+      }
     }
 
-    // Reset daily counter if new day
+    // Update user ad stats
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const lastAdDate = user.lastAdDate ? new Date(user.lastAdDate) : null;
     const isNewDay = !lastAdDate || lastAdDate < today;
-
     const todayCount = isNewDay ? 1 : (user.adsWatchedToday || 0) + 1;
+
+    const totalWatched = (user.adsWatchedTotal || 0) + 1;
+    const bonusEarned = totalWatched % ADS_FOR_BONUS === 0;
 
     const updateData: any = {
       adsWatchedToday: todayCount,
@@ -75,16 +86,8 @@ export async function POST(request: NextRequest) {
       lastAdDate: new Date(),
     };
 
-    // Check if user earned bonus (every ADS_FOR_BONUS ads)
-    let bonusEarned = false;
-    const totalBeforeThis = isNewDay ? 0 : (user.adsWatchedToday || 0);
-    const newTotal = totalBeforeThis + 1;
-
-    // Use total (not daily) for bonus calculation - more consistent
-    const totalWatched = (user.adsWatchedTotal || 0) + 1;
-    if (totalWatched % ADS_FOR_BONUS === 0) {
+    if (bonusEarned) {
       updateData.bonusMessages = { increment: BONUS_MESSAGES };
-      bonusEarned = true;
     }
 
     const updatedUser = await db.user.update({

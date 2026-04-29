@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { SUBSCRIPTION_PRICE } from '../usage/route';
+import { SUBSCRIPTION_PRICE } from '@/lib/usageLimit';
 
 /**
- * Create a subscription checkout session
- * For now: manual payment verification (owner confirms)
- * Can be upgraded to Stripe/PayPal later
+ * Create a subscription request (manual payment)
  */
 export async function POST(request: NextRequest) {
   try {
@@ -21,32 +19,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'المستخدم غير موجود' }, { status: 404 });
     }
 
-    // Generate a pending subscription record
     const subscriptionId = `sub_${Date.now()}_${user.id.slice(0, 8)}`;
 
-    // For manual payment: generate payment info
-    if (paymentMethod === 'manual') {
-      return NextResponse.json({
-        success: true,
-        subscriptionId,
-        price: SUBSCRIPTION_PRICE,
-        currency: 'USD',
-        message: 'تم إنشاء طلب الاشتراك. تواصل مع المالك لإتمام الدفع.',
-        paymentInfo: {
-          price: `$${SUBSCRIPTION_PRICE}`,
-          duration: 'شهر واحد',
-          benefits: 'رسائل غير محدودة لمدة شهر كامل',
-        },
-      });
-    }
-
-    // Future: Stripe integration
-    // if (paymentMethod === 'stripe') {
-    //   const session = await stripe.checkout.sessions.create({...});
-    //   return NextResponse.json({ url: session.url });
-    // }
-
-    return NextResponse.json({ error: 'طريقة الدفع غير مدعومة' }, { status: 400 });
+    return NextResponse.json({
+      success: true,
+      subscriptionId,
+      price: SUBSCRIPTION_PRICE,
+      currency: 'USD',
+      message: 'تم إنشاء طلب الاشتراك. تواصل مع المالك لإتمام الدفع.',
+      paymentInfo: {
+        price: `$${SUBSCRIPTION_PRICE}`,
+        duration: 'شهر واحد',
+        benefits: 'رسائل غير محدودة لمدة شهر كامل',
+      },
+    });
   } catch (error) {
     console.error('Subscription error:', error);
     return NextResponse.json({ error: 'خطأ في إنشاء الاشتراك' }, { status: 500 });
@@ -91,7 +77,6 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { userId, ownerCode } = body;
 
-    // Verify owner
     if (ownerCode !== 'qalamadmin2024') {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 403 });
     }
@@ -100,7 +85,6 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'معرف المستخدم مطلوب' }, { status: 400 });
     }
 
-    // Activate subscription for 30 days
     const expiry = new Date();
     expiry.setDate(expiry.getDate() + 30);
 
@@ -108,7 +92,7 @@ export async function PUT(request: NextRequest) {
       where: { id: userId },
       data: {
         subscriptionExpiry: expiry,
-        messagesUsed: 0, // Reset counter
+        messagesUsed: 0,
       },
     });
 

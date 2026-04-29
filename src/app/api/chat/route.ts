@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { callAI, ChatMessage } from '@/lib/aiProvider';
 import { filterArabicText } from '@/lib/arabicFilter';
-import { canUserSend, getUserUsageInfo } from '@/app/api/usage/route';
+import { canUserSend, getUserUsageInfo } from '@/lib/usageLimit';
 
 // Catch unhandled errors to prevent process crash
 if (typeof process !== 'undefined') {
