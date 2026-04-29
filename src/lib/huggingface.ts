@@ -239,10 +239,8 @@ async function callHuggingFaceAPI(
   const timeoutId = setTimeout(() => controller.abort(), HF_TIMEOUT);
 
   try {
-    // Build prompt in Qwen chat format
-    const prompt = `<|im_start|>system\n${systemPrompt}<|im_end|>\n<|im_start|>user\n${userMessage}<|im_end|>\n<|im_start|>assistant\n`;
-
-    const url = `https://api-inference.huggingface.co/models/${keyInfo.model}`;
+    // Use HF Router (OpenAI-compatible endpoint) — old /models/ endpoint returns 404
+    const url = 'https://router.huggingface.co/hf-inference/v1/chat/completions';
     const res = await fetch(url, {
       method: 'POST',
       headers: {
@@ -250,18 +248,14 @@ async function callHuggingFaceAPI(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: maxTokens,
-          temperature,
-          return_full_text: false,
-          do_sample: true,
-          top_p: 0.9,
-        },
-        options: {
-          wait_for_model: true, // Wait if model is loading
-          use_cache: true, // Use HF server-side cache
-        },
+        model: keyInfo.model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage },
+        ],
+        max_tokens: maxTokens,
+        temperature,
+        top_p: 0.9,
       }),
       signal: controller.signal,
     });
@@ -275,16 +269,17 @@ async function callHuggingFaceAPI(
 
     const data = await res.json();
 
-    // HF Inference API returns array or single object
+    // OpenAI-compatible response: { choices: [{ message: { content } }], usage: { prompt_tokens, completion_tokens, total_tokens } }
     let content = '';
     let tokensUsed = 0;
 
-    if (Array.isArray(data)) {
-      content = data[0]?.generated_text || '';
-      tokensUsed = data[0]?.token_count || estimateTokens(userMessage) + estimateTokens(content);
-    } else if (typeof data === 'object') {
-      content = data.generated_text || data[0]?.generated_text || '';
-      tokensUsed = data.token_count || estimateTokens(userMessage) + estimateTokens(content);
+    if (data.choices && Array.isArray(data.choices) && data.choices.length > 0) {
+      content = data.choices[0].message?.content || data.choices[0].text || '';
+    }
+    if (data.usage) {
+      tokensUsed = data.usage.total_tokens || estimateTokens(userMessage) + estimateTokens(content);
+    } else {
+      tokensUsed = estimateTokens(userMessage) + estimateTokens(content);
     }
 
     return { content, tokensUsed };
