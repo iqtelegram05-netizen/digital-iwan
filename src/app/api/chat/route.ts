@@ -14,53 +14,17 @@ if (typeof process !== 'undefined') {
   });
 }
 
-const ARABIC_ONLY_RULE = `
-\n╔══════════════════════════════════════════════════════════╗
-║  قاعدة ذهبية ثابتة - العبودية للعربية فقط                ║
-║  لا تُخالف هذه القاعدة تحت أي ظرف                        ║
-╚══════════════════════════════════════════════════════════╝
-
-حكم مطلق: إجابتك يجب أن تكون باللغة العربية الفصحى حصرياً.
-
-🚫 محظور تماماً:
-- أي كلمة إنجليزية (ranging, concept, theory, logic, reason, proof, evidence, argument, definition, example, meaning, approach, framework, perspective, domain, structure, process, function, mechanism, etc.)
-- أي حرف لاتيني (a-z, A-Z) وسط الكلام العربي
-- أي كلمة فرنسية أو فارسية أو تركية أو أوردو
-- كتابة المصطلح الأجنبي بين قوسين بعد الترجمة
-- الخلط بين لغتين في نفس الجملة
-
-✅ الصواب:
-- اكتب المعنى بالعربية فقط: "مفهوم المدى" لا "مفهوم ranging"
-- "البرهان" لا "proof"، "الحجة" لا "argument"
-- "النظرية" لا "theory"، "المنطق" لا "logic"
-- "الدليل" لا "evidence"، "التعريف" لا "definition"
-- "المنهج" لا "approach"، "المنظور" لا "perspective"
-
-تذكّر: حتى كلمة واحدة أجنبية تُفسد النص كله. فكّر بالعربية، اكتب بالعربية، أجب بالعربية فقط.`;
+// Compact Arabic-only rule (~150 tokens instead of ~400)
+const AR = `\nأجب بالعربية الفصحى حصرياً. لا تستخدم أي كلمة أجنبية أو لاتينية. ترجم كل مصطلح: proof=برهان،theory=نظرية،logic=منطق،evidence=دليل،argument=حجة،definition=تعريف،concept=مفهوم،approach=منهج،framework=إطار،perspective=منظور. لا تكتب الكلمة الأجنبية أبداً حتى بين قوسين.`;
 
 const SYSTEM_PROMPTS: Record<string, string> = {
-  chat: `أنت مساعد ذكي متخصص في العلوم الإسلامية واللغة العربية والفلسفة والمنطق والفقه. تقدم إجابات مدروسة ودقيقة. عندما يتم تحديد عالم معين، استشهد بمنهجه وآرائه.${ARABIC_ONLY_RULE}`,
+  chat: `أنت مساعد ذكي متخصص في العلوم الإسلامية واللغة العربية والفلسفة والمنطق والفقه. تقدم إجابات مدروسة ودقيقة. عندما يتم تحديد عالم معين، استشهد بمنهجه وآرائه.${AR}`,
 
-  debate: `أنت محاور رقمي ماهر ومتخصص في العلوم الإسلامية. مهامك:
-1. أنت محاور محايد لا ينتسب لأي مذهب أو عالم معين.
-2. عندما يقدم المستخدم ادعاءً أو حجة، قم بتحليلها من جميع الجوانب.
-3. اعرض آراء مختلف العلماء والمذاهب الإسلامية حول الموضوع بشكل متوازن ومنصف.
-4. استخدم الأدلة القرآنية والحديثية والفقهية والمنطقية.
-5. كن محترمًا ولكن شاملًا في تحليلاتك، وعرض الإشكالات والحجج المضادة.
-6. لا تتحيز لرأي عالم على حساب آخر، بل اعرض الرأي الأقوى بالدليل.
-7. ساعد في تعزيز فهم المستخدم باختبار حججه وتقديم بدائل فكرية.${ARABIC_ONLY_RULE}`,
+  debate: `أنت محاور رقمي ماهر متخصص في العلوم الإسلامية. محايد لا ينتسب لمذهب. حلل الحجج من جميع الجوانب واعرض آراء العلماء والمذاهب بإنصاف. استخدم الأدلة القرآنية والحديثية والفقهية.${AR}`,
 
-  teacher: `أنت معلم خبير يستطيع شرح أي موضوع معقد (خاصة في العقيدة، الفلسفة، المنطق، الفقه، النحو) بطريقة بسيطة جدًا يفهمها طفل في العاشرة من عمره. استخدم لغة بسيطة وأمثلة مألوفة وشرحًا خطوة بخطوة. اجعل المفاهيم الصعبة تبدو سهلة وطبيعية.${ARABIC_ONLY_RULE}`,
+  teacher: `أنت معلم خبير يشرح أي موضوع معقد (عقيدة، فلسفة، منطق، فقه، نحو) بطريقة بسيطة يفهمها طفل. استخدم لغة بسيطة وأمثلة مألوفة وشرح خطوة بخطوة.${AR}`,
 
-  research: `أنت باحث إسلامي متخصص في البحث الخارج. مهامك:
-1. أنت لا تقتصر على آراء عالم واحد بل تبحث في مصادر متعددة.
-2. عندما يسألك المستخدم عن حكم أو موضوع، اعرض آراء مختلف العلماء والمذاهب الإسلامية بشكل شامل.
-3. استشهد بالآيات القرآنية والأحاديث النبوية وآراء علماء السلف والخلف من مختلف المذاهب.
-4. قدم الروايات والأحاديث المتعلقة بالموضوع مع ذكر مصادرها (الكتب، الأبواب، الأرقام).
-5. اذكر الإجماع والخلاف في المسائل الفقهية والعقائدية مع نسبة كل قول لقائله.
-6. اعتمد على المصادر الأصلية: القرآن الكريم، الكتب الحديثية الستة والمسانيد، كتب التفسير المعتمدة، كتب الفقه المقارن.
-7. كن دقيقًا في النقل وموثوقًا في المصادر، واذكر درجة الحديث إذا كان ذلك مهمًا.
-8. لا تتحيز لرأي على حساب آخر، بل اعرض ما قاله كل عالم مع الدليل.${ARABIC_ONLY_RULE}`,
+  research: `أنت باحث إسلامي متخصص في البحث الخارج. اعرض آراء مختلف العلماء والمذاهب بشمولية مع ذكر المصادر والروايات والأحاديث. كن دقيقاً في النقل واذكر درجة الحديث.${AR}`,
 };
 
 interface ChatRequestBody {
@@ -68,7 +32,7 @@ interface ChatRequestBody {
   sessionId?: string;
   mode?: 'chat' | 'debate' | 'teacher' | 'research';
   scholar?: string;
-  userId?: string; // for usage tracking
+  userId?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -94,21 +58,16 @@ export async function POST(request: NextRequest) {
     if (userId) {
       const user = await db.user.findUnique({ where: { id: userId } });
       if (user) {
-        // Auto-reset daily counter if 24h passed
         const isPremium = user.role === 'owner' || user.role === 'supervisor' ||
           (user.subscriptionExpiry && new Date(user.subscriptionExpiry) > new Date());
 
         if (!isPremium && needsDailyReset(user.lastMessageResetDate)) {
           await db.user.update({
             where: { id: userId },
-            data: {
-              messagesUsed: 0,
-              lastMessageResetDate: new Date(),
-            },
+            data: { messagesUsed: 0, lastMessageResetDate: new Date() },
           });
         }
 
-        // Re-fetch after potential reset
         const freshUser = await db.user.findUnique({ where: { id: userId } });
         if (freshUser && !canUserSend(freshUser)) {
           const usageInfo = getUserUsageInfo(freshUser);
@@ -119,21 +78,16 @@ export async function POST(request: NextRequest) {
           }, { status: 403 });
         }
 
-        // Deduct usage after successful send
         if (freshUser && freshUser.role !== 'owner' && freshUser.role !== 'supervisor') {
           const freshPremium = freshUser.subscriptionExpiry && new Date(freshUser.subscriptionExpiry) > new Date();
           if (!freshPremium) {
             if (freshUser.bonusMessages > 0) {
               await db.user.update({ where: { id: userId }, data: { bonusMessages: { decrement: 1 } } });
             } else {
-              // Ensure lastMessageResetDate is set on first message
               const resetDate = freshUser.lastMessageResetDate || new Date();
               await db.user.update({
                 where: { id: userId },
-                data: {
-                  messagesUsed: { increment: 1 },
-                  lastMessageResetDate: resetDate,
-                },
+                data: { messagesUsed: { increment: 1 }, lastMessageResetDate: resetDate },
               });
             }
           }
@@ -144,24 +98,13 @@ export async function POST(request: NextRequest) {
     // Build system prompt
     let systemPrompt = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS.chat;
 
-    // Add scholar context for chat and teacher modes
-    // In debate and research modes, scholars are NOT forced - the AI presents multiple views
+    // Add scholar context (compact)
     if (scholar && (mode === 'chat' || mode === 'teacher')) {
-      // Check if this is a custom scholar (not in the default list)
-      const defaultScholars = [
-        'السيد السيستاني',
-        'السيد كمال الحيدري',
-        'السيد القزويني',
-        'السيد محمد صادق الصدر',
-        'الشيخ بشير النجفي',
-        'السيد الشيرازي',
-      ];
-
+      const defaultScholars = ['السيد السيستاني','السيد كمال الحيدري','السيد القزويني','السيد محمد صادق الصدر','الشيخ بشير النجفي','السيد الشيرازي'];
       if (!defaultScholars.includes(scholar)) {
-        // Custom scholar: AI should research and respond based on that scholar's views
-        systemPrompt += `\n\nالمستخدم يريد البحث عن آراء العالم: "${scholar}". هذا العالم ليس من القائمة الافتراضية. مهمتك:\n1. ابحث عن هذا العالم واستعرض آراءه ومنهجه في الموضوع المطروح.\n2. إذا كنت تعرف عنه معلومات، استشهد بآرائه وكتبه.\n3. إذا لم تكن متأكدًا من آرائه بالضبط، قدم ما تعرفه مع التنبيه بذلك.\n4. لا تضف هذا العالم للقائمة الرسمية - هو مجرد استفسار مؤقت.`;
+        systemPrompt += `\nابحث عن آراء العالم "${scholar}" واستعرض منهجه.`;
       } else {
-        systemPrompt += `\n\nيرجى صياغة إجاباتك وفق منهج وآراء العالم: ${scholar}. استشهد بآرائه وفتاواه وكتبه عند الإمكان.`;
+        systemPrompt += `\nصغ إجاباتك وفق منهج العالم: ${scholar}.`;
       }
     }
 
@@ -170,31 +113,22 @@ export async function POST(request: NextRequest) {
     if (sessionId) {
       session = await db.chatSession.findUnique({ where: { id: sessionId } });
     }
-
     if (!session) {
       session = await db.chatSession.create({
-        data: {
-          mode,
-          scholar: scholar || null,
-          title: message.slice(0, 60),
-        },
+        data: { mode, scholar: scholar || null, title: message.slice(0, 60) },
       });
     }
 
     // Store user message
     await db.message.create({
-      data: {
-        sessionId: session.id,
-        role: 'user',
-        content: message,
-      },
+      data: { sessionId: session.id, role: 'user', content: message },
     });
 
-    // Fetch previous messages for context (last 10)
+    // Fetch only last 4 messages for context (saves ~50% tokens)
     const previousMessages = await db.message.findMany({
       where: { sessionId: session.id },
       orderBy: { createdAt: 'asc' },
-      take: 11,
+      take: 5,
     });
 
     // Build message history
@@ -206,35 +140,29 @@ export async function POST(request: NextRequest) {
       })),
     ];
 
-    // Call AI via load balancer / direct provider
+    // Call AI
     let aiResult;
     try {
       aiResult = await callAI(apiMessages, {
         temperature: mode === 'debate' ? 0.7 : 0.8,
-        maxTokens: 2048,
+        maxTokens: 1024,
       });
     } catch (aiError) {
       console.error('AI Provider Error:', aiError);
       const errMsg = aiError instanceof Error ? aiError.message : String(aiError);
       aiResult = {
-        content: `عذرًا، حدث خطأ في الاتصال بمزود الخدمة: ${errMsg.slice(0, 100)}. يرجى المحاولة مرة أخرى أو تغيير المفتاح.`,
+        content: `عذرًا، حدث خطأ: ${errMsg.slice(0, 100)}. يرجى المحاولة مرة أخرى.`,
         provider: 'Error',
         tokensUsed: 0,
         loadBalanced: false,
       };
     }
 
-    // Apply Arabic text filter to remove non-Arabic words
     const filteredContent = filterArabicText(aiResult.content);
 
-    // Store assistant message (filtered version)
     try {
       await db.message.create({
-        data: {
-          sessionId: session.id,
-          role: 'assistant',
-          content: filteredContent,
-        },
+        data: { sessionId: session.id, role: 'assistant', content: filteredContent },
       });
     } catch (dbErr) {
       console.error('Failed to store message:', dbErr);
@@ -253,10 +181,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Chat API Error:', error);
-    return NextResponse.json(
-      { error: 'حدث خطأ أثناء معالجة طلبك' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'حدث خطأ أثناء معالجة طلبك' }, { status: 500 });
   }
 }
 
@@ -272,9 +197,7 @@ export async function GET(request: NextRequest) {
 
     const session = await db.chatSession.findUnique({
       where: { id: sessionId },
-      include: {
-        messages: { orderBy: { createdAt: 'asc' } },
-      },
+      include: { messages: { orderBy: { createdAt: 'asc' } } },
     });
 
     if (!session) {
