@@ -9,7 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 import { BookOpen, Compass, Mic, Calendar, Clock } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import QiblaCompass from './QiblaCompass';
+// QiblaCompass moved to standalone page at /qibla
 import { type ReaderItem } from '@/store/appStore';
 import { useTranslation } from '@/i18n/useTranslation';
 import { isRTL } from '@/i18n/languages';
@@ -143,11 +143,16 @@ export default function SideDrawer() {
           </SheetDescription>
         </SheetHeader>
 
-        <Tabs defaultValue="prayers" className="flex-1 min-h-0 flex flex-col" dir="rtl">
+        <Tabs defaultValue="prayers" className="flex-1 min-h-0 flex flex-col" dir="rtl" onValueChange={(val) => {
+          if (val === 'qibla') {
+            // Navigate to dedicated Qibla page instead of showing inline
+            window.location.href = '/qibla';
+          }
+        }}>
           <TabsList className="w-full grid grid-cols-4 p-1 m-3 rounded-xl bg-muted/50 h-auto">
             {[
               { value: 'prayers', label: t('tabs.prayers'), icon: BookOpen },
-              { value: 'qibla', label: t('tabs.qibla'), icon: Compass },
+              { value: 'qibla', label: t('tabs.qibla'), icon: Compass, isExternal: true, href: '/qibla' },
               { value: 'sermons', label: t('tabs.sermons'), icon: Mic },
               { value: 'events', label: t('tabs.events'), icon: Calendar },
             ].map((tab) => (
@@ -194,9 +199,12 @@ export default function SideDrawer() {
               )}
             </TabsContent>
 
-            {/* Qibla Tab */}
+            {/* Qibla - opens dedicated page */}
             <TabsContent value="qibla" className="mt-0">
-              <QiblaCompass />
+              <div className="flex flex-col items-center justify-center py-8 gap-3">
+                <Compass className="w-10 h-10 text-primary animate-pulse" />
+                <p className="text-sm text-muted-foreground">جارٍ فتح بوصلة القبلة...</p>
+              </div>
             </TabsContent>
 
             {/* Sermons Tab */}

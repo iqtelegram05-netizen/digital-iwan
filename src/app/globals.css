@@ -518,7 +518,7 @@
 }
 
 /* ========================================
-   Compass Styles
+   Compass Styles (Qibla Page)
    ======================================== */
 
 .compass-ring {
@@ -533,6 +533,121 @@
 .compass-mark {
   color: #0ea5e9;
   font-weight: bold;
+}
+
+/* === Standalone Qibla Compass Page === */
+.compass-wrapper {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle, #ffffff 0%, #f0f4f8 60%, #e2e8f0 100%);
+  box-shadow:
+    0 0 0 4px rgba(14, 165, 233, 0.15),
+    0 0 0 8px rgba(14, 165, 233, 0.08),
+    0 0 30px rgba(14, 165, 233, 0.1),
+    inset 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.dark .compass-wrapper {
+  background: radial-gradient(circle, #1e293b 0%, #0f172a 60%, #020617 100%);
+  box-shadow:
+    0 0 0 4px rgba(14, 165, 233, 0.2),
+    0 0 0 8px rgba(14, 165, 233, 0.1),
+    0 0 40px rgba(14, 165, 233, 0.15),
+    inset 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.compass-outer-ring {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  border: 2px solid rgba(14, 165, 233, 0.12);
+}
+
+.compass-degree-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.compass-tick {
+  position: absolute;
+  border-radius: 1px;
+}
+
+/* Compass Arrow */
+.compass-arrow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 120px;
+  z-index: 20;
+}
+
+.arrow-north {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 60px solid #ef4444;
+  filter: drop-shadow(0 2px 4px rgba(239, 68, 68, 0.3));
+}
+
+.arrow-south {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 55px solid #94a3b8;
+  opacity: 0.5;
+}
+
+.compass-center-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #0ea5e9;
+  box-shadow: 0 0 8px rgba(14, 165, 233, 0.5), 0 0 20px rgba(14, 165, 233, 0.2);
+  z-index: 30;
+}
+
+/* Qibla Marker */
+.compass-qibla-marker {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform-origin: center center;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.compass-qibla-icon {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
 }
 
 /* ========================================
