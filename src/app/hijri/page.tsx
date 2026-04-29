@@ -274,7 +274,7 @@ export default function HijriCalendarPage() {
   const goPrevWeek = useCallback(() => setWeekOffset(o => o - 1), []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-primary/5 flex flex-col">
+    <div className="h-[100dvh] bg-gradient-to-b from-background via-background to-primary/5 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="sticky top-0 z-50 flex items-center gap-2 px-3 py-3 bg-background/80 backdrop-blur-lg border-b border-primary/10">
         <button onClick={() => window.history.back()} className="p-2 rounded-full hover:bg-primary/10 transition-colors shrink-0">
