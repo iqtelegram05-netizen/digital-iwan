@@ -17,6 +17,7 @@ export default function UsageBar() {
     showAdReward,
     setShowAdReward,
     lastAdRewardMsg,
+    setLastAdRewardMsg,
     setCurrentView,
   } = useAppStore();
 
