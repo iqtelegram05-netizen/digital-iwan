@@ -15,7 +15,12 @@
     "prayers": "Dualar",
     "qibla": "Kıble",
     "sermons": "Hutbeler",
-    "events": "Etkinlikler"
+    "events": "Etkinlikler",
+    "iwan": "İwan",
+    "debater": "Münazirci",
+    "teacher": "Öğretmen",
+    "quiz": "Sınav",
+    "profile": "Profil"
   },
   "prayers": {
     "title": "Dualar",
@@ -30,7 +35,18 @@
   },
   "events": {
     "title": "Hicri Takvim Etkinlikleri",
-    "countdown": "Sonraki etkinliğin geri sayımı burada görünecek"
+    "countdown": "Sonraki etkinliğin geri sayımı burada görünecek",
+    "hijriNewYear": "Hicri Yeni Yıl",
+    "ashura": "Aşure - İmam Hüseyin'in (AS) Şehadeti",
+    "arbaeen": "İmam Hüseyin'in (AS) Arbaeini",
+    "prophetBirth": "Hz. Muhammed'in (SAV) ve İmam Sadık'ın (AS) Doğumu",
+    "mabath": "Peygamber'in Tebliği (Meb'az)",
+    "mahdiBirth": "İmam Mehdi'nin (AJ) Doğumu",
+    "aliStrike": "İmam Ali'nin (AS) Darbesi",
+    "aliMartyrdom": "İmam Ali'nin (AS) Şehadeti",
+    "laylatAlQadr": "Kadir Gecesi (Leyle-i Kadir)",
+    "eidAlGhadir": "Gadir Hum Bayramı",
+    "months": ["", "Muharrem", "Safer", "Rebiülevvel", "Rebiülahir", "Cemaziyelevvel", "Cemaziyelahir", "Recep", "Şaban", "Ramazan", "Şevval", "Zilkade", "Zilhicce"]
   },
   "chat": {
     "scientificIwan": "Bilimsel İvan",
@@ -133,6 +149,8 @@
     "showLess": "Daha Az",
     "textColor": "Metin Rengi",
     "fontSize": "Yazı Boyutu",
+    "noText": "Metin seçilmedi",
+    "back": "Geri",
     "colors": {
       "default": "Varsayılan",
       "warm": "Sıcak",
@@ -164,19 +182,121 @@
   },
   "admin": {
     "title": "Kontrol Paneli",
-    "addPrayer": "Dua Ekle",
-    "addSermon": "Hutbe Ekle",
-    "addVisit": "Ziyaret Ekle",
+    "ownerOnly": "Yalnızca sahipler ve denetçiler için",
+    "clearData": "Verileri Temizle",
+    "back": "Geri",
+    "addPrayer": "Dua, ziyaret veya hutbe ekle",
+    "addPrayerShort": "Ekle",
     "titleField": "Başlık",
     "subtitleField": "Kısa Açıklama",
     "categoryField": "Kategori",
-    "textField": "Tam Metin",
+    "textField": "Metin...",
     "save": "Kaydet",
     "cancel": "İptal",
     "delete": "Sil",
     "edit": "Düzenle",
     "savedSuccess": "Başarıyla kaydedildi!",
-    "deleteConfirm": "Silmek istediğinizden emin misiniz?"
+    "deleteConfirm": "Silmek istediğinizden emin misiniz?",
+    "tabs": {
+      "loadBalancer": "Load Balancer",
+      "keysAndLinks": "Keys & Links",
+      "users": "Users",
+      "prayers": "Supplications & Sermons"
+    },
+    "ragLinks": {
+      "title": "Knowledge Base Links (RAG)",
+      "link": "link",
+      "noLinks": "No links yet",
+      "addPlaceholder": "https://example.com/knowledge"
+    },
+    "apiKeys": {
+      "title": "API Keys (10 slots)",
+      "active": "Active",
+      "waiting": "Waiting",
+      "consumed": "Consumed",
+      "addSwap": "Add / Swap Key",
+      "keyName": "Key Name",
+      "keyValue": "API Key Value",
+      "existing": "(exists)",
+      "empty": "(empty)",
+      "keyN": "Key {n}"
+    },
+    "usersMgmt": {
+      "title": "Registered Users",
+      "userN": "user",
+      "noUsers": "No registered users yet",
+      "noName": "No name",
+      "registered": "Registered:",
+      "logins": "Logins:",
+      "times": "times",
+      "lastLogin": "Last login:",
+      "unblock": "Unblock",
+      "block": "Block",
+      "promote": "Promote",
+      "banned": "Banned"
+    },
+    "roles": {
+      "owner": "Owner",
+      "supervisor": "Supervisor",
+      "user": "User"
+    },
+    "prayersMgmt": {
+      "title": "Added Supplications, Visits, and Sermons",
+      "itemN": "item",
+      "noItems": "No items added yet",
+      "draft": "Draft",
+      "categoryPrayer": "Supplication",
+      "categoryVisit": "Visit",
+      "categorySermon": "Sermon"
+    },
+    "loadBalancer": {
+      "activeKeys": "Active",
+      "standbyKeys": "Standby",
+      "cooldownKeys": "Cooldown",
+      "exhaustedKeys": "Exhausted",
+      "totalKeys": "Total Keys",
+      "totalRequests": "Total Requests",
+      "tokensUsed": "Tokens Used",
+      "addKeys": "Add Keys",
+      "pasteBulk": "Paste Bulk",
+      "manualAdd": "Manual Add",
+      "reactivateAll": "Reactivate All",
+      "deleteAll": "Delete All",
+      "autoSave": "Auto Add",
+      "autoDetect": "Provider is auto-detected from the key format and encrypted before saving",
+      "pressPaste": "Press \"Paste Bulk\" to add multiple keys at once",
+      "disabled": "Disabled",
+      "keyN": "key",
+      "connectionError": "Connection error",
+      "deleteError": "Delete error",
+      "confirmDelete": "Are you sure?",
+      "confirmClearAll": "Are you sure you want to delete all supplications, visits, sermons, and API keys?\nThis action cannot be undone.",
+      "clearResult": "Clear Result",
+      "clearResultCopied": "Clear Result (copied)",
+      "bulkPlaceholder": "Paste API keys here...\nYou can paste multiple keys separated by newline or comma\nProvider type will be auto-detected (Gemini, Groq, DeepSeek, OpenAI, OpenRouter)",
+      "noKeys": "No keys",
+      "requests": "Requests",
+      "minutesShort": "m",
+      "refreshData": "Refresh Data"
+    }
+  },
+  "footer": {
+    "text": "Geliştiren:"
+  },
+  "qibla": {
+    "north": "Kuzey",
+    "northEast": "Kuzeydoğu",
+    "east": "Doğu",
+    "southEast": "Güneydoğu",
+    "south": "Güney",
+    "southWest": "Güneybatı",
+    "west": "Batı",
+    "northWest": "Kuzeybatı",
+    "calculating": "Yön belirleniyor...",
+    "locationError": "Konumunuza erişilemiyor. Lütfen konum servislerini etkinleştirin.",
+    "calculationError": "Kıble yönü hesaplanırken bir hata oluştu.",
+    "retry": "Tekrar Dene",
+    "compassLabels": ["K", "D", "G", "B"]
   },
   "common": {
     "loading": "Yükleniyor...",

@@ -15,7 +15,12 @@
     "prayers": "祈り",
     "qibla": "キブラ",
     "sermons": "説教",
-    "events": "イベント"
+    "events": "イベント",
+    "iwan": "イワン",
+    "debater": "討論者",
+    "teacher": "教師",
+    "quiz": "テスト",
+    "profile": "プロフィール"
   },
   "prayers": {
     "title": "祈り",
@@ -30,7 +35,18 @@
   },
   "events": {
     "title": "ヒジュラ暦イベント",
-    "countdown": "次のイベントまでのカウントダウンがここに表示されます"
+    "countdown": "次のイベントまでのカウントダウンがここに表示されます",
+    "hijriNewYear": "ヒジュラ新年",
+    "ashura": "アーシューラー - イマーム・フセイン（AS）の殉教",
+    "arbaeen": "イマーム・フセイン（AS）のアルバーウィーン",
+    "prophetBirth": "預言者ムハンマド（PBUH）とイマーム・サーディク（AS）の誕生",
+    "mabath": "預言者の使命（マバアス）",
+    "mahdiBirth": "イマーム・マフディー（AJ）の誕生",
+    "aliStrike": "イマーム・アリー（AS）の打撃",
+    "aliMartyrdom": "イマーム・アリー（AS）の殉教",
+    "laylatAlQadr": "運命の夜（ライラト・アル・カドル）",
+    "eidAlGhadir": "イード・アル・ガディール",
+    "months": ["", "ムハッラム", "サファル", "ラビー・アル・アウワル", "ラビー・アッ＝サーニー", "ジュマーダ・アル・ウーラー", "ジュマーダ・アッ＝サーニーヤ", "ラジャブ", "シャアバーン", "ラマダーン", "シャウワール", "ズー・アル＝カアダ", "ズー・アル＝ヒッジャ"]
   },
   "chat": {
     "scientificIwan": "科学イワーン",
@@ -133,6 +149,8 @@
     "showLess": "少なく見る",
     "textColor": "テキストの色",
     "fontSize": "フォントサイズ",
+    "noText": "テキストが選択されていません",
+    "back": "戻る",
     "colors": {
       "default": "デフォルト",
       "warm": "暖色",
@@ -164,19 +182,121 @@
   },
   "admin": {
     "title": "管理パネル",
-    "addPrayer": "祈りを追加",
-    "addSermon": "説教を追加",
-    "addVisit": "訪問を追加",
+    "ownerOnly": "オーナーと管理者のみ",
+    "clearData": "データをクリア",
+    "back": "戻る",
+    "addPrayer": "祈り、訪問、または説教を追加",
+    "addPrayerShort": "追加",
     "titleField": "タイトル",
     "subtitleField": "短い説明",
     "categoryField": "カテゴリー",
-    "textField": "全文",
+    "textField": "テキスト...",
     "save": "保存",
     "cancel": "キャンセル",
     "delete": "削除",
     "edit": "編集",
     "savedSuccess": "保存成功！",
-    "deleteConfirm": "本当に削除しますか？"
+    "deleteConfirm": "本当に削除しますか？",
+    "tabs": {
+      "loadBalancer": "Load Balancer",
+      "keysAndLinks": "Keys & Links",
+      "users": "Users",
+      "prayers": "Supplications & Sermons"
+    },
+    "ragLinks": {
+      "title": "Knowledge Base Links (RAG)",
+      "link": "link",
+      "noLinks": "No links yet",
+      "addPlaceholder": "https://example.com/knowledge"
+    },
+    "apiKeys": {
+      "title": "API Keys (10 slots)",
+      "active": "Active",
+      "waiting": "Waiting",
+      "consumed": "Consumed",
+      "addSwap": "Add / Swap Key",
+      "keyName": "Key Name",
+      "keyValue": "API Key Value",
+      "existing": "(exists)",
+      "empty": "(empty)",
+      "keyN": "Key {n}"
+    },
+    "usersMgmt": {
+      "title": "Registered Users",
+      "userN": "user",
+      "noUsers": "No registered users yet",
+      "noName": "No name",
+      "registered": "Registered:",
+      "logins": "Logins:",
+      "times": "times",
+      "lastLogin": "Last login:",
+      "unblock": "Unblock",
+      "block": "Block",
+      "promote": "Promote",
+      "banned": "Banned"
+    },
+    "roles": {
+      "owner": "Owner",
+      "supervisor": "Supervisor",
+      "user": "User"
+    },
+    "prayersMgmt": {
+      "title": "Added Supplications, Visits, and Sermons",
+      "itemN": "item",
+      "noItems": "No items added yet",
+      "draft": "Draft",
+      "categoryPrayer": "Supplication",
+      "categoryVisit": "Visit",
+      "categorySermon": "Sermon"
+    },
+    "loadBalancer": {
+      "activeKeys": "Active",
+      "standbyKeys": "Standby",
+      "cooldownKeys": "Cooldown",
+      "exhaustedKeys": "Exhausted",
+      "totalKeys": "Total Keys",
+      "totalRequests": "Total Requests",
+      "tokensUsed": "Tokens Used",
+      "addKeys": "Add Keys",
+      "pasteBulk": "Paste Bulk",
+      "manualAdd": "Manual Add",
+      "reactivateAll": "Reactivate All",
+      "deleteAll": "Delete All",
+      "autoSave": "Auto Add",
+      "autoDetect": "Provider is auto-detected from the key format and encrypted before saving",
+      "pressPaste": "Press \"Paste Bulk\" to add multiple keys at once",
+      "disabled": "Disabled",
+      "keyN": "key",
+      "connectionError": "Connection error",
+      "deleteError": "Delete error",
+      "confirmDelete": "Are you sure?",
+      "confirmClearAll": "Are you sure you want to delete all supplications, visits, sermons, and API keys?\nThis action cannot be undone.",
+      "clearResult": "Clear Result",
+      "clearResultCopied": "Clear Result (copied)",
+      "bulkPlaceholder": "Paste API keys here...\nYou can paste multiple keys separated by newline or comma\nProvider type will be auto-detected (Gemini, Groq, DeepSeek, OpenAI, OpenRouter)",
+      "noKeys": "No keys",
+      "requests": "Requests",
+      "minutesShort": "m",
+      "refreshData": "Refresh Data"
+    }
+  },
+  "footer": {
+    "text": "開発"
+  },
+  "qibla": {
+    "north": "北",
+    "northEast": "北東",
+    "east": "東",
+    "southEast": "南東",
+    "south": "南",
+    "southWest": "南西",
+    "west": "西",
+    "northWest": "北西",
+    "calculating": "方向を測定中...",
+    "locationError": "位置情報にアクセスできません。位置情報サービスを有効にしてください。",
+    "calculationError": "キブラの方向の計算中にエラーが発生しました。",
+    "retry": "再試行",
+    "compassLabels": ["北", "東", "南", "西"]
   },
   "common": {
     "loading": "読み込み中...",

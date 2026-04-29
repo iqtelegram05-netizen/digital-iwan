@@ -35,7 +35,18 @@
   },
   "events": {
     "title": "Hijri Calendar Events",
-    "countdown": "Countdown to the next event will appear here"
+    "countdown": "Countdown to the next event will appear here",
+    "hijriNewYear": "Hijri New Year",
+    "ashura": "Ashura - Martyrdom of Imam Hussein (AS)",
+    "arbaeen": "Arbaeen of Imam Hussein (AS)",
+    "prophetBirth": "Birth of Prophet Muhammad (PBUH) and Imam Sadiq (AS)",
+    "mabath": "Prophet's Mission (Mabath)",
+    "mahdiBirth": "Birth of Imam Mahdi (AJ)",
+    "aliStrike": "Imam Ali's Strike (AS)",
+    "aliMartyrdom": "Martyrdom of Imam Ali (AS)",
+    "laylatAlQadr": "Night of Decree (Laylat al-Qadr)",
+    "eidAlGhadir": "Eid al-Ghadir",
+    "months": ["", "Muharram", "Safar", "Rabi al-Awwal", "Rabi al-Thani", "Jumada al-Ula", "Jumada al-Thania", "Rajab", "Sha'ban", "Ramadan", "Shawwal", "Dhu al-Qi'dah", "Dhu al-Hijjah"]
   },
   "chat": {
     "scientificIwan": "Scientific Iwan",

@@ -14,24 +14,18 @@ import { type ReaderItem } from '@/store/appStore';
 import { useTranslation } from '@/i18n/useTranslation';
 import { isRTL } from '@/i18n/languages';
 
-// ========== EVENTS DATA ==========
+// ========== EVENTS DATA (month/day only - titles come from translations) ==========
 const HIJRI_EVENTS = [
-  { month: 1, day: 1, title: 'رأس السنة الهجرية', color: 'bg-sky-500' },
-  { month: 1, day: 10, title: 'عاشوراء - استشهاد الإمام الحسين (ع)', color: 'bg-red-600' },
-  { month: 2, day: 20, title: 'أربعينية الحسين (ع)', color: 'bg-red-600' },
-  { month: 3, day: 17, title: 'مولد النبي محمد (ص) والإمام الصادق (ع)', color: 'bg-sky-500' },
-  { month: 7, day: 27, title: 'المبعث النبوي', color: 'bg-sky-500' },
-  { month: 8, day: 15, title: 'مولد الإمام المهدي (عج)', color: 'bg-sky-500' },
-  { month: 9, day: 19, title: 'ضربة الإمام علي (ع)', color: 'bg-yellow-600' },
-  { month: 9, day: 21, title: 'شهادة الإمام علي (ع)', color: 'bg-red-600' },
-  { month: 9, day: 27, title: 'ليلة القدر', color: 'bg-blue-500' },
-  { month: 12, day: 18, title: 'عيد الغدير الأغر', color: 'bg-sky-500' },
-];
-
-const MONTH_NAMES = [
-  '', 'محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني',
-  'جمادى الأولى', 'جمادى الآخرة', 'رجب', 'شعبان',
-  'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة',
+  { month: 1, day: 1, titleKey: 'events.hijriNewYear', color: 'bg-sky-500' },
+  { month: 1, day: 10, titleKey: 'events.ashura', color: 'bg-red-600' },
+  { month: 2, day: 20, titleKey: 'events.arbaeen', color: 'bg-red-600' },
+  { month: 3, day: 17, titleKey: 'events.prophetBirth', color: 'bg-sky-500' },
+  { month: 7, day: 27, titleKey: 'events.mabath', color: 'bg-sky-500' },
+  { month: 8, day: 15, titleKey: 'events.mahdiBirth', color: 'bg-sky-500' },
+  { month: 9, day: 19, titleKey: 'events.aliStrike', color: 'bg-yellow-600' },
+  { month: 9, day: 21, titleKey: 'events.aliMartyrdom', color: 'bg-red-600' },
+  { month: 9, day: 27, titleKey: 'events.laylatAlQadr', color: 'bg-blue-500' },
+  { month: 12, day: 18, titleKey: 'events.eidAlGhadir', color: 'bg-sky-500' },
 ];
 
 interface PrayerItem {
@@ -96,9 +90,10 @@ export default function SideDrawer() {
   const { sheetOpen, setSheetOpen, openReader } = useAppStore();
   const [prayers, setPrayers] = useState<PrayerItem[]>([]);
   const [prayersLoading, setPrayersLoading] = useState(true);
-  const { t, lang } = useTranslation();
+  const { t, tSection, lang } = useTranslation();
   const dir = isRTL(lang) ? 'rtl' : 'ltr';
   const side = dir === 'rtl' ? 'right' : 'right';
+  const monthNames = tSection('events.months') as string[];
 
   const fetchPrayers = useCallback(async () => {
     try {
@@ -237,9 +232,9 @@ export default function SideDrawer() {
                   >
                     <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${event.color}`} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium">{event.title}</p>
+                      <p className="text-xs font-medium">{t(event.titleKey)}</p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {event.day} {MONTH_NAMES[event.month]}
+                        {event.day} {monthNames[event.month] || ''}
                       </p>
                     </div>
                   </motion.div>

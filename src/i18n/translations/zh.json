@@ -15,7 +15,12 @@
     "prayers": "祈祷文",
     "qibla": "朝向",
     "sermons": "演讲",
-    "events": "活动"
+    "events": "活动",
+    "iwan": "演讲厅",
+    "debater": "辩论者",
+    "teacher": "教师",
+    "quiz": "测验",
+    "profile": "个人资料"
   },
   "prayers": {
     "title": "祈祷文",
@@ -30,7 +35,18 @@
   },
   "events": {
     "title": "伊斯兰历活动",
-    "countdown": "下一个活动的倒计时将显示在这里"
+    "countdown": "下一个活动的倒计时将显示在这里",
+    "hijriNewYear": "伊斯兰历新年",
+    "ashura": "阿舒拉 - 伊玛目侯赛因殉难",
+    "arbaeen": "伊玛目侯赛因四十日祭",
+    "prophetBirth": "先知穆罕默德诞辰及伊玛目萨迪格诞辰",
+    "mabath": "先知受命（穆阿特）",
+    "mahdiBirth": "伊玛目马赫迪诞辰",
+    "aliStrike": "伊玛目阿里受击",
+    "aliMartyrdom": "伊玛目阿里殉难",
+    "laylatAlQadr": "盖德尔夜",
+    "eidAlGhadir": "古德尔节",
+    "months": ["", "穆哈兰", "色法尔", "赖比尔·奥瓦尔", "赖比尔·萨尼", "朱马达·乌拉", "朱马达·萨尼亚", "赖哲布", "舍尔班", "赖买丹", "沙瓦尔", "祖勒·盖尔德", "祖勒·哈吉"]
   },
   "chat": {
     "scientificIwan": "科学伊旺",
@@ -133,6 +149,8 @@
     "showLess": "显示较少",
     "textColor": "文字颜色",
     "fontSize": "字体大小",
+    "noText": "未选择文本",
+    "back": "返回",
     "colors": {
       "default": "默认",
       "warm": "暖色",
@@ -164,19 +182,121 @@
   },
   "admin": {
     "title": "控制面板",
-    "addPrayer": "添加祈祷文",
-    "addSermon": "添加演讲",
-    "addVisit": "添加访问",
+    "ownerOnly": "仅限所有者和主管",
+    "clearData": "清除数据",
+    "back": "返回",
+    "addPrayer": "添加祈祷文、访问或演讲",
+    "addPrayerShort": "添加",
     "titleField": "标题",
     "subtitleField": "简短描述",
     "categoryField": "类别",
-    "textField": "全文",
+    "textField": "文本...",
     "save": "保存",
     "cancel": "取消",
     "delete": "删除",
     "edit": "编辑",
     "savedSuccess": "保存成功！",
-    "deleteConfirm": "确定要删除吗？"
+    "deleteConfirm": "确定要删除吗？",
+    "tabs": {
+      "loadBalancer": "Load Balancer",
+      "keysAndLinks": "Keys & Links",
+      "users": "Users",
+      "prayers": "Supplications & Sermons"
+    },
+    "ragLinks": {
+      "title": "Knowledge Base Links (RAG)",
+      "link": "link",
+      "noLinks": "No links yet",
+      "addPlaceholder": "https://example.com/knowledge"
+    },
+    "apiKeys": {
+      "title": "API Keys (10 slots)",
+      "active": "Active",
+      "waiting": "Waiting",
+      "consumed": "Consumed",
+      "addSwap": "Add / Swap Key",
+      "keyName": "Key Name",
+      "keyValue": "API Key Value",
+      "existing": "(exists)",
+      "empty": "(empty)",
+      "keyN": "Key {n}"
+    },
+    "usersMgmt": {
+      "title": "Registered Users",
+      "userN": "user",
+      "noUsers": "No registered users yet",
+      "noName": "No name",
+      "registered": "Registered:",
+      "logins": "Logins:",
+      "times": "times",
+      "lastLogin": "Last login:",
+      "unblock": "Unblock",
+      "block": "Block",
+      "promote": "Promote",
+      "banned": "Banned"
+    },
+    "roles": {
+      "owner": "Owner",
+      "supervisor": "Supervisor",
+      "user": "User"
+    },
+    "prayersMgmt": {
+      "title": "Added Supplications, Visits, and Sermons",
+      "itemN": "item",
+      "noItems": "No items added yet",
+      "draft": "Draft",
+      "categoryPrayer": "Supplication",
+      "categoryVisit": "Visit",
+      "categorySermon": "Sermon"
+    },
+    "loadBalancer": {
+      "activeKeys": "Active",
+      "standbyKeys": "Standby",
+      "cooldownKeys": "Cooldown",
+      "exhaustedKeys": "Exhausted",
+      "totalKeys": "Total Keys",
+      "totalRequests": "Total Requests",
+      "tokensUsed": "Tokens Used",
+      "addKeys": "Add Keys",
+      "pasteBulk": "Paste Bulk",
+      "manualAdd": "Manual Add",
+      "reactivateAll": "Reactivate All",
+      "deleteAll": "Delete All",
+      "autoSave": "Auto Add",
+      "autoDetect": "Provider is auto-detected from the key format and encrypted before saving",
+      "pressPaste": "Press \"Paste Bulk\" to add multiple keys at once",
+      "disabled": "Disabled",
+      "keyN": "key",
+      "connectionError": "Connection error",
+      "deleteError": "Delete error",
+      "confirmDelete": "Are you sure?",
+      "confirmClearAll": "Are you sure you want to delete all supplications, visits, sermons, and API keys?\nThis action cannot be undone.",
+      "clearResult": "Clear Result",
+      "clearResultCopied": "Clear Result (copied)",
+      "bulkPlaceholder": "Paste API keys here...\nYou can paste multiple keys separated by newline or comma\nProvider type will be auto-detected (Gemini, Groq, DeepSeek, OpenAI, OpenRouter)",
+      "noKeys": "No keys",
+      "requests": "Requests",
+      "minutesShort": "m",
+      "refreshData": "Refresh Data"
+    }
+  },
+  "footer": {
+    "text": "开发"
+  },
+  "qibla": {
+    "north": "北",
+    "northEast": "东北",
+    "east": "东",
+    "southEast": "东南",
+    "south": "南",
+    "southWest": "西南",
+    "west": "西",
+    "northWest": "西北",
+    "calculating": "确定方向中...",
+    "locationError": "无法获取您的位置。请启用定位服务。",
+    "calculationError": "计算朝向时出现错误。",
+    "retry": "重试",
+    "compassLabels": ["北", "东", "南", "西"]
   },
   "common": {
     "loading": "加载中...",

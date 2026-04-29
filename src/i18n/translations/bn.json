@@ -15,7 +15,12 @@
     "prayers": "দোয়া",
     "qibla": "কিবলা",
     "sermons": "খুতবা",
-    "events": "অনুষ্ঠান"
+    "events": "অনুষ্ঠান",
+    "iwan": "ইওয়ান",
+    "debater": "বিতার্কা",
+    "teacher": "শিক্ষক",
+    "quiz": "পরীক্ষা",
+    "profile": "প্রোফাইল"
   },
   "prayers": {
     "title": "দোয়া",
@@ -30,7 +35,18 @@
   },
   "events": {
     "title": "হিজরি ক্যালেন্ডার অনুষ্ঠান",
-    "countdown": "পরবর্তী অনুষ্ঠানের কাউন্টডাউন এখানে দেখাবে"
+    "countdown": "পরবর্তী অনুষ্ঠানের কাউন্টডাউন এখানে দেখাবে",
+    "hijriNewYear": "হিজরি নববর্ষ",
+    "ashura": "আশুরা - ইমাম হোসেন (আ.) এর শাহাদত",
+    "arbaeen": "ইমাম হোসেন (আ.) এর আরবাঈন",
+    "prophetBirth": "নবী মুহাম্মাদ (সা.) ও ইমাম সাদিক (আ.) এর জন্ম",
+    "mabath": "নবীর বেআত (মাবাআথ)",
+    "mahdiBirth": "ইমাম মাহদী (আজ.) এর জন্ম",
+    "aliStrike": "ইমাম আলী (আ.) এর আঘাত",
+    "aliMartyrdom": "ইমাম আলী (আ.) এর শাহাদত",
+    "laylatAlQadr": "শবে কদর (লাইলাতুল কদর)",
+    "eidAlGhadir": "ঈদে গাদীর",
+    "months": ["", "মুহররম", "সফর", "রবিউল আওয়াল", "রবিউস সানী", "জুমাদাল উলা", "জুমাদাস সানী", "রজব", "শাবান", "রমজান", "শাওয়াল", "জুলকিদা", "জুলহিজ্জা"]
   },
   "chat": {
     "scientificIwan": "বৈজ্ঞানিক ইওয়ান",
@@ -133,6 +149,8 @@
     "showLess": "কম দেখুন",
     "textColor": "টেক্সট রং",
     "fontSize": "ফন্ট আকার",
+    "noText": "কোনো পাঠ নির্বাচিত নয়",
+    "back": "ফিরে যান",
     "colors": {
       "default": "ডিফল্ট",
       "warm": "উষ্ণ",
@@ -164,19 +182,121 @@
   },
   "admin": {
     "title": "কন্ট্রোল প্যানেল",
-    "addPrayer": "দোয়া যোগ করুন",
-    "addSermon": "খুতবা যোগ করুন",
-    "addVisit": "জিয়ারত যোগ করুন",
+    "ownerOnly": "শুধুমাত্র মালিক এবং পর্যবেক্ষকদের জন্য",
+    "clearData": "ডেটা মুছুন",
+    "back": "ফিরে যান",
+    "addPrayer": "দোয়া, জিয়ারত বা খুতবা যোগ করুন",
+    "addPrayerShort": "যোগ করুন",
     "titleField": "শিরোনাম",
     "subtitleField": "সংক্ষিপ্ত বিবরণ",
     "categoryField": "বিভাগ",
-    "textField": "পূর্ণ পাঠ",
+    "textField": "পাঠ...",
     "save": "সংরক্ষণ",
     "cancel": "বাতিল",
     "delete": "মুছুন",
     "edit": "সম্পাদনা",
     "savedSuccess": "সফলভাবে সংরক্ষিত!",
-    "deleteConfirm": "আপনি কি মুছে ফেলতে চান?"
+    "deleteConfirm": "আপনি কি মুছে ফেলতে চান?",
+    "tabs": {
+      "loadBalancer": "Load Balancer",
+      "keysAndLinks": "Keys & Links",
+      "users": "Users",
+      "prayers": "Supplications & Sermons"
+    },
+    "ragLinks": {
+      "title": "Knowledge Base Links (RAG)",
+      "link": "link",
+      "noLinks": "No links yet",
+      "addPlaceholder": "https://example.com/knowledge"
+    },
+    "apiKeys": {
+      "title": "API Keys (10 slots)",
+      "active": "Active",
+      "waiting": "Waiting",
+      "consumed": "Consumed",
+      "addSwap": "Add / Swap Key",
+      "keyName": "Key Name",
+      "keyValue": "API Key Value",
+      "existing": "(exists)",
+      "empty": "(empty)",
+      "keyN": "Key {n}"
+    },
+    "usersMgmt": {
+      "title": "Registered Users",
+      "userN": "user",
+      "noUsers": "No registered users yet",
+      "noName": "No name",
+      "registered": "Registered:",
+      "logins": "Logins:",
+      "times": "times",
+      "lastLogin": "Last login:",
+      "unblock": "Unblock",
+      "block": "Block",
+      "promote": "Promote",
+      "banned": "Banned"
+    },
+    "roles": {
+      "owner": "Owner",
+      "supervisor": "Supervisor",
+      "user": "User"
+    },
+    "prayersMgmt": {
+      "title": "Added Supplications, Visits, and Sermons",
+      "itemN": "item",
+      "noItems": "No items added yet",
+      "draft": "Draft",
+      "categoryPrayer": "Supplication",
+      "categoryVisit": "Visit",
+      "categorySermon": "Sermon"
+    },
+    "loadBalancer": {
+      "activeKeys": "Active",
+      "standbyKeys": "Standby",
+      "cooldownKeys": "Cooldown",
+      "exhaustedKeys": "Exhausted",
+      "totalKeys": "Total Keys",
+      "totalRequests": "Total Requests",
+      "tokensUsed": "Tokens Used",
+      "addKeys": "Add Keys",
+      "pasteBulk": "Paste Bulk",
+      "manualAdd": "Manual Add",
+      "reactivateAll": "Reactivate All",
+      "deleteAll": "Delete All",
+      "autoSave": "Auto Add",
+      "autoDetect": "Provider is auto-detected from the key format and encrypted before saving",
+      "pressPaste": "Press \"Paste Bulk\" to add multiple keys at once",
+      "disabled": "Disabled",
+      "keyN": "key",
+      "connectionError": "Connection error",
+      "deleteError": "Delete error",
+      "confirmDelete": "Are you sure?",
+      "confirmClearAll": "Are you sure you want to delete all supplications, visits, sermons, and API keys?\nThis action cannot be undone.",
+      "clearResult": "Clear Result",
+      "clearResultCopied": "Clear Result (copied)",
+      "bulkPlaceholder": "Paste API keys here...\nYou can paste multiple keys separated by newline or comma\nProvider type will be auto-detected (Gemini, Groq, DeepSeek, OpenAI, OpenRouter)",
+      "noKeys": "No keys",
+      "requests": "Requests",
+      "minutesShort": "m",
+      "refreshData": "Refresh Data"
+    }
+  },
+  "footer": {
+    "text": "তৈরি করেছেন"
+  },
+  "qibla": {
+    "north": "উত্তর",
+    "northEast": "উত্তর পূর্ব",
+    "east": "পূর্ব",
+    "southEast": "দক্ষিণ পূর্ব",
+    "south": "দক্ষিণ",
+    "southWest": "দক্ষিণ পশ্চিম",
+    "west": "পশ্চিম",
+    "northWest": "উত্তর পশ্চিম",
+    "calculating": "দিক নির্ধারণ হচ্ছে...",
+    "locationError": "আপনার অবস্থান নির্ণয় করা যায়নি। অনুগ্রহ করে লোকেশন সার্ভিস সক্রিয় করুন।",
+    "calculationError": "কিবলার দিক নির্ণয়ে ত্রুটি হয়েছে।",
+    "retry": "আবার চেষ্টা করুন",
+    "compassLabels": ["উ", "পূ", "দ", "প"]
   },
   "common": {
     "loading": "লোড হচ্ছে...",

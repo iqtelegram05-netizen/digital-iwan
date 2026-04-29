@@ -15,7 +15,12 @@
     "prayers": "Invocations",
     "qibla": "Qibla",
     "sermons": "Sermons",
-    "events": "Événements"
+    "events": "Événements",
+    "iwan": "Iwan",
+    "debater": "Débateur",
+    "teacher": "Professeur",
+    "quiz": "Quiz",
+    "profile": "Profil"
   },
   "prayers": {
     "title": "Invocations",
@@ -30,7 +35,18 @@
   },
   "events": {
     "title": "Événements du Calendrier Hijri",
-    "countdown": "Le compte à rebours pour le prochain événement apparaîtra ici"
+    "countdown": "Le compte à rebours pour le prochain événement apparaîtra ici",
+    "hijriNewYear": "Nouvel An Hijri",
+    "ashura": "Achoura - Martyre de l'Imam Hussein (AS)",
+    "arbaeen": "Arbaeen de l'Imam Hussein (AS)",
+    "prophetBirth": "Naissance du Prophète Muhammad (PBUH) et de l'Imam Sadiq (AS)",
+    "mabath": "Mission du Prophète (Mabath)",
+    "mahdiBirth": "Naissance de l'Imam Mahdi (AJ)",
+    "aliStrike": "Coup d'Imam Ali (AS)",
+    "aliMartyrdom": "Martyre de l'Imam Ali (AS)",
+    "laylatAlQadr": "Nuit du Destin (Laylat al-Qadr)",
+    "eidAlGhadir": "Eid al-Ghadir",
+    "months": ["", "Mouharram", "Safar", "Rabi al-Awwal", "Rabi al-Thani", " Joumada al-Ula", " Joumada al-Thania", "Rajab", "Sha'ban", "Ramadan", "Chawwal", "Dhou al-Qi'dah", "Dhou al-Hijjah"]
   },
   "chat": {
     "scientificIwan": "Iwan Scientifique",
@@ -133,6 +149,8 @@
     "showLess": "Voir Moins",
     "textColor": "Couleur du Texte",
     "fontSize": "Taille de Police",
+    "noText": "Aucun texte sélectionné",
+    "back": "Retour",
     "colors": {
       "default": "Par défaut",
       "warm": "Chaud",
@@ -164,19 +182,121 @@
   },
   "admin": {
     "title": "Panneau de Contrôle",
-    "addPrayer": "Ajouter une Invocation",
-    "addSermon": "Ajouter un Sermon",
-    "addVisit": "Ajouter une Visite",
+    "ownerOnly": "Réservé aux propriétaires et superviseurs",
+    "clearData": "Effacer les Données",
+    "back": "Retour",
+    "addPrayer": "Ajouter invocation, visite ou sermon",
+    "addPrayerShort": "Ajouter",
     "titleField": "Titre",
     "subtitleField": "Description Courte",
     "categoryField": "Catégorie",
-    "textField": "Texte Complet",
+    "textField": "Texte...",
     "save": "Enregistrer",
     "cancel": "Annuler",
     "delete": "Supprimer",
     "edit": "Modifier",
     "savedSuccess": "Enregistré avec succès !",
-    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ?"
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ?",
+    "tabs": {
+      "loadBalancer": "Équilibreur de Charge",
+      "keysAndLinks": "Clés et Liens",
+      "users": "Utilisateurs",
+      "prayers": "Invocations et Sermons"
+    },
+    "ragLinks": {
+      "title": "Liens de la Base de Connaissances (RAG)",
+      "link": "lien",
+      "noLinks": "Aucun lien",
+      "addPlaceholder": "https://example.com/connaissance"
+    },
+    "apiKeys": {
+      "title": "Clés API (10 emplacements)",
+      "active": "Active",
+      "waiting": "En attente",
+      "consumed": "Consommée",
+      "addSwap": "Ajouter / Remplacer une Clé",
+      "keyName": "Nom de la Clé",
+      "keyValue": "Valeur de la Clé API",
+      "existing": "(existe)",
+      "empty": "(vide)",
+      "keyN": "Clé {n}"
+    },
+    "usersMgmt": {
+      "title": "Utilisateurs Enregistrés",
+      "userN": "utilisateur",
+      "noUsers": "Aucun utilisateur enregistré",
+      "noName": "Sans nom",
+      "registered": "Inscrit :",
+      "logins": "Connexions :",
+      "times": "fois",
+      "lastLogin": "Dernière connexion :",
+      "unblock": "Débloquer",
+      "block": "Bloquer",
+      "promote": "Promouvoir",
+      "banned": "Banni"
+    },
+    "roles": {
+      "owner": "Propriétaire",
+      "supervisor": "Superviseur",
+      "user": "Utilisateur"
+    },
+    "prayersMgmt": {
+      "title": "Invocations, Visites et Sermons Ajoutés",
+      "itemN": "élément",
+      "noItems": "Aucun élément ajouté",
+      "draft": "Brouillon",
+      "categoryPrayer": "Invocation",
+      "categoryVisit": "Visite",
+      "categorySermon": "Sermon"
+    },
+    "loadBalancer": {
+      "activeKeys": "Actives",
+      "standbyKeys": "En attente",
+      "cooldownKeys": "Refroidissement",
+      "exhaustedKeys": "Épuisées",
+      "totalKeys": "Total des Clés",
+      "totalRequests": "Total des Requêtes",
+      "tokensUsed": "Jetons Utilisés",
+      "addKeys": "Ajouter des Clés",
+      "pasteBulk": "Coller en Masse",
+      "manualAdd": "Ajout Manuel",
+      "reactivateAll": "Tout Réactiver",
+      "deleteAll": "Tout Supprimer",
+      "autoSave": "Ajout Auto",
+      "autoDetect": "Le fournisseur est détecté automatiquement à partir du format de la clé et crypté avant l'enregistrement",
+      "pressPaste": "Appuyez sur \"Coller en Masse\" pour ajouter plusieurs clés à la fois",
+      "disabled": "Désactivé",
+      "keyN": "clé",
+      "connectionError": "Erreur de connexion",
+      "deleteError": "Erreur de suppression",
+      "confirmDelete": "Êtes-vous sûr ?",
+      "confirmClearAll": "Êtes-vous sûr de vouloir supprimer toutes les invocations, visites, sermons et clés API ?\nCette action est irréversible.",
+      "clearResult": "Résultat de l'Effacement",
+      "clearResultCopied": "Résultat de l'Effacement (copié)",
+      "bulkPlaceholder": "Collez les clés API ici...\nVous pouvez coller plusieurs clés séparées par un saut de ligne ou une virgule\nLe type de fournisseur sera détecté automatiquement (Gemini, Groq, DeepSeek, OpenAI, OpenRouter)",
+      "noKeys": "Aucune clé",
+      "requests": "Requêtes",
+      "minutesShort": "m",
+      "refreshData": "Actualiser les Données"
+    }
+  },
+  "footer": {
+    "text": "Développé par"
+  },
+  "qibla": {
+    "north": "Nord",
+    "northEast": "Nord-Est",
+    "east": "Est",
+    "southEast": "Sud-Est",
+    "south": "Sud",
+    "southWest": "Sud-Ouest",
+    "west": "Ouest",
+    "northWest": "Nord-Ouest",
+    "calculating": "Détermination de la direction...",
+    "locationError": "Impossible d'accéder à votre position. Veuillez activer les services de localisation.",
+    "calculationError": "Erreur lors du calcul de la direction de la Qibla.",
+    "retry": "Réessayer",
+    "compassLabels": ["N", "E", "S", "O"]
   },
   "common": {
     "loading": "Chargement...",

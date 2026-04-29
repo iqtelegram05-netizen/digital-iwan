@@ -15,7 +15,12 @@
     "prayers": "Bittgebete",
     "qibla": "Qibla",
     "sermons": "Predigten",
-    "events": "Ereignisse"
+    "events": "Ereignisse",
+    "iwan": "Iwan",
+    "debater": "Debater",
+    "teacher": "Lehrer",
+    "quiz": "Quiz",
+    "profile": "Profil"
   },
   "prayers": {
     "title": "Bittgebete",
@@ -30,7 +35,18 @@
   },
   "events": {
     "title": "Ereignisse des Hijri-Kalenders",
-    "countdown": "Der Countdown zum nächsten Ereignis wird hier angezeigt"
+    "countdown": "Der Countdown zum nächsten Ereignis wird hier angezeigt",
+    "hijriNewYear": "Hijri-Neujahr",
+    "ashura": "Ashura - Martyrium von Imam Hussein (AS)",
+    "arbaeen": "Arbaeen von Imam Hussein (AS)",
+    "prophetBirth": "Geburt des Propheten Muhammad (PBUH) und Imam Sadiq (AS)",
+    "mabath": "Mission des Propheten (Mabath)",
+    "mahdiBirth": "Geburt von Imam Mahdi (AJ)",
+    "aliStrike": "Schlag von Imam Ali (AS)",
+    "aliMartyrdom": "Martyrium von Imam Ali (AS)",
+    "laylatAlQadr": "Nacht der Bestimmung (Laylat al-Qadr)",
+    "eidAlGhadir": "Eid al-Ghadir",
+    "months": ["", "Muharram", "Safar", "Rabi al-Awwal", "Rabi al-Thani", "Dschumada al-Ula", "Dschumada al-Thania", "Radschab", "Scha'ban", "Ramadan", "Schawwal", "Dhu al-Qi'dah", "Dhu al-Hidschah"]
   },
   "chat": {
     "scientificIwan": "Wissenschaftlicher Iwan",
@@ -133,6 +149,8 @@
     "showLess": "Weniger Anzeigen",
     "textColor": "Textfarbe",
     "fontSize": "Schriftgröße",
+    "noText": "Kein Text ausgewählt",
+    "back": "Zurück",
     "colors": {
       "default": "Standard",
       "warm": "Warm",
@@ -164,19 +182,121 @@
   },
   "admin": {
     "title": "Systemsteuerung",
-    "addPrayer": "Bittgebet Hinzufügen",
-    "addSermon": "Predigt Hinzufügen",
-    "addVisit": "Besuch Hinzufügen",
+    "ownerOnly": "Nur für Eigentümer und Supervisoren",
+    "clearData": "Daten Löschen",
+    "back": "Zurück",
+    "addPrayer": "Bittgebet, Besuch oder Predigt hinzufügen",
+    "addPrayerShort": "Hinzufügen",
     "titleField": "Titel",
     "subtitleField": "Kurzbeschreibung",
     "categoryField": "Kategorie",
-    "textField": "Volltext",
+    "textField": "Text...",
     "save": "Speichern",
     "cancel": "Abbrechen",
     "delete": "Löschen",
     "edit": "Bearbeiten",
     "savedSuccess": "Erfolgreich gespeichert!",
-    "deleteConfirm": "Sind Sie sicher, dass Sie löschen möchten?"
+    "deleteConfirm": "Sind Sie sicher, dass Sie löschen möchten?",
+    "tabs": {
+      "loadBalancer": "Load Balancer",
+      "keysAndLinks": "Keys & Links",
+      "users": "Users",
+      "prayers": "Supplications & Sermons"
+    },
+    "ragLinks": {
+      "title": "Knowledge Base Links (RAG)",
+      "link": "link",
+      "noLinks": "No links yet",
+      "addPlaceholder": "https://example.com/knowledge"
+    },
+    "apiKeys": {
+      "title": "API Keys (10 slots)",
+      "active": "Active",
+      "waiting": "Waiting",
+      "consumed": "Consumed",
+      "addSwap": "Add / Swap Key",
+      "keyName": "Key Name",
+      "keyValue": "API Key Value",
+      "existing": "(exists)",
+      "empty": "(empty)",
+      "keyN": "Key {n}"
+    },
+    "usersMgmt": {
+      "title": "Registered Users",
+      "userN": "user",
+      "noUsers": "No registered users yet",
+      "noName": "No name",
+      "registered": "Registered:",
+      "logins": "Logins:",
+      "times": "times",
+      "lastLogin": "Last login:",
+      "unblock": "Unblock",
+      "block": "Block",
+      "promote": "Promote",
+      "banned": "Banned"
+    },
+    "roles": {
+      "owner": "Owner",
+      "supervisor": "Supervisor",
+      "user": "User"
+    },
+    "prayersMgmt": {
+      "title": "Added Supplications, Visits, and Sermons",
+      "itemN": "item",
+      "noItems": "No items added yet",
+      "draft": "Draft",
+      "categoryPrayer": "Supplication",
+      "categoryVisit": "Visit",
+      "categorySermon": "Sermon"
+    },
+    "loadBalancer": {
+      "activeKeys": "Active",
+      "standbyKeys": "Standby",
+      "cooldownKeys": "Cooldown",
+      "exhaustedKeys": "Exhausted",
+      "totalKeys": "Total Keys",
+      "totalRequests": "Total Requests",
+      "tokensUsed": "Tokens Used",
+      "addKeys": "Add Keys",
+      "pasteBulk": "Paste Bulk",
+      "manualAdd": "Manual Add",
+      "reactivateAll": "Reactivate All",
+      "deleteAll": "Delete All",
+      "autoSave": "Auto Add",
+      "autoDetect": "Provider is auto-detected from the key format and encrypted before saving",
+      "pressPaste": "Press \"Paste Bulk\" to add multiple keys at once",
+      "disabled": "Disabled",
+      "keyN": "key",
+      "connectionError": "Connection error",
+      "deleteError": "Delete error",
+      "confirmDelete": "Are you sure?",
+      "confirmClearAll": "Are you sure you want to delete all supplications, visits, sermons, and API keys?\nThis action cannot be undone.",
+      "clearResult": "Clear Result",
+      "clearResultCopied": "Clear Result (copied)",
+      "bulkPlaceholder": "Paste API keys here...\nYou can paste multiple keys separated by newline or comma\nProvider type will be auto-detected (Gemini, Groq, DeepSeek, OpenAI, OpenRouter)",
+      "noKeys": "No keys",
+      "requests": "Requests",
+      "minutesShort": "m",
+      "refreshData": "Refresh Data"
+    }
+  },
+  "footer": {
+    "text": "Entwickelt von"
+  },
+  "qibla": {
+    "north": "Norden",
+    "northEast": "Nordost",
+    "east": "Osten",
+    "southEast": "Südost",
+    "south": "Süden",
+    "southWest": "Südwest",
+    "west": "Westen",
+    "northWest": "Nordwest",
+    "calculating": "Richtung wird ermittelt...",
+    "locationError": "Zugriff auf Ihren Standort nicht möglich. Bitte aktivieren Sie die Standortdienste.",
+    "calculationError": "Beim Berechnen der Qibla-Richtung ist ein Fehler aufgetreten.",
+    "retry": "Erneut Versuchen",
+    "compassLabels": ["N", "O", "S", "W"]
   },
   "common": {
     "loading": "Laden...",

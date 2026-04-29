@@ -15,7 +15,12 @@
     "prayers": "دعاها",
     "qibla": "قبله",
     "sermons": "خطبه‌ها",
-    "events": "مناسبت‌ها"
+    "events": "مناسبت‌ها",
+    "iwan": "ایوان",
+    "debater": "مناظر",
+    "teacher": "استاد",
+    "quiz": "آزمون",
+    "profile": "پروفایل"
   },
   "prayers": {
     "title": "دعاها",
@@ -30,7 +35,18 @@
   },
   "events": {
     "title": "مناسبت‌های تاریخ هجری",
-    "countdown": "شمارش معکوس مناسبت بعدی اینجا نمایش داده می‌شود"
+    "countdown": "شمارش معکوس مناسبت بعدی اینجا نمایش داده می‌شود",
+    "hijriNewYear": "سال نو هجری",
+    "ashura": "عاشورا - شهادت امام حسین (ع)",
+    "arbaeen": "اربعین امام حسین (ع)",
+    "prophetBirth": "ولادت پیامبر اکرم (ص) و امام صادق (ع)",
+    "mabath": "مبعث پیامبر (مبعث)",
+    "mahdiBirth": "ولادت امام مهدی (عج)",
+    "aliStrike": "ضربت امیرالمؤمنین علی (ع)",
+    "aliMartyrdom": "شهادت امام علی (ع)",
+    "laylatAlQadr": "شب قدر (لیلة القدر)",
+    "eidAlGhadir": "عید غدیر خم",
+    "months": ["", "محرم", "صفر", "ربیع‌الاول", "ربیع‌الثانی", "جمادی‌الاولی", "جمادی‌الثانیه", "رجب", "شعبان", "رمضان", "شوال", "ذی‌القعده", "ذی‌الحجه"]
   },
   "chat": {
     "scientificIwan": "ایوان علمی",
@@ -133,6 +149,8 @@
     "showLess": "کمتر",
     "textColor": "رنگ متن",
     "fontSize": "اندازه فونت",
+    "noText": "متن انتخاب نشده",
+    "back": "بازگشت",
     "colors": {
       "default": "پیش‌فرض",
       "warm": "گرم",
@@ -164,19 +182,121 @@
   },
   "admin": {
     "title": "پنل کنترل",
-    "addPrayer": "افزودن دعا",
-    "addSermon": "افزودن خطبه",
-    "addVisit": "افزودن زیارت",
+    "ownerOnly": "فقط برای مالکان و ناظران",
+    "clearData": "پاک کردن داده‌ها",
+    "back": "بازگشت",
+    "addPrayer": "افزودن دعا، زیارت یا خطبه",
+    "addPrayerShort": "افزودن",
     "titleField": "عنوان",
     "subtitleField": "توضیح کوتاه",
     "categoryField": "دسته‌بندی",
-    "textField": "متن کامل",
+    "textField": "متن...",
     "save": "ذخیره",
     "cancel": "لغو",
     "delete": "حذف",
     "edit": "ویرایش",
     "savedSuccess": "با موفقیت ذخیره شد!",
-    "deleteConfirm": "آیا مطمئن هستید که می‌خواهید حذف کنید؟"
+    "deleteConfirm": "آیا مطمئن هستید که می‌خواهید حذف کنید؟",
+    "tabs": {
+      "loadBalancer": "Load Balancer",
+      "keysAndLinks": "Keys & Links",
+      "users": "Users",
+      "prayers": "Supplications & Sermons"
+    },
+    "ragLinks": {
+      "title": "Knowledge Base Links (RAG)",
+      "link": "link",
+      "noLinks": "No links yet",
+      "addPlaceholder": "https://example.com/knowledge"
+    },
+    "apiKeys": {
+      "title": "API Keys (10 slots)",
+      "active": "Active",
+      "waiting": "Waiting",
+      "consumed": "Consumed",
+      "addSwap": "Add / Swap Key",
+      "keyName": "Key Name",
+      "keyValue": "API Key Value",
+      "existing": "(exists)",
+      "empty": "(empty)",
+      "keyN": "Key {n}"
+    },
+    "usersMgmt": {
+      "title": "Registered Users",
+      "userN": "user",
+      "noUsers": "No registered users yet",
+      "noName": "No name",
+      "registered": "Registered:",
+      "logins": "Logins:",
+      "times": "times",
+      "lastLogin": "Last login:",
+      "unblock": "Unblock",
+      "block": "Block",
+      "promote": "Promote",
+      "banned": "Banned"
+    },
+    "roles": {
+      "owner": "Owner",
+      "supervisor": "Supervisor",
+      "user": "User"
+    },
+    "prayersMgmt": {
+      "title": "Added Supplications, Visits, and Sermons",
+      "itemN": "item",
+      "noItems": "No items added yet",
+      "draft": "Draft",
+      "categoryPrayer": "Supplication",
+      "categoryVisit": "Visit",
+      "categorySermon": "Sermon"
+    },
+    "loadBalancer": {
+      "activeKeys": "Active",
+      "standbyKeys": "Standby",
+      "cooldownKeys": "Cooldown",
+      "exhaustedKeys": "Exhausted",
+      "totalKeys": "Total Keys",
+      "totalRequests": "Total Requests",
+      "tokensUsed": "Tokens Used",
+      "addKeys": "Add Keys",
+      "pasteBulk": "Paste Bulk",
+      "manualAdd": "Manual Add",
+      "reactivateAll": "Reactivate All",
+      "deleteAll": "Delete All",
+      "autoSave": "Auto Add",
+      "autoDetect": "Provider is auto-detected from the key format and encrypted before saving",
+      "pressPaste": "Press \"Paste Bulk\" to add multiple keys at once",
+      "disabled": "Disabled",
+      "keyN": "key",
+      "connectionError": "Connection error",
+      "deleteError": "Delete error",
+      "confirmDelete": "Are you sure?",
+      "confirmClearAll": "Are you sure you want to delete all supplications, visits, sermons, and API keys?\nThis action cannot be undone.",
+      "clearResult": "Clear Result",
+      "clearResultCopied": "Clear Result (copied)",
+      "bulkPlaceholder": "Paste API keys here...\nYou can paste multiple keys separated by newline or comma\nProvider type will be auto-detected (Gemini, Groq, DeepSeek, OpenAI, OpenRouter)",
+      "noKeys": "No keys",
+      "requests": "Requests",
+      "minutesShort": "m",
+      "refreshData": "Refresh Data"
+    }
+  },
+  "footer": {
+    "text": "توسعه یافته توسط"
+  },
+  "qibla": {
+    "north": "شمال",
+    "northEast": "شمال شرقی",
+    "east": "شرق",
+    "southEast": "جنوب شرقی",
+    "south": "جنوب",
+    "southWest": "جنوب غربی",
+    "west": "غرب",
+    "northWest": "شمال غربی",
+    "calculating": "در حال تعیین جهت...",
+    "locationError": "نمی‌توان به موقعیت شما دسترسی پیدا کرد. لطفاً سرویس مکان‌یاب را فعال کنید.",
+    "calculationError": "خطایی در محاسبه جهت قبله رخ داد.",
+    "retry": "تلاش مجدد",
+    "compassLabels": ["ش", "م", "ج", "غ"]
   },
   "common": {
     "loading": "در حال بارگذاری...",

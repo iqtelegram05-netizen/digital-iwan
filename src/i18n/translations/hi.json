@@ -15,7 +15,12 @@
     "prayers": "दुआएं",
     "qibla": "किबला",
     "sermons": "खुतबे",
-    "events": "कार्यक्रम"
+    "events": "कार्यक्रम",
+    "iwan": "ईवान",
+    "debater": "वादी",
+    "teacher": "शिक्षक",
+    "quiz": "परीक्षा",
+    "profile": "प्रोफ़ाइल"
   },
   "prayers": {
     "title": "दुआएं",
@@ -30,7 +35,18 @@
   },
   "events": {
     "title": "हिजरी कैलेंडर कार्यक्रम",
-    "countdown": "अगले कार्यक्रम की उल्टी गिनती यहां दिखाई देगी"
+    "countdown": "अगले कार्यक्रम की उल्टी गिनती यहां दिखाई देगी",
+    "hijriNewYear": "हिजरी नव वर्ष",
+    "ashura": "अशुरा - इमाम हुसैन (अ.स.) की शहादत",
+    "arbaeen": "इमाम हुसैन (अ.स.) का अरबाईन",
+    "prophetBirth": "पैग़ंबर मुहम्मद (स.अ.व.) और इमाम सादिक़ (अ.स.) की विलादत",
+    "mabath": "पैग़ंबर का बेअत (मबआथ)",
+    "mahdiBirth": "इमाम महदी (अ.ज.) की विलादत",
+    "aliStrike": "इमाम अली (अ.स.) का वार",
+    "aliMartyrdom": "इमाम अली (अ.स.) की शहादत",
+    "laylatAlQadr": "लैलतुल क़द्र (रातुल क़द्र)",
+    "eidAlGhadir": "ईदुल ग़दीर",
+    "months": ["", "मुहर्रम", "सफ़र", "रबीउल अव्वल", "रबीउस सानी", "जुमादाउल ऊला", "जुमादास सानी", "रजब", "शअबान", "रमज़ान", "शव्वाल", "ज़ुल क़दा", "ज़ुल हिज्जा"]
   },
   "chat": {
     "scientificIwan": "वैज्ञानिक इवान",
@@ -133,6 +149,8 @@
     "showLess": "कम देखें",
     "textColor": "पाठ रंग",
     "fontSize": "फ़ॉन्ट आकार",
+    "noText": "कोई पाठ चयनित नहीं",
+    "back": "वापस",
     "colors": {
       "default": "डिफ़ॉल्ट",
       "warm": "गर्म",
@@ -164,19 +182,121 @@
   },
   "admin": {
     "title": "कंट्रोल पैनल",
-    "addPrayer": "दुआ जोड़ें",
-    "addSermon": "खुतबा जोड़ें",
-    "addVisit": "ज़ियारत जोड़ें",
+    "ownerOnly": "केवल मालिकों और पर्यवेक्षकों के लिए",
+    "clearData": "डेटा साफ़ करें",
+    "back": "वापस",
+    "addPrayer": "दुआ, ज़ियारत या खुतबा जोड़ें",
+    "addPrayerShort": "जोड़ें",
     "titleField": "शीर्षक",
     "subtitleField": "संक्षिप्त विवरण",
     "categoryField": "श्रेणी",
-    "textField": "पूरा पाठ",
+    "textField": "पाठ...",
     "save": "सहेजें",
     "cancel": "रद्द करें",
     "delete": "हटाएं",
     "edit": "संपादित करें",
     "savedSuccess": "सफलतापूर्वक सहेजा!",
-    "deleteConfirm": "क्या आप हटाना चाहते हैं?"
+    "deleteConfirm": "क्या आप हटाना चाहते हैं?",
+    "tabs": {
+      "loadBalancer": "Load Balancer",
+      "keysAndLinks": "Keys & Links",
+      "users": "Users",
+      "prayers": "Supplications & Sermons"
+    },
+    "ragLinks": {
+      "title": "Knowledge Base Links (RAG)",
+      "link": "link",
+      "noLinks": "No links yet",
+      "addPlaceholder": "https://example.com/knowledge"
+    },
+    "apiKeys": {
+      "title": "API Keys (10 slots)",
+      "active": "Active",
+      "waiting": "Waiting",
+      "consumed": "Consumed",
+      "addSwap": "Add / Swap Key",
+      "keyName": "Key Name",
+      "keyValue": "API Key Value",
+      "existing": "(exists)",
+      "empty": "(empty)",
+      "keyN": "Key {n}"
+    },
+    "usersMgmt": {
+      "title": "Registered Users",
+      "userN": "user",
+      "noUsers": "No registered users yet",
+      "noName": "No name",
+      "registered": "Registered:",
+      "logins": "Logins:",
+      "times": "times",
+      "lastLogin": "Last login:",
+      "unblock": "Unblock",
+      "block": "Block",
+      "promote": "Promote",
+      "banned": "Banned"
+    },
+    "roles": {
+      "owner": "Owner",
+      "supervisor": "Supervisor",
+      "user": "User"
+    },
+    "prayersMgmt": {
+      "title": "Added Supplications, Visits, and Sermons",
+      "itemN": "item",
+      "noItems": "No items added yet",
+      "draft": "Draft",
+      "categoryPrayer": "Supplication",
+      "categoryVisit": "Visit",
+      "categorySermon": "Sermon"
+    },
+    "loadBalancer": {
+      "activeKeys": "Active",
+      "standbyKeys": "Standby",
+      "cooldownKeys": "Cooldown",
+      "exhaustedKeys": "Exhausted",
+      "totalKeys": "Total Keys",
+      "totalRequests": "Total Requests",
+      "tokensUsed": "Tokens Used",
+      "addKeys": "Add Keys",
+      "pasteBulk": "Paste Bulk",
+      "manualAdd": "Manual Add",
+      "reactivateAll": "Reactivate All",
+      "deleteAll": "Delete All",
+      "autoSave": "Auto Add",
+      "autoDetect": "Provider is auto-detected from the key format and encrypted before saving",
+      "pressPaste": "Press \"Paste Bulk\" to add multiple keys at once",
+      "disabled": "Disabled",
+      "keyN": "key",
+      "connectionError": "Connection error",
+      "deleteError": "Delete error",
+      "confirmDelete": "Are you sure?",
+      "confirmClearAll": "Are you sure you want to delete all supplications, visits, sermons, and API keys?\nThis action cannot be undone.",
+      "clearResult": "Clear Result",
+      "clearResultCopied": "Clear Result (copied)",
+      "bulkPlaceholder": "Paste API keys here...\nYou can paste multiple keys separated by newline or comma\nProvider type will be auto-detected (Gemini, Groq, DeepSeek, OpenAI, OpenRouter)",
+      "noKeys": "No keys",
+      "requests": "Requests",
+      "minutesShort": "m",
+      "refreshData": "Refresh Data"
+    }
+  },
+  "footer": {
+    "text": "विकसित किया गया"
+  },
+  "qibla": {
+    "north": "उत्तर",
+    "northEast": "उत्तर पूर्व",
+    "east": "पूर्व",
+    "southEast": "दक्षिण पूर्व",
+    "south": "दक्षिण",
+    "southWest": "दक्षिण पश्चिम",
+    "west": "पश्चिम",
+    "northWest": "उत्तर पश्चिम",
+    "calculating": "दिशा का निर्धारण हो रहा है...",
+    "locationError": "आपके स्थान तक पहुँच नहीं हो सकी। कृपया स्थान सेवा सक्षम करें।",
+    "calculationError": "किबला की दिशा की गणना में त्रुटि हुई।",
+    "retry": "पुनः प्रयास करें",
+    "compassLabels": ["उ", "पू", "द", "प"]
   },
   "common": {
     "loading": "लोड हो रहा है...",
