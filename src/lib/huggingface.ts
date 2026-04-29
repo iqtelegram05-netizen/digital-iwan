@@ -8,7 +8,7 @@
  */
 
 import { db } from '@/lib/db';
-import { decrypt, fingerprint as makeFP } from '@/lib/crypto';
+import { decrypt, encrypt, fingerprint as makeFP } from '@/lib/crypto';
 
 // ========== Types ==========
 export interface HFKeyInfo {
