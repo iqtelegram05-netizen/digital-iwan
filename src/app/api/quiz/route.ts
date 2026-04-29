@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import ZAI from 'z-ai-web-dev-sdk';
+import { callAI } from '@/lib/aiProvider';
 
 const CATEGORY_PROMPTS: Record<string, string> = {
   'عقائد': 'أسئلة في العقيدة الإسلامية تشمل أصول الإيمان والتوحيد وأسماء الله وصفاته والقضاء والقدر والإيمان بالملائكة والكتب والرسل واليوم الآخر',
@@ -19,7 +19,7 @@ interface QuizQuestion {
   id: string;
   question: string;
   options: string[];
-  correctAnswer: number; // index of correct option (0-3)
+  correctAnswer: number;
 }
 
 export async function POST(request: NextRequest) {
@@ -28,10 +28,7 @@ export async function POST(request: NextRequest) {
     const { category } = body;
 
     if (!category || typeof category !== 'string') {
-      return NextResponse.json(
-        { error: 'التصنيف مطلوب' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'التصنيف مطلوب' }, { status: 400 });
     }
 
     if (!VALID_CATEGORIES.includes(category)) {
@@ -59,26 +56,21 @@ export async function POST(request: NextRequest) {
 }
 حيث correctAnswer هو فهرس الإجابة الصحيحة (0، 1، 2، أو 3).`;
 
-    const zai = await ZAI.create();
-    const completion = await zai.chat.completions.create({
-      messages: [
+    // Use the shared AI provider (load balancer → direct API → ZAI fallback)
+    const aiResult = await callAI(
+      [
         { role: 'system', content: systemPrompt },
-        {
-          role: 'user',
-          content: `أنشئ 10 أسئلة اختبار في تصنيف: ${category}. الأسئلة يجب أن تكون باللغة العربية.`,
-        },
+        { role: 'user', content: `أنشئ 10 أسئلة اختبار في تصنيف: ${category}. الأسئلة يجب أن تكون باللغة العربية.` },
       ],
-      temperature: 0.8,
-      max_tokens: 4096,
-    });
+      { temperature: 0.8, maxTokens: 4096 }
+    );
 
-    const responseText = completion.choices?.[0]?.message?.content || '';
+    const responseText = aiResult.content;
 
     // Parse JSON from response
     let quizData: { questions: Array<{ question: string; options: string[]; correctAnswer: number }> };
 
     try {
-      // Try to extract JSON from the response (handle markdown code blocks)
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         quizData = JSON.parse(jsonMatch[0]);
@@ -86,7 +78,6 @@ export async function POST(request: NextRequest) {
         quizData = JSON.parse(responseText);
       }
     } catch {
-      // If parsing fails, try to fix common issues
       const cleanedText = responseText
         .replace(/```json\n?/g, '')
         .replace(/```\n?/g, '')
@@ -103,11 +94,10 @@ export async function POST(request: NextRequest) {
     const questions: QuizQuestion[] = quizData.questions.map((q, index) => ({
       id: `q_${Date.now()}_${index}`,
       question: q.question,
-      options: q.options.slice(0, 4), // Ensure exactly 4 options
+      options: q.options.slice(0, 4),
       correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
     }));
 
-    // Ensure we have exactly 10 questions
     while (questions.length < 10) {
       questions.push({
         id: `q_${Date.now()}_${questions.length}`,
@@ -121,6 +111,7 @@ export async function POST(request: NextRequest) {
       questions: questions.slice(0, 10),
       category,
       total: 10,
+      provider: aiResult.provider,
     });
   } catch (error) {
     console.error('Quiz Generation Error:', error);
@@ -131,7 +122,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET: Return available categories
 export async function GET() {
   return NextResponse.json({
     categories: VALID_CATEGORIES,

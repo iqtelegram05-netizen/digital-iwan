@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import ZAI from 'z-ai-web-dev-sdk';
-import { selectKey, reportSuccess, reportFailure } from '@/lib/loadBalancer';
+import { callAI, ChatMessage } from '@/lib/aiProvider';
 
 const SYSTEM_PROMPTS: Record<string, string> = {
   chat: `أنت مساعد ذكي متخصص في العلوم الإسلامية واللغة العربية والفلسفة والمنطق والفقه. تقدم إجابات مدروسة ودقيقة. عندما يتم تحديد عالم معين، استشهد بمنهجه وآرائه. أجب باللغة العربية.`,
@@ -18,112 +17,6 @@ interface ChatRequestBody {
   scholar?: string;
 }
 
-// ========== Provider Configuration ==========
-const PROVIDER_CONFIG: Record<string, {
-  baseUrl: string;
-  model: string;
-  headers?: Record<string, string>;
-}> = {
-  groq: {
-    baseUrl: 'https://api.groq.com/openai/v1',
-    model: 'llama-3.3-70b-versatile',
-  },
-  deepseek: {
-    baseUrl: 'https://api.deepseek.com/v1',
-    model: 'deepseek-chat',
-  },
-  openai: {
-    baseUrl: 'https://api.openai.com/v1',
-    model: 'gpt-4o-mini',
-  },
-  gemini: {
-    baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
-    model: 'gemini-2.0-flash',
-  },
-  openrouter: {
-    baseUrl: 'https://openrouter.ai/api/v1',
-    model: 'openai/gpt-4o-mini',
-  },
-};
-
-// ========== Direct API Call to Provider ==========
-async function callProviderApi(
-  provider: string,
-  apiKey: string,
-  messages: Array<{ role: string; content: string }>,
-  mode: string,
-  customBaseUrl?: string | null
-): Promise<{ content: string; tokensUsed: number }> {
-  const config = PROVIDER_CONFIG[provider];
-
-  // Use custom base URL if provided (for custom providers), otherwise use predefined config
-  const baseUrl = customBaseUrl || config?.baseUrl;
-  const model = config?.model || 'gpt-4o-mini';
-
-  if (!baseUrl) {
-    throw new Error(`Provider not supported and no custom baseUrl: ${provider}`);
-  }
-
-  const temperature = mode === 'debate' ? 0.7 : 0.8;
-
-  // ===== Gemini uses a different API format =====
-  if (provider === 'gemini') {
-    const geminiMessages = messages.map((m) => ({
-      role: m.role === 'assistant' ? 'model' : m.role,
-      parts: [{ text: m.content }],
-    }));
-
-    const url = `${baseUrl}/models/${model}:generateContent?key=${apiKey}`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: geminiMessages,
-        generationConfig: { temperature, maxOutputTokens: 2048 },
-      }),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Gemini API ${res.status}: ${errText.slice(0, 200)}`);
-    }
-
-    const data = await res.json();
-    const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    const tokensUsed = data.usageMetadata?.totalTokenCount || 0;
-    return { content, tokensUsed };
-  }
-
-  // ===== OpenAI-compatible format (Groq, DeepSeek, OpenAI, OpenRouter, custom) =====
-  const url = `${baseUrl}/chat/completions`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature,
-      max_tokens: 2048,
-    }),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`${provider} API ${res.status}: ${errText.slice(0, 200)}`);
-  }
-
-  const data = await res.json();
-  const content = data.choices?.[0]?.message?.content || '';
-  const tokensUsed = data.usage?.total_tokens || 0;
-  return { content, tokensUsed };
-}
-
-// Max retries with different keys
-const MAX_RETRIES = 3;
-
 export async function POST(request: NextRequest) {
   try {
     const body: ChatRequestBody = await request.json();
@@ -139,10 +32,7 @@ export async function POST(request: NextRequest) {
 
     const validModes = ['chat', 'debate', 'teacher'];
     if (!validModes.includes(mode)) {
-      return NextResponse.json(
-        { error: 'وضع غير صالح' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'وضع غير صالح' }, { status: 400 });
     }
 
     // Build system prompt
@@ -184,98 +74,35 @@ export async function POST(request: NextRequest) {
     });
 
     // Build message history
-    const chatHistory = previousMessages.map((msg) => ({
-      role: msg.role as 'user' | 'assistant' | 'system',
-      content: msg.content,
-    }));
-
-    // All messages for the API call
-    const apiMessages = [
+    const apiMessages: ChatMessage[] = [
       { role: 'system', content: systemPrompt },
-      ...chatHistory,
+      ...previousMessages.map((msg) => ({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+      })),
     ];
 
-    // ===== LOAD BALANCER: Try with API keys directly =====
-    let aiResponse = '';
-    let usedKey = false;
-    let lastError = '';
-    let usedProvider = '';
-
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      const selectedKey = await selectKey();
-
-      if (!selectedKey) {
-        break;
-      }
-
-      const providerName = selectedKey.provider;
-
-      try {
-        console.log(`[LoadBalancer] Attempt ${attempt + 1}: Using ${selectedKey.providerLabel} key (${selectedKey.fingerprint})`);
-
-        const result = await callProviderApi(
-          providerName,
-          selectedKey.decryptedKey,
-          apiMessages,
-          mode,
-          selectedKey.providerBaseUrl
-        );
-
-        if (result.content) {
-          aiResponse = result.content;
-          await reportSuccess(selectedKey.id, result.tokensUsed);
-          usedKey = true;
-          usedProvider = selectedKey.providerLabel;
-          console.log(`[LoadBalancer] Success: ${selectedKey.providerLabel} (${result.tokensUsed} tokens)`);
-          break;
-        }
-      } catch (err: unknown) {
-        lastError = err instanceof Error ? err.message : String(err);
-        console.error(`[LoadBalancer] Failed: ${selectedKey.providerLabel} - ${lastError}`);
-        const result = await reportFailure(selectedKey.id, lastError, 'retry');
-
-        if (!result.shouldRetry || !result.nextKey) {
-          break;
-        }
-      }
-    }
-
-    // Fallback: use default ZAI if no keys worked
-    if (!aiResponse) {
-      try {
-        console.log('[LoadBalancer] Fallback to ZAI default');
-        const zai = await ZAI.create();
-        const completion = await zai.chat.completions.create({
-          messages: apiMessages,
-          temperature: mode === 'debate' ? 0.7 : 0.8,
-          max_tokens: 2048,
-        });
-        aiResponse = completion.choices?.[0]?.message?.content || 'عذرًا، لم أتمكن من توليد إجابة.';
-        usedProvider = 'Z.ai Default';
-      } catch (err) {
-        const errMsg = err instanceof Error ? err.message : String(err);
-        console.error('[LoadBalancer] ZAI fallback also failed:', errMsg);
-        aiResponse = lastError
-          ? `عذرًا، حدث خطأ في الخدمة: ${lastError.slice(0, 100)}`
-          : 'عذرًا، لم أتمكن من توليد إجابة. يرجى المحاولة لاحقاً.';
-      }
-    }
+    // Call AI via load balancer / direct provider
+    const aiResult = await callAI(apiMessages, {
+      temperature: mode === 'debate' ? 0.7 : 0.8,
+      maxTokens: 2048,
+    });
 
     // Store assistant message
     await db.message.create({
       data: {
         sessionId: session.id,
         role: 'assistant',
-        content: aiResponse,
+        content: aiResult.content,
       },
     });
 
     return NextResponse.json({
-      message: aiResponse,
+      message: aiResult.content,
       sessionId: session.id,
       mode: session.mode,
-      loadBalanced: usedKey,
-      provider: usedProvider,
+      loadBalanced: aiResult.loadBalanced,
+      provider: aiResult.provider,
     });
   } catch (error) {
     console.error('Chat API Error:', error);

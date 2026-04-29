@@ -430,3 +430,28 @@ Stage Summary:
 - Supports custom base URLs for custom providers
 - Falls back to ZAI default when no load balancer keys are available
 - Added logging for debugging load balancer decisions
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix "Configuration file not found or invalid" - same problem persists
+
+Work Log:
+- Root cause: z-ai-web-dev-sdk ZAI.create() requires .z-ai-config file to exist
+- Even with .z-ai-config present, the SDK could fail if config format is wrong or file missing in production
+- Solution: Created shared AI provider module that does NOT depend on SDK
+- Created `/home/z/my-project/src/lib/aiProvider.ts`:
+  - Direct API calls to Groq, DeepSeek, OpenAI, Gemini, OpenRouter
+  - Uses load balancer to select keys
+  - Falls back to ZAI SDK only if all keys fail (with try/catch - won't crash)
+  - If everything fails, returns a user-friendly message instead of crashing
+- Updated `src/app/api/chat/route.ts` to use callAI() from aiProvider
+- Updated `src/app/api/quiz/route.ts` to use callAI() from aiProvider
+- Removed all direct ZAI.create() imports from API routes
+- Build succeeded with no errors
+
+Stage Summary:
+- App NO LONGER requires .z-ai-config to function
+- When user adds Groq API key via admin panel, it's used directly via fetch()
+- ZAI SDK is only a graceful fallback, wrapped in try/catch
+- Error "Configuration file not found or invalid" should no longer appear
