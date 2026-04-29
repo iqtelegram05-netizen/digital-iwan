@@ -175,8 +175,8 @@ export default function Home() {
 
             {/* Bottom Tab Bar - hidden in reader view */}
             {!isReaderView && (
-            <nav className="sticky bottom-0 z-30 glass-card border-t border-border/20">
-              <div className="flex items-center justify-around px-0.5 py-0.5 max-w-2xl mx-auto">
+            <nav className="sticky bottom-0 z-30 glass-card border-t border-border/20 shrink-0">
+              <div className="flex items-center justify-around px-1 py-0.5 max-w-2xl mx-auto overflow-hidden">
                 {TABS.map((tab) => {
                   const isActive = currentView === tab.view;
                   return (

@@ -693,11 +693,11 @@
 }
 
 .btn-3d:hover {
-  transform: perspective(500px) translateZ(8px);
+  transform: perspective(500px) translateZ(4px);
 }
 
 .btn-3d:active {
-  transform: perspective(500px) translateZ(0) scale(0.98);
+  transform: perspective(500px) translateZ(0);
 }
 
 /* ========================================

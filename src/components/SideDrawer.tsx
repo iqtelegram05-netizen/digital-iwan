@@ -143,7 +143,7 @@ export default function SideDrawer() {
           </SheetDescription>
         </SheetHeader>
 
-        <Tabs defaultValue="prayers" className="h-full" dir="rtl">
+        <Tabs defaultValue="prayers" className="flex-1 min-h-0 flex flex-col" dir="rtl">
           <TabsList className="w-full grid grid-cols-4 p-1 m-3 rounded-xl bg-muted/50 h-auto">
             {[
               { value: 'prayers', label: 'الأدعية', icon: BookOpen },
@@ -162,7 +162,7 @@ export default function SideDrawer() {
             ))}
           </TabsList>
 
-          <ScrollArea className="h-[calc(100dvh-140px)] px-3 pb-6" style={{ overflowX: 'hidden' } as React.CSSProperties}>
+          <ScrollArea className="flex-1 min-h-0 px-3 pb-6" style={{ overflowX: 'hidden' } as React.CSSProperties}>
             {/* Prayers Tab */}
             <TabsContent value="prayers" className="mt-0 space-y-4">
               <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">الأدعية</h3>
