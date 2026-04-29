@@ -12,6 +12,7 @@ import AdminPanel from '@/components/AdminPanel';
 import ReaderView from '@/components/ReaderView';
 import SideDrawer from '@/components/SideDrawer';
 import Footer from '@/components/Footer';
+import DonationPopup from '@/components/DonationPopup';
 import { BookOpen, Swords, GraduationCap, Brain, User, Search } from 'lucide-react';
 import { useTranslation } from '@/i18n/useTranslation';
 
@@ -222,6 +223,9 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Donation Popup */}
+      <DonationPopup onDismiss={() => {}} />
     </div>
   );
 }
