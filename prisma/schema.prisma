@@ -18,6 +18,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Subscription & Usage
+  messagesUsed     Int      @default(0)
+  bonusMessages    Int      @default(0)
+  subscriptionExpiry DateTime?
+  adsWatchedToday  Int      @default(0)
+  adsWatchedTotal  Int      @default(0)
+  lastAdDate       DateTime?
+
   chatSessions ChatSession[]
   quizResults  QuizResult[]
   profiles     UserProfile[]
@@ -87,6 +95,20 @@ model OwnerSettings {
   apiKeys   String?  // JSON array of {key, status, name, createdAt}
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Ad {
+  id          String   @id @default(cuid())
+  title       String
+  imageUrl    String?  // URL of ad banner image
+  linkUrl     String?  // URL to redirect on click
+  htmlCode    String?  // Custom HTML embed code (for AdSense etc)
+  isActive    Boolean  @default(true)
+  priority    Int      @default(0) // higher = shown first
+  impressions Int     @default(0)
+  clicks      Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Prayer {

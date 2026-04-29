@@ -39,6 +39,28 @@ export interface UserProfile {
   role: string;
   isBlocked: boolean;
   lastLogin: string | null;
+  // Usage fields
+  messagesUsed?: number;
+  bonusMessages?: number;
+  subscriptionExpiry?: string | null;
+  isPremium?: boolean;
+}
+
+export interface UsageInfo {
+  messagesUsed: number;
+  freeLimit: number;
+  freeRemaining: number;
+  bonusMessages: number;
+  isPremium: boolean;
+  subscriptionExpiry: string | null;
+  adsWatchedToday: number;
+  adsProgress: number;
+  adsUntilBonus: number;
+  ADS_FOR_BONUS: number;
+  BONUS_MESSAGES: number;
+  SUBSCRIPTION_PRICE: number;
+  canSend: boolean;
+  isAdmin: boolean;
 }
 
 interface AppState {
@@ -82,6 +104,16 @@ interface AppState {
   // User auth
   user: UserProfile | null;
   setUser: (user: UserProfile | null) => void;
+
+  // Usage tracking
+  usageInfo: UsageInfo | null;
+  setUsageInfo: (info: UsageInfo | null) => void;
+  limitReachedModal: boolean;
+  setLimitReachedModal: (open: boolean) => void;
+  showAdReward: boolean;
+  setShowAdReward: (show: boolean) => void;
+  lastAdRewardMsg: string;
+  setLastAdRewardMsg: (msg: string) => void;
 
   // Reader
   readerItem: ReaderItem | null;
@@ -171,6 +203,16 @@ export const useAppStore = create<AppState>((set) => ({
 
   user: null,
   setUser: (user) => set({ user }),
+
+  // Usage tracking
+  usageInfo: null,
+  setUsageInfo: (info) => set({ usageInfo: info }),
+  limitReachedModal: false,
+  setLimitReachedModal: (open) => set({ limitReachedModal: open }),
+  showAdReward: false,
+  setShowAdReward: (show) => set({ showAdReward: show }),
+  lastAdRewardMsg: '',
+  setLastAdRewardMsg: (msg) => set({ lastAdRewardMsg: msg }),
 
   readerItem: null,
   setReaderItem: (item) => set({ readerItem: item }),

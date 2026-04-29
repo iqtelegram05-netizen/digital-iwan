@@ -7,6 +7,7 @@ import { Send, Trash2, BookOpen, Swords, GraduationCap, Search, Pin } from 'luci
 import CrystalButton from './CrystalButton';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/i18n/useTranslation';
+import UsageBar from './UsageBar';
 
 export default function ChatView() {
   const {
@@ -17,6 +18,10 @@ export default function ChatView() {
     setIsLoading,
     setSessionId,
     selectedScholar,
+    user,
+    usageInfo,
+    setUsageInfo,
+    setLimitReachedModal,
   } = useAppStore();
 
   const { t } = useTranslation();
@@ -77,6 +82,14 @@ export default function ChatView() {
   const sendMessage = useCallback(async () => {
     if (!input.trim() || isLoading) return;
 
+    // Check usage limit for non-admin users
+    if (user && user.role !== 'owner' && user.role !== 'supervisor' && usageInfo) {
+      if (!usageInfo.canSend) {
+        setLimitReachedModal(true);
+        return;
+      }
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
@@ -96,10 +109,23 @@ export default function ChatView() {
           sessionId,
           mode: chatMode,
           scholar: selectedScholar,
+          userId: user?.id,
         }),
       });
 
       const data = await res.json();
+
+      // Update usage info from response
+      if (data.usageInfo) {
+        setUsageInfo(data.usageInfo);
+      }
+
+      // Handle limit reached from server
+      if (res.status === 403 && data.error === 'limit_reached') {
+        setLimitReachedModal(true);
+        setIsLoading(chatMode, false);
+        return;
+      }
 
       if (data.sessionId) {
         setSessionId(chatMode, data.sessionId);
@@ -122,7 +148,7 @@ export default function ChatView() {
     } finally {
       setIsLoading(chatMode, false);
     }
-  }, [input, isLoading, addMessage, chatMode, sessionId, selectedScholar, setSessionId, setIsLoading, t]);
+  }, [input, isLoading, addMessage, chatMode, sessionId, selectedScholar, setSessionId, setIsLoading, t, user, usageInfo, setUsageInfo, setLimitReachedModal]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -147,6 +173,9 @@ export default function ChatView() {
         {config.icon}
         <h2 className="text-sm sm:text-lg font-bold">{config.title}</h2>
       </motion.div>
+
+      {/* Usage Bar */}
+      <UsageBar />
 
       {/* Clear chat button */}
       {messages.length > 0 && pinnedMsgs.length > 0 && (

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { callAI, ChatMessage } from '@/lib/aiProvider';
 import { filterArabicText } from '@/lib/arabicFilter';
+import { canUserSend, getUserUsageInfo } from '@/app/api/usage/route';
 
 // Catch unhandled errors to prevent process crash
 if (typeof process !== 'undefined') {
@@ -52,6 +53,7 @@ interface ChatRequestBody {
   sessionId?: string;
   mode?: 'chat' | 'debate' | 'teacher' | 'research';
   scholar?: string;
+  userId?: string; // for usage tracking
 }
 
 export async function POST(request: NextRequest) {
@@ -70,6 +72,32 @@ export async function POST(request: NextRequest) {
     const validModes = ['chat', 'debate', 'teacher', 'research'];
     if (!validModes.includes(mode)) {
       return NextResponse.json({ error: 'وضع غير صالح' }, { status: 400 });
+    }
+
+    // Check usage limits (if userId provided)
+    const userId = body.userId;
+    if (userId) {
+      const user = await db.user.findUnique({ where: { id: userId } });
+      if (user && !canUserSend(user)) {
+        const usageInfo = getUserUsageInfo(user);
+        return NextResponse.json({
+          error: 'limit_reached',
+          message: 'وصلت للحد الأقصى من الرسائل المجانية. اشترك أو شاهد إعلانات للمتابعة.',
+          usageInfo,
+        }, { status: 403 });
+      }
+
+      // Deduct usage after successful send
+      if (user && user.role !== 'owner' && user.role !== 'supervisor') {
+        const isPremium = user.subscriptionExpiry && new Date(user.subscriptionExpiry) > new Date();
+        if (!isPremium) {
+          if (user.bonusMessages > 0) {
+            await db.user.update({ where: { id: userId }, data: { bonusMessages: { decrement: 1 } } });
+          } else {
+            await db.user.update({ where: { id: userId }, data: { messagesUsed: { increment: 1 } } });
+          }
+        }
+      }
     }
 
     // Build system prompt
@@ -177,6 +205,10 @@ export async function POST(request: NextRequest) {
       mode: session.mode,
       loadBalanced: aiResult.loadBalanced,
       provider: aiResult.provider,
+      usageInfo: userId ? await (async () => {
+        const u = await db.user.findUnique({ where: { id: userId } });
+        return u ? getUserUsageInfo(u) : null;
+      })() : undefined,
     });
   } catch (error) {
     console.error('Chat API Error:', error);
