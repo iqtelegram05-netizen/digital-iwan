@@ -1,4 +1,4 @@
-// AI Provider Module - Direct API calls without SDK dependency
+// AI Provider Module - Direct API calls, NO SDK dependency
 // Supports: Groq, DeepSeek, OpenAI, Gemini, OpenRouter, and custom providers
 
 import { selectKey, reportSuccess, reportFailure } from './loadBalancer';
@@ -122,7 +122,7 @@ export async function callAI(
   messages: ChatMessage[],
   options: { temperature?: number; maxTokens?: number } = {}
 ): Promise<AIResponse> {
-  // Step 1: Try Load Balancer keys
+  // Try Load Balancer keys
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     const selectedKey = await selectKey();
 
@@ -161,35 +161,9 @@ export async function callAI(
     }
   }
 
-  // Step 2: Fallback to ZAI SDK (only if .z-ai-config exists)
-  try {
-    console.log('[AI] Fallback to ZAI SDK');
-    const ZAI = (await import('z-ai-web-dev-sdk')).default;
-    const zai = await ZAI.create();
-    const completion = await zai.chat.completions.create({
-      messages: messages.map(m => ({ role: m.role, content: m.content })),
-      temperature: options.temperature ?? 0.8,
-      max_tokens: options.maxTokens ?? 2048,
-    });
-
-    const content = completion.choices?.[0]?.message?.content || '';
-    if (content) {
-      return {
-        content,
-        provider: 'Z.ai Default',
-        tokensUsed: completion.usage?.total_tokens || 0,
-        loadBalanced: false,
-      };
-    }
-  } catch (sdkErr: unknown) {
-    const msg = sdkErr instanceof Error ? sdkErr.message : String(sdkErr);
-    console.error('[AI] ZAI SDK fallback failed:', msg);
-    // If SDK fails (e.g., no .z-ai-config), return a helpful error
-  }
-
-  // Step 3: All failed
+  // No keys available - return clear message
   return {
-    content: 'عذرًا، لم أتمكن من توليد إجابة. يرجى إضافة مفاتيح API من لوحة الإدارة أو التحقق من اتصال الإنترنت.',
+    content: 'لا توجد مفاتيح API نشطة. يرجى إضافة مفتاح (مثل Groq أو DeepSeek) من لوحة الإدارة.',
     provider: 'None',
     tokensUsed: 0,
     loadBalanced: false,
