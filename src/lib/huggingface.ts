@@ -179,19 +179,40 @@ export async function reportHFFailure(keyId: string, error: string): Promise<boo
   try {
     const isRateLimit = error.includes('429') || error.includes('rate') || error.includes('quota') || error.includes('overloaded');
     const isAuthError = error.includes('401') || error.includes('403') || error.includes('authorization');
+    const isNotSupported = error.includes('Model not supported') || error.includes('Invalid username');
 
-    if (isAuthError) {
-      // Auth errors = key is invalid, mark as exhausted
+    // If model just not supported (HF free tier), keep active and let other providers try
+    if (isNotSupported) {
+      console.log(`[HF] Key ${keyId}: model not supported by this provider, will retry with other providers`);
       await db.huggingFaceKey.update({
         where: { id: keyId },
         data: {
-          status: 'exhausted',
           failCount: { increment: 1 },
-          lastError: error.slice(0, 200),
+          lastError: `Not supported - trying other providers`,
           lastErrorAt: new Date(),
         },
       });
-      return false; // don't retry this key
+      return true; // try next key
+    }
+
+    if (isAuthError) {
+      // Auth errors = key is invalid for ALL providers, mark as exhausted
+      // But only if ALL providers rejected it
+      const allProvidersFailed = error.includes('all providers') || error.includes('جميع مزودي');
+      if (allProvidersFailed) {
+        await db.huggingFaceKey.update({
+          where: { id: keyId },
+          data: {
+            status: 'exhausted',
+            failCount: { increment: 1 },
+            lastError: error.slice(0, 200),
+            lastErrorAt: new Date(),
+          },
+        });
+        return false;
+      }
+      // Individual provider auth error - keep active, try other providers
+      return true;
     }
 
     if (isRateLimit) {
@@ -226,7 +247,94 @@ export async function reportHFFailure(keyId: string, error: string): Promise<boo
 }
 
 // ========== Call HuggingFace API ==========
-const HF_TIMEOUT = 45000; // 45 seconds (HF can be slow)
+const HF_TIMEOUT = 45000; // 45 seconds
+
+/**
+ * Multi-provider call: tries multiple endpoints for maximum compatibility.
+ * Tokens in the HF keys table can be ANY OpenAI-compatible API key:
+ *   - HuggingFace (PRO subscription)
+ *   - Groq (free at groq.com)
+ *   - OpenRouter (free tier at openrouter.ai)
+ *   - Together AI, DeepSeek, etc.
+ *
+ * We auto-detect the provider by trying endpoints in order.
+ */
+const HF_PROVIDERS = [
+  {
+    name: 'Groq',
+    // Free tier: unlimited requests, very fast
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    defaultModel: 'llama-3.3-70b-versatile',
+    buildBody: (model: string, sys: string, user: string, maxTok: number, temp: number) => JSON.stringify({
+      model,
+      messages: [{ role: 'system', content: sys }, { role: 'user', content: user }],
+      max_tokens: maxTok,
+      temperature: temp,
+      top_p: 0.9,
+    }),
+    parseResponse: (data: any) => ({
+      content: data.choices?.[0]?.message?.content || '',
+      tokensUsed: data.usage?.total_tokens || 0,
+    }),
+    isNotSupported: () => false,
+    detectByError: (err: string) => false,
+  },
+  {
+    name: 'Together AI',
+    url: 'https://api.together.xyz/v1/chat/completions',
+    defaultModel: 'meta-llama/Llama-3.3-70B-Instruct-Turbo',
+    buildBody: (model: string, sys: string, user: string, maxTok: number, temp: number) => JSON.stringify({
+      model,
+      messages: [{ role: 'system', content: sys }, { role: 'user', content: user }],
+      max_tokens: maxTok,
+      temperature: temp,
+      top_p: 0.9,
+    }),
+    parseResponse: (data: any) => ({
+      content: data.choices?.[0]?.message?.content || '',
+      tokensUsed: data.usage?.total_tokens || 0,
+    }),
+    isNotSupported: () => false,
+    detectByError: () => false,
+  },
+  {
+    name: 'OpenRouter',
+    url: 'https://openrouter.ai/api/v1/chat/completions',
+    defaultModel: 'qwen/qwen-2.5-72b-instruct:free',
+    buildBody: (model: string, sys: string, user: string, maxTok: number, temp: number) => JSON.stringify({
+      model,
+      messages: [{ role: 'system', content: sys }, { role: 'user', content: user }],
+      max_tokens: maxTok,
+      temperature: temp,
+      top_p: 0.9,
+      route: 'fallback',
+    }),
+    parseResponse: (data: any) => ({
+      content: data.choices?.[0]?.message?.content || '',
+      tokensUsed: data.usage?.total_tokens || 0,
+    }),
+    isNotSupported: () => false,
+    detectByError: (err: string) => err.includes('Invalid API key') && !err.includes('groq'),
+  },
+  {
+    name: 'HuggingFace Router',
+    // Requires PRO subscription
+    url: 'https://router.huggingface.co/hf-inference/v1/chat/completions',
+    defaultModel: 'Qwen/Qwen2.5-72B-Instruct',
+    buildBody: (model: string, sys: string, user: string, maxTok: number, temp: number) => JSON.stringify({
+      model,
+      messages: [{ role: 'system', content: sys }, { role: 'user', content: user }],
+      max_tokens: maxTok,
+      temperature: temp,
+      top_p: 0.9,
+    }),
+    parseResponse: (data: any) => ({
+      content: data.choices?.[0]?.message?.content || '',
+      tokensUsed: data.usage?.total_tokens || 0,
+    }),
+    isNotSupported: (err: string) => err.includes('Model not supported') || err.includes('Invalid username'),
+  },
+];
 
 async function callHuggingFaceAPI(
   keyInfo: HFKeyInfo,
@@ -239,50 +347,61 @@ async function callHuggingFaceAPI(
   const timeoutId = setTimeout(() => controller.abort(), HF_TIMEOUT);
 
   try {
-    // Use HF Router (OpenAI-compatible endpoint) — old /models/ endpoint returns 404
-    const url = 'https://router.huggingface.co/hf-inference/v1/chat/completions';
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${keyInfo.token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: keyInfo.model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage },
-        ],
-        max_tokens: maxTokens,
-        temperature,
-        top_p: 0.9,
-      }),
-      signal: controller.signal,
-    });
+    // Try each provider in order until one works
+    for (const provider of HF_PROVIDERS) {
+      try {
+        const url = provider.url;
+        // Use the provider's default model if the configured model is HF-specific
+        // and this is not the HF provider
+        const model = provider.name === 'HuggingFace Router' 
+          ? keyInfo.model 
+          : (provider as any).defaultModel;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${keyInfo.token}`,
+            'Content-Type': 'application/json',
+            ...(provider.name === 'OpenRouter' ? { 'HTTP-Referer': 'https://digital-iwan.vercel.app' } : {}),
+          },
+          body: provider.buildBody(model, systemPrompt, userMessage, maxTokens, temperature),
+          signal: controller.signal,
+        });
 
-    clearTimeout(timeoutId);
+        if (!res.ok) {
+          const errText = await res.text();
+          // If model not supported by this provider, try next
+          if (provider.isNotSupported(errText)) {
+            console.log(`[HF] ${provider.name}: model not supported, trying next provider...`);
+            continue;
+          }
+          throw new Error(`${provider.name} API ${res.status}: ${errText.slice(0, 200)}`);
+        }
 
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`HF API ${res.status}: ${errText.slice(0, 200)}`);
+        const data = await res.json();
+        const parsed = provider.parseResponse(data);
+
+        if (!parsed.content) {
+          continue; // Empty response, try next provider
+        }
+
+        if (parsed.tokensUsed === 0) {
+          parsed.tokensUsed = estimateTokens(userMessage) + estimateTokens(parsed.content);
+        }
+
+        return parsed;
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          throw new Error('HF API timeout (45s)');
+        }
+        // If this provider failed, try next
+        const msg = err instanceof Error ? err.message : String(err);
+        console.log(`[HF] ${provider.name} failed: ${msg.slice(0, 100)}`);
+        continue;
+      }
     }
 
-    const data = await res.json();
-
-    // OpenAI-compatible response: { choices: [{ message: { content } }], usage: { prompt_tokens, completion_tokens, total_tokens } }
-    let content = '';
-    let tokensUsed = 0;
-
-    if (data.choices && Array.isArray(data.choices) && data.choices.length > 0) {
-      content = data.choices[0].message?.content || data.choices[0].text || '';
-    }
-    if (data.usage) {
-      tokensUsed = data.usage.total_tokens || estimateTokens(userMessage) + estimateTokens(content);
-    } else {
-      tokensUsed = estimateTokens(userMessage) + estimateTokens(content);
-    }
-
-    return { content, tokensUsed };
+    // All providers failed
+    throw new Error('جميع مزودي API فشلوا. تأكد من صلاحية المفاتيح.');
   } catch (err: unknown) {
     clearTimeout(timeoutId);
     if (err instanceof Error && err.name === 'AbortError') {
