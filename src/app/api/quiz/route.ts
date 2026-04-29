@@ -13,6 +13,7 @@ const VALID_CATEGORIES = ['عقائد', 'منطق', 'علم', 'نحو', 'فقه'
 
 interface QuizRequestBody {
   category: string;
+  custom?: boolean;
 }
 
 interface QuizQuestion {
@@ -31,19 +32,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'التصنيف مطلوب' }, { status: 400 });
     }
 
-    if (!VALID_CATEGORIES.includes(category)) {
+    const isCustom = body.custom === true;
+
+    // For custom categories, skip validation and generate dynamically
+    if (!isCustom && !VALID_CATEGORIES.includes(category)) {
       return NextResponse.json(
         { error: `التصنيف غير صالح. التصنيفات المتاحة: ${VALID_CATEGORIES.join('، ')}` },
         { status: 400 }
       );
     }
 
-    const categoryPrompt = CATEGORY_PROMPTS[category] || '';
+    const categoryPrompt = CATEGORY_PROMPTS[category] || (isCustom ? `أسئلة في مجال: ${category}. غطِّ جوانب متنوعة من هذا الموضوع بأسئلة عميقة ومفيدة` : '');
 
     const systemPrompt = `أنت خبير في توليد أسئلة اختبار في المجال التالي: ${categoryPrompt}. 
 قم بتوليد 10 أسئلة اختبار متعددة الخيارات (4 خيارات لكل سؤال). 
 الأسئلة يجب أن تكون عميقة وتختبر الفهم الحقيقي وليس مجرد الحفظ.
 كل خيار يجب أن يكون معقولًا ومقنعًا.
+قاعدة صارمة: جميع الأسئلة والخيارات يجب أن تكون باللغة العربية فقط. لا تستخدم أي إيموجي أو رموز غريبة في الأسئلة أو الخيارات.
 أجب فقط بصيغة JSON التالية بدون أي نص إضافي:
 {
   "questions": [
@@ -110,6 +115,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       questions: questions.slice(0, 10),
       category,
+      isCustom,
       total: 10,
       provider: aiResult.provider,
     });

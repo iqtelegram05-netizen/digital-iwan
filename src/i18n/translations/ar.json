@@ -90,7 +90,8 @@
       "kalam": "علم الكلام",
       "grammar": "نحو",
       "fiqh": "فقه"
-    }
+    },
+    "customCategory": "موضوع جانبي"
   },
   "profile": {
     "title": "الملف الشخصي",

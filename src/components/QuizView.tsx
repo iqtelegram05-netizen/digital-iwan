@@ -5,8 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import CrystalButton from './CrystalButton';
-import { Brain, CheckCircle, XCircle, RotateCcw, Trophy, ArrowLeft } from 'lucide-react';
+import { Brain, CheckCircle, XCircle, RotateCcw, Trophy, ArrowLeft, Plus, X, Check, BookOpen, Lightbulb, Scroll, PenTool, Scale, Sparkles } from 'lucide-react';
 import { useTranslation } from '@/i18n/useTranslation';
 
 export default function QuizView() {
@@ -24,27 +26,32 @@ export default function QuizView() {
   const { t } = useTranslation();
 
   const CATEGORIES = [
-    { id: 'عقائد', label: t('quiz.categories.beliefs'), icon: '🕌' },
-    { id: 'منطق', label: t('quiz.categories.logic'), icon: '🧠' },
-    { id: 'علم', label: t('quiz.categories.kalam'), icon: '📚' },
-    { id: 'نحو', label: t('quiz.categories.grammar'), icon: '✍️' },
-    { id: 'فقه', label: t('quiz.categories.fiqh'), icon: '⚖️' },
+    { id: 'عقائد', label: t('quiz.categories.beliefs'), icon: <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" /> },
+    { id: 'منطق', label: t('quiz.categories.logic'), icon: <Lightbulb className="w-5 h-5 sm:w-6 sm:h-6" /> },
+    { id: 'علم', label: t('quiz.categories.kalam'), icon: <Scroll className="w-5 h-5 sm:w-6 sm:h-6" /> },
+    { id: 'نحو', label: t('quiz.categories.grammar'), icon: <PenTool className="w-5 h-5 sm:w-6 sm:h-6" /> },
+    { id: 'فقه', label: t('quiz.categories.fiqh'), icon: <Scale className="w-5 h-5 sm:w-6 sm:h-6" /> },
   ];
 
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
+  const [customCategoryName, setCustomCategoryName] = useState('');
+
   const [loading, setLoading] = useState(false);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const startQuiz = useCallback(async (category: string) => {
+  const startQuiz = useCallback(async (category: string, custom = false) => {
     setLoading(true);
     setError(null);
+    setIsCustomCategory(custom);
     setQuizCategory(category);
     try {
       const res = await fetch('/api/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category }),
+        body: JSON.stringify({ category, custom }),
       });
       const data = await res.json();
       if (data.questions && data.questions.length > 0) {
@@ -60,6 +67,14 @@ export default function QuizView() {
       setLoading(false);
     }
   }, [setQuizQuestions, setQuizCategory, t]);
+
+  const handleCustomCategory = () => {
+    if (customCategoryName.trim()) {
+      startQuiz(customCategoryName.trim(), true);
+      setCustomCategoryName('');
+      setShowCustomCategory(false);
+    }
+  };
 
   const submitQuiz = useCallback(async () => {
     if (!quizCategory || quizQuestions.length === 0) return;
@@ -130,10 +145,22 @@ export default function QuizView() {
                 onClick={() => startQuiz(cat.id)}
                 disabled={loading}
               >
-                <span className="text-xl sm:text-2xl">{cat.icon}</span>
+                <span className="text-primary/80">{cat.icon}</span>
                 <span className="text-[11px] sm:text-sm font-medium">{cat.label}</span>
               </CrystalButton>
             ))}
+            {/* Custom Category Button */}
+            <CrystalButton
+              variant="outline"
+              className="h-auto py-2.5 sm:py-4 flex flex-col items-center gap-1 sm:gap-2 border-dashed border-primary/30 hover:bg-primary/10 hover:border-primary/50 rounded-xl"
+              onClick={() => setShowCustomCategory(true)}
+              disabled={loading}
+            >
+              <span className="text-primary/60">
+                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
+              </span>
+              <span className="text-[11px] sm:text-sm font-medium text-primary/70">{t('quiz.customCategory') || 'موضوع جانبي'}</span>
+            </CrystalButton>
           </div>
 
           {loading && (
@@ -144,6 +171,63 @@ export default function QuizView() {
           )}
 
           {error && <p className="text-destructive text-sm">{error}</p>}
+
+          {/* Custom Category Dialog */}
+          <AnimatePresence>
+            {showCustomCategory && (
+              <motion.div
+                className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowCustomCategory(false)}
+              >
+                <motion.div
+                  className="bg-card border border-border/50 rounded-2xl p-5 max-w-sm w-full shadow-2xl"
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-bold text-primary flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      موضوع جانبي
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                      onClick={() => setShowCustomCategory(false)}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    أدخل اسم الموضوع الذي تريد اختبار نفسك فيه. يمكن أن يكون أي موضوع جانبي غير التصنيفات الرئيسية.
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      value={customCategoryName}
+                      onChange={(e) => setCustomCategoryName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleCustomCategory()}
+                      placeholder="مثال: تاريخ الإسلام، تفسير سورة الكهف، سيرة الأئمة..."
+                      className="text-xs border-primary/20 bg-card/50"
+                      autoFocus
+                    />
+                    <Button
+                      size="icon"
+                      className="shrink-0 h-9 w-9 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
+                      onClick={handleCustomCategory}
+                      disabled={!customCategoryName.trim()}
+                    >
+                      <Check className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
     );
