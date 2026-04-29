@@ -12,7 +12,7 @@ import { useTranslation } from '@/i18n/useTranslation';
 import {
   User, Save, Sparkles, LogOut, Mail, Calendar, Shield,
   ChevronLeft, LogIn, Loader2, AlertCircle, CheckCircle2, Settings,
-  Crown
+  Crown, CreditCard, MessageSquare
 } from 'lucide-react';
 
 // بريد المالك - يُعيّن مباشرة في الواجهة
@@ -41,8 +41,12 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
 }
 
 export default function ProfileView() {
-  const { user, setUser, setCurrentView } = useAppStore();
+  const { user, setUser, setCurrentView, usageInfo, setUsageInfo } = useAppStore();
   const { t, tSection } = useTranslation();
+
+  // Subscription state
+  const [subscribing, setSubscribing] = useState(false);
+  const [subMessage, setSubMessage] = useState('');
 
   const interestOptions = tSection('profile.interestsList');
   const INTEREST_OPTIONS = Array.isArray(interestOptions) && interestOptions.length > 0 
@@ -60,6 +64,39 @@ export default function ProfileView() {
   const [loginError, setLoginError] = useState('');
   const googleBtnRef = useRef<HTMLDivElement>(null);
   const gsiInitialized = useRef(false);
+
+  // Fetch subscription/usage info
+  useEffect(() => {
+    if (user && user.role !== 'owner' && user.role !== 'supervisor') {
+      fetch(`/api/usage?userId=${user.id}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => { if (data) setUsageInfo(data); })
+        .catch(() => {});
+    }
+  }, [user, setUsageInfo]);
+
+  const handleSubscribe = async () => {
+    if (!user || subscribing) return;
+    setSubscribing(true);
+    setSubMessage('');
+    try {
+      const res = await fetch('/api/subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSubMessage('تم إنشاء طلب الاشتراك! تواصل مع المالك لإتمام الدفع.');
+      } else {
+        setSubMessage(data.error || 'حدث خطأ');
+      }
+    } catch {
+      setSubMessage('تعذر الاتصال بالسيرفر');
+    } finally {
+      setSubscribing(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -445,6 +482,77 @@ export default function ProfileView() {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              {/* قسم الاشتراك */}
+              {user.role !== 'owner' && user.role !== 'supervisor' && (
+                <div className="space-y-2 pt-2 border-t border-border/30">
+                  <h3 className="text-xs font-bold text-foreground/80 flex items-center gap-2">
+                    <Crown className="w-3.5 h-3.5 text-yellow-500" />
+                    الاشتراك
+                  </h3>
+
+                  {usageInfo?.isPremium ? (
+                    <div className="p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Crown className="w-4 h-4 text-yellow-500" />
+                        <span className="text-xs font-bold text-yellow-500">اشتراك فعّال</span>
+                      </div>
+                      {usageInfo.subscriptionExpiry && (
+                        <p className="text-[10px] text-muted-foreground">
+                          ينتهي في: {new Date(usageInfo.subscriptionExpiry).toLocaleDateString('ar-IQ', {
+                            year: 'numeric', month: 'long', day: 'numeric',
+                          })}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-1.5 mt-1.5 text-[10px] text-green-500">
+                        <MessageSquare className="w-3 h-3" />
+                        <span>رسائل غير محدودة</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3 rounded-xl bg-yellow-500/5 border border-yellow-500/20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Crown className="w-4 h-4 text-yellow-500" />
+                        <span className="text-xs font-bold">اشتراك شهري - $10</span>
+                      </div>
+                      <div className="space-y-1 mb-3">
+                        <div className="flex items-center gap-1.5 text-[10px] text-foreground/70">
+                          <MessageSquare className="w-3 h-3 text-primary" />
+                          <span>رسائل غير محدودة لمدة شهر كامل</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[10px] text-foreground/70">
+                          <CreditCard className="w-3 h-3 text-primary" />
+                          <span>بدون إعلانات</span>
+                        </div>
+                      </div>
+                      <CrystalButton
+                        className="w-full h-8 bg-yellow-500 hover:bg-yellow-600 text-white text-xs rounded-lg gap-1.5"
+                        onClick={handleSubscribe}
+                        disabled={subscribing}
+                      >
+                        {subscribing ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <CreditCard className="w-3.5 h-3.5" />
+                        )}
+                        اشترك الآن
+                      </CrystalButton>
+                      {subMessage && (
+                        <motion.p
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="text-[10px] text-center mt-2 p-1.5 rounded-lg bg-primary/5 border border-primary/10"
+                        >
+                          {subMessage}
+                        </motion.p>
+                      )}
+                      <p className="text-[9px] text-muted-foreground text-center mt-1.5">
+                        تواصل مع المالك لإتمام الدفع بعد الاشتراك
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* زر لوحة التحكم - يظهر للمالك دائماً */}
               {(user.role === 'owner' || user.role === 'supervisor' || isOwnerEmail(user.email)) && (

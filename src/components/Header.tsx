@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAppStore } from '@/store/appStore';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Moon, Sun, GraduationCap, Languages, Plus, X, Check } from 'lucide-react';
+import { Menu, Moon, Sun, GraduationCap, Languages, Plus, X, Check, Tv, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { LANGUAGES } from '@/i18n/languages';
 import { useTranslation } from '@/i18n/useTranslation';
+import AdWatchModal from './AdWatchModal';
 
 const SCHOLARS = [
   'السيد السيستاني',
@@ -31,12 +32,13 @@ interface HeaderProps {
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
-  const { selectedScholar, setSelectedScholar, currentView } = useAppStore();
+  const { selectedScholar, setSelectedScholar, currentView, user, usageInfo } = useAppStore();
   const { theme, setTheme } = useTheme();
   const { t, lang, setLanguage } = useTranslation();
 
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customScholar, setCustomScholar] = useState('');
+  const [showAdModal, setShowAdModal] = useState(false);
 
   // Find current language info
   const currentLang = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
@@ -160,6 +162,23 @@ export default function Header({ onMenuClick }: HeaderProps) {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Watch Ad Button - for non-premium logged-in users */}
+        {user && user.role !== 'owner' && user.role !== 'supervisor' && usageInfo && !usageInfo.isPremium && (
+          <motion.button
+            className="shrink-0 flex items-center gap-1 h-7 sm:h-8 px-2 sm:px-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
+            onClick={() => setShowAdModal(true)}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Tv className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <span className="text-[9px] sm:text-[10px] font-medium hidden sm:inline">إعلان</span>
+            {usageInfo.adsUntilBonus < 10 && (
+              <span className="text-[8px] text-green-500 hidden sm:inline">{usageInfo.adsUntilBonus}←{usageInfo.BONUS_MESSAGES}</span>
+            )}
+          </motion.button>
+        )}
+
+        <AdWatchModal open={showAdModal} onClose={() => setShowAdModal(false)} />
 
         {/* Language Selector */}
         <Select value={lang} onValueChange={setLanguage}>

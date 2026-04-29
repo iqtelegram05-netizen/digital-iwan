@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
 import type { UsageInfoData } from '@/lib/usageLimit';
 import { Tv, Gift, Crown, X } from 'lucide-react';
 import CrystalButton from './CrystalButton';
+import AdWatchModal from './AdWatchModal';
 
 export default function UsageBar() {
   const {
@@ -20,6 +21,8 @@ export default function UsageBar() {
     setLastAdRewardMsg,
     setCurrentView,
   } = useAppStore();
+
+  const [showAdModal, setShowAdModal] = useState(false);
 
   const fetchUsage = useCallback(async () => {
     if (!user || user.role === 'owner' || user.role === 'supervisor') return;
@@ -38,47 +41,11 @@ export default function UsageBar() {
     fetchUsage();
   }, [fetchUsage]);
 
-  const handleWatchAd = useCallback(async () => {
-    if (!user) return;
-    try {
-      // Fetch available ads
-      const adsRes = await fetch('/api/ads');
-      const adsData = await adsRes.json();
-
-      if (adsData.ads && adsData.ads.length > 0) {
-        // Show ad (open link or display)
-        const ad = adsData.ads[0];
-        if (ad.linkUrl) {
-          window.open(ad.linkUrl, '_blank', 'noopener');
-        }
-
-        // Wait a bit for user to "watch" the ad
-        await new Promise(resolve => setTimeout(resolve, 3000));
-      }
-
-      // Record ad watch
-      const res = await fetch('/api/ads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, adId: adsData.ads?.[0]?.id }),
-      });
-      const data = await res.json();
-
-      if (data.bonusEarned) {
-        setShowAdReward(true);
-        setLastAdRewardMsg(data.message);
-      }
-
-      // Refresh usage
-      fetchUsage();
-    } catch {
-      // silently fail
-    }
-  }, [user, setShowAdReward, setLastAdRewardMsg, fetchUsage]);
-
-  // Don't show for admin/owner
-  if (!user || user.role === 'owner' || user.role === 'supervisor') return null;
-  if (!usageInfo) return null;
+  // Re-fetch usage when ad modal closes
+  const handleAdModalClose = useCallback(() => {
+    setShowAdModal(false);
+    fetchUsage();
+  }, [fetchUsage]);
 
   const isPremium = usageInfo.isPremium;
 
@@ -127,13 +94,16 @@ export default function UsageBar() {
             <CrystalButton
               size="sm"
               className="shrink-0 h-6 px-2 text-[9px] sm:text-[10px] gap-1 bg-primary/10 hover:bg-primary/20 text-primary border-0"
-              onClick={handleWatchAd}
+              onClick={() => setShowAdModal(true)}
             >
               <Tv className="w-3 h-3" />
               شاهد إعلان
             </CrystalButton>
           )}
         </div>
+
+        {/* AdWatchModal */}
+        <AdWatchModal open={showAdModal} onClose={handleAdModalClose} />
 
         {/* Ad progress */}
         {!isPremium && usageInfo.adsUntilBonus < 10 && (
@@ -203,7 +173,7 @@ export default function UsageBar() {
                   className="w-full h-8 bg-green-500 hover:bg-green-600 text-white text-xs rounded-lg"
                   onClick={() => {
                     setLimitReachedModal(false);
-                    handleWatchAd();
+                    setShowAdModal(true);
                   }}
                 >
                   شاهد إعلان الآن

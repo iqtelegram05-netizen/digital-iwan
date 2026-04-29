@@ -41,6 +41,7 @@ import {
   AlertTriangle,
   Server,
   Gauge,
+  Tv,
 } from 'lucide-react';
 
 // ========== Types ==========
@@ -120,7 +121,20 @@ interface LBStats {
   providers: LBProvider[];
 }
 
-type AdminTab = 'keys' | 'users' | 'prayers' | 'loadbalancer';
+interface AdminAd {
+  id: string;
+  title: string;
+  imageUrl: string | null;
+  linkUrl: string | null;
+  htmlCode: string | null;
+  isActive: boolean;
+  priority: number;
+  impressions: number;
+  clicks: number;
+  createdAt: string;
+}
+
+type AdminTab = 'keys' | 'users' | 'prayers' | 'loadbalancer' | 'ads';
 
 export default function AdminPanel() {
   const { setCurrentView } = useAppStore();
@@ -174,14 +188,22 @@ export default function AdminPanel() {
   const [lbError, setLbError] = useState<string | null>(null);
   const [lbSuccess, setLbSuccess] = useState<string | null>(null);
 
+  // Ads management state
+  const [adminAds, setAdminAds] = useState<AdminAd[]>([]);
+  const [adTitle, setAdTitle] = useState('');
+  const [adImageUrl, setAdImageUrl] = useState('');
+  const [adLinkUrl, setAdLinkUrl] = useState('');
+  const [adPriority, setAdPriority] = useState('0');
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [adminRes, usersRes, prayersRes, keysRes] = await Promise.all([
+      const [adminRes, usersRes, prayersRes, keysRes, adsRes] = await Promise.all([
         fetch('/api/admin'),
         fetch('/api/admin/users'),
         fetch('/api/prayers?all=true'),
         fetch('/api/keys'),
+        fetch('/api/admin/ads'),
       ]);
       if (adminRes.ok) setData(await adminRes.json());
       if (usersRes.ok) {
@@ -194,6 +216,10 @@ export default function AdminPanel() {
       }
       if (keysRes.ok) {
         setLbStats(await keysRes.json());
+      }
+      if (adsRes.ok) {
+        const adsData = await adsRes.json();
+        setAdminAds(adsData.ads || []);
       }
     } catch {
       // silent
@@ -530,7 +556,8 @@ export default function AdminPanel() {
             { id: 'keys', label: t('admin.tabs.keysAndLinks'), icon: Key },
             { id: 'users', label: t('admin.tabs.users'), icon: Users },
             { id: 'prayers', label: t('admin.tabs.prayers'), icon: BookOpen },
-          ] as const).map((tab) => (
+            { id: 'ads', label: 'إعلانات', icon: Tv },
+          ] as { id: AdminTab; label: string; icon: typeof Key }[]).map((tab) => (
             <CrystalButton
               key={tab.id}
               variant={activeTab === tab.id ? 'default' : 'outline'}
@@ -1052,6 +1079,180 @@ export default function AdminPanel() {
                 </CardContent>
               </Card>
             )}
+          </div>
+        )}
+
+        {/* ========== TAB: Ads ========== */}
+        {activeTab === 'ads' && (
+          <div className="space-y-6">
+            {/* Add Ad Form */}
+            <Card className="glass-card border-primary/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Tv className="w-4 h-4 text-primary" />
+                  إضافة إعلان جديد
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <Input
+                    value={adTitle}
+                    onChange={(e) => setAdTitle(e.target.value)}
+                    placeholder="عنوان الإعلان (مطلوب)"
+                    className="text-xs border-primary/20 bg-card/50"
+                  />
+                  <div className="flex gap-2">
+                    <Input
+                      value={adImageUrl}
+                      onChange={(e) => setAdImageUrl(e.target.value)}
+                      placeholder="رابط الصورة (اختياري)"
+                      className="text-xs border-primary/20 bg-card/50 flex-1"
+                    />
+                    <Input
+                      value={adLinkUrl}
+                      onChange={(e) => setAdLinkUrl(e.target.value)}
+                      placeholder="رابط التوجيه (اختياري)"
+                      className="text-xs border-primary/20 bg-card/50 flex-1"
+                    />
+                  </div>
+                  <Input
+                    value={adPriority}
+                    onChange={(e) => setAdPriority(e.target.value)}
+                    placeholder="الأولوية (رقم، الافتراضي 0)"
+                    type="number"
+                    className="text-xs border-primary/20 bg-card/50"
+                  />
+                </div>
+                <CrystalButton
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg"
+                  onClick={async () => {
+                    if (!adTitle.trim() || saving) return;
+                    setSaving(true);
+                    try {
+                      const res = await fetch('/api/admin/ads', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          title: adTitle.trim(),
+                          imageUrl: adImageUrl.trim() || undefined,
+                          linkUrl: adLinkUrl.trim() || undefined,
+                          priority: parseInt(adPriority) || 0,
+                        }),
+                      });
+                      if (res.ok) {
+                        const json = await res.json();
+                        setAdminAds((prev) => [...prev, json.ad]);
+                        setAdTitle('');
+                        setAdImageUrl('');
+                        setAdLinkUrl('');
+                        setAdPriority('0');
+                      }
+                    } catch { /* silent */ } finally { setSaving(false); }
+                  }}
+                  disabled={saving || !adTitle.trim()}
+                >
+                  <Save className="w-4 h-4 ml-2" />
+                  إضافة الإعلان
+                </CrystalButton>
+              </CardContent>
+            </Card>
+
+            {/* Ads List */}
+            <Card className="glass-card border-primary/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Tv className="w-4 h-4 text-primary" />
+                  إدارة الإعلانات
+                  <Badge variant="secondary" className="text-[10px] mr-auto">{adminAds.length} إعلان</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loading ? spinner : (
+                  <ScrollArea className="max-h-[400px]">
+                    <div className="space-y-2">
+                      {adminAds.length === 0 && (
+                        <p className="text-xs text-muted-foreground text-center py-6">لا توجد إعلانات بعد</p>
+                      )}
+                      {adminAds.map((ad) => (
+                        <div key={ad.id} className="p-3 rounded-lg bg-card/50 border border-border/30">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-xs font-medium truncate">{ad.title}</p>
+                                <Badge
+                                  variant="secondary"
+                                  className={`text-[9px] px-2 py-0.5 ${ad.isActive ? 'bg-green-500/20 text-green-600' : 'bg-gray-500/20 text-gray-500'}`}
+                                >
+                                  {ad.isActive ? 'فعّال' : 'معطّل'}
+                                </Badge>
+                              </div>
+                              {ad.imageUrl && (
+                                <p className="text-[10px] text-muted-foreground truncate mt-0.5">🖼 {ad.imageUrl}</p>
+                              )}
+                              {ad.linkUrl && (
+                                <p className="text-[10px] text-primary truncate">🔗 {ad.linkUrl}</p>
+                              )}
+                              <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground">
+                                <span>👁 {ad.impressions}</span>
+                                <span>👆 {ad.clicks}</span>
+                                <span>⭐ {ad.priority}</span>
+                              </div>
+                            </div>
+                            <div className="flex flex-col gap-1 shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className={`h-6 w-6 ${ad.isActive ? 'text-green-500/70 hover:text-green-500' : 'text-gray-400 hover:text-gray-500'}`}
+                                onClick={async () => {
+                                  if (saving) return;
+                                  setSaving(true);
+                                  try {
+                                    const res = await fetch('/api/admin/ads', {
+                                      method: 'PUT',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ id: ad.id, isActive: !ad.isActive }),
+                                    });
+                                    if (res.ok) {
+                                      const json = await res.json();
+                                      setAdminAds((prev) => prev.map((a) => a.id === ad.id ? { ...a, isActive: json.ad.isActive } : a));
+                                    }
+                                  } catch { /* silent */ } finally { setSaving(false); }
+                                }}
+                                disabled={saving}
+                              >
+                                {ad.isActive ? <Eye className="w-3 h-3" /> : <Eye className="w-3 h-3 opacity-40" />}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-destructive/70 hover:text-destructive"
+                                onClick={async () => {
+                                  if (!confirm('هل تريد حذف هذا الإعلان؟')) return;
+                                  setSaving(true);
+                                  try {
+                                    const res = await fetch('/api/admin/ads', {
+                                      method: 'DELETE',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ id: ad.id }),
+                                    });
+                                    if (res.ok) {
+                                      setAdminAds((prev) => prev.filter((a) => a.id !== ad.id));
+                                    }
+                                  } catch { /* silent */ } finally { setSaving(false); }
+                                }}
+                                disabled={saving}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </CardContent>
+            </Card>
           </div>
         )}
 
