@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
 import type { UsageInfoData } from '@/lib/usageLimit';
-import { Tv, Gift, Crown, X, Clock, RefreshCw, Infinity } from 'lucide-react';
+import { getGuestUsageInfo, incrementGuestUsage } from '@/lib/guestUsage';
+import { Tv, Gift, Crown, X, Clock, RefreshCw, Infinity, LogIn } from 'lucide-react';
 import CrystalButton from './CrystalButton';
 import AdWatchModal from './AdWatchModal';
 
@@ -35,16 +36,27 @@ export default function UsageBar() {
   const [showAdModal, setShowAdModal] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [isExpired, setIsExpired] = useState(false);
+  const [guestInfo, setGuestInfo] = useState<UsageInfoData | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const isGuest = !user;
   const isAdmin = user?.role === 'owner' || user?.role === 'supervisor';
   const isPremium = usageInfo?.isPremium || false;
   const hasSubscription = isAdmin || isPremium;
 
-  // Fetch usage info for ALL logged-in users (including admins)
-  const fetchUsage = useCallback(async () => {
-    if (!user) return;
-    // For admins, set a default usageInfo directly without API call
+  // The active usage info (from API for logged-in, from localStorage for guests)
+  const activeInfo = isGuest ? guestInfo : usageInfo;
+
+  // Fetch usage info for ALL users including guests
+  const fetchUsage = useCallback(() => {
+    if (isGuest) {
+      // Guest: use localStorage
+      const info = getGuestUsageInfo();
+      setGuestInfo(info);
+      return;
+    }
+
+    // Logged-in admin/owner: set unlimited directly
     if (user.role === 'owner' || user.role === 'supervisor') {
       setUsageInfo({
         messagesUsed: 0,
@@ -66,34 +78,37 @@ export default function UsageBar() {
       });
       return;
     }
+
+    // Regular logged-in user: fetch from API
     try {
-      const res = await fetch(`/api/usage?userId=${user.id}`);
-      if (res.ok) {
-        const data: UsageInfoData = await res.json();
-        setUsageInfo(data);
-        setCountdown(data.resetCountdown || 0);
-      }
+      fetch(`/api/usage?userId=${user.id}`)
+        .then((res) => res.ok ? res.json() : null)
+        .then((data: UsageInfoData | null) => {
+          if (data) {
+            setUsageInfo(data);
+            setCountdown(data.resetCountdown || 0);
+          }
+        })
+        .catch(() => {});
     } catch {
-      // silently fail
+      // silent
     }
-  }, [user, setUsageInfo]);
+  }, [user, isGuest, setUsageInfo]);
 
   useEffect(() => {
     fetchUsage();
   }, [fetchUsage]);
 
-  // Countdown timer - ticks every second (only for non-premium users)
+  // Countdown timer
   useEffect(() => {
-    if (hasSubscription) return;
-    if (!usageInfo) return;
+    if (hasSubscription || !activeInfo) return;
 
-    setCountdown(usageInfo.resetCountdown || 0);
+    setCountdown(activeInfo.resetCountdown || 0);
 
     timerRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           setIsExpired(true);
-          fetchUsage();
           return 0;
         }
         return prev - 1;
@@ -106,7 +121,7 @@ export default function UsageBar() {
         timerRef.current = null;
       }
     };
-  }, [hasSubscription, usageInfo?.resetCountdown, fetchUsage]);
+  }, [hasSubscription, activeInfo?.resetCountdown]);
 
   // Re-fetch when timer expires
   useEffect(() => {
@@ -116,25 +131,40 @@ export default function UsageBar() {
     }
   }, [isExpired, fetchUsage]);
 
+  // Expose incrementGuestUsage for ChatView to call
+  useEffect(() => {
+    if (isGuest) {
+      // Store in window for ChatView to access
+      (window as any).__iwan_guest_increment = () => {
+        const updated = incrementGuestUsage();
+        setGuestInfo(updated);
+        return updated;
+      };
+      (window as any).__iwan_guest_info = () => getGuestUsageInfo();
+      return () => {
+        delete (window as any).__iwan_guest_increment;
+        delete (window as any).__iwan_guest_info;
+      };
+    }
+  }, [isGuest]);
+
   // Re-fetch usage when ad modal closes
   const handleAdModalClose = useCallback(() => {
     setShowAdModal(false);
     fetchUsage();
   }, [fetchUsage]);
 
-  // Don't render if not logged in
-  if (!user) return null;
-  // Don't render until usageInfo is loaded (prevents flash)
-  if (!usageInfo) return null;
+  // Don't render until usageInfo is loaded
+  if (!activeInfo) return null;
 
-  const totalRemaining = usageInfo.freeRemaining + usageInfo.bonusMessages;
-  const usagePercent = usageInfo.freeLimit > 0
-    ? ((usageInfo.freeLimit - usageInfo.freeRemaining) / usageInfo.freeLimit) * 100
+  const totalRemaining = activeInfo.freeRemaining + activeInfo.bonusMessages;
+  const usagePercent = activeInfo.freeLimit > 0
+    ? ((activeInfo.freeLimit - activeInfo.freeRemaining) / activeInfo.freeLimit) * 100
     : 0;
 
   return (
     <>
-      {/* Usage Bar - visible for ALL logged-in users */}
+      {/* Usage Bar - visible for ALL users (guest + logged-in + admin) */}
       <motion.div
         className="mx-3 sm:mx-4 mt-1 mb-0 px-2.5 py-1.5 rounded-lg bg-card/60 border border-border/30 backdrop-blur-sm"
         initial={{ opacity: 0, y: -10 }}
@@ -156,14 +186,14 @@ export default function UsageBar() {
                     {isAdmin ? 'غير محدود' : 'مشترك'}
                   </span>
                 </div>
-                {!isAdmin && usageInfo.subscriptionExpiry && (
+                {!isAdmin && usageInfo?.subscriptionExpiry && (
                   <span className="text-[8px] text-muted-foreground">
                     ينتهي {new Date(usageInfo.subscriptionExpiry).toLocaleDateString('ar')}
                   </span>
                 )}
               </div>
             ) : (
-              /* Regular user - show remaining questions */
+              /* Regular user or Guest - show remaining questions */
               <>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-0.5">
@@ -176,12 +206,12 @@ export default function UsageBar() {
                         {totalRemaining}
                       </span>
                       <span className="text-[9px] sm:text-[10px] text-muted-foreground">
-                        / {usageInfo.freeLimit} سؤال متبقي
+                        / {activeInfo.freeLimit} سؤال متبقي
                       </span>
                     </div>
-                    {usageInfo.bonusMessages > 0 && (
+                    {activeInfo.bonusMessages > 0 && (
                       <span className="text-[9px] text-green-500 font-medium">
-                        +{usageInfo.bonusMessages} مكافأة
+                        +{activeInfo.bonusMessages} مكافأة
                       </span>
                     )}
                   </div>
@@ -203,20 +233,32 @@ export default function UsageBar() {
             )}
           </div>
 
-          {/* Watch Ad Button - only for non-premium, non-admin users */}
+          {/* Action buttons for non-premium users */}
           {!hasSubscription && (
-            <CrystalButton
-              size="sm"
-              className="shrink-0 h-6 px-2 text-[9px] sm:text-[10px] gap-1 bg-primary/10 hover:bg-primary/20 text-primary border-0"
-              onClick={() => setShowAdModal(true)}
-            >
-              <Tv className="w-3 h-3" />
-              شاهد إعلان
-            </CrystalButton>
+            <div className="flex items-center gap-1 shrink-0">
+              {isGuest && (
+                <CrystalButton
+                  size="sm"
+                  className="h-6 px-2 text-[9px] sm:text-[10px] gap-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 border-0"
+                  onClick={() => setCurrentView('profile')}
+                >
+                  <LogIn className="w-3 h-3" />
+                  <span className="hidden sm:inline">تسجيل</span>
+                </CrystalButton>
+              )}
+              <CrystalButton
+                size="sm"
+                className="h-6 px-2 text-[9px] sm:text-[10px] gap-1 bg-primary/10 hover:bg-primary/20 text-primary border-0"
+                onClick={() => setShowAdModal(true)}
+              >
+                <Tv className="w-3 h-3" />
+                شاهد إعلان
+              </CrystalButton>
+            </div>
           )}
         </div>
 
-        {/* 24h Countdown Timer - only for regular users */}
+        {/* 24h Countdown Timer */}
         {!hasSubscription && countdown > 0 && (
           <div className="mt-1.5 flex items-center justify-between">
             <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
@@ -226,17 +268,17 @@ export default function UsageBar() {
                 {formatCountdown(countdown)}
               </span>
             </div>
-            {usageInfo.adsUntilBonus < 10 && (
+            {activeInfo.adsUntilBonus < 10 && (
               <div className="flex items-center gap-0.5 text-[8px] text-green-500">
                 <Gift className="w-2.5 h-2.5" />
-                <span>{usageInfo.adsUntilBonus} إعلان ← {usageInfo.BONUS_MESSAGES} رسائل</span>
+                <span>{activeInfo.adsUntilBonus} إعلان ← {activeInfo.BONUS_MESSAGES} رسائل</span>
               </div>
             )}
           </div>
         )}
 
         {/* Timer expired message */}
-        {!hasSubscription && countdown === 0 && usageInfo.freeRemaining < usageInfo.freeLimit && (
+        {!hasSubscription && countdown === 0 && activeInfo.freeRemaining < activeInfo.freeLimit && (
           <div className="mt-1.5 flex items-center gap-1 text-[9px] text-green-500 animate-pulse">
             <RefreshCw className="w-2.5 h-2.5" />
             <span>تم تجديد الأسئلة!</span>
@@ -247,9 +289,9 @@ export default function UsageBar() {
       {/* AdWatchModal */}
       <AdWatchModal open={showAdModal} onClose={handleAdModalClose} />
 
-      {/* Limit Reached Modal - only for regular users */}
+      {/* Limit Reached Modal */}
       <AnimatePresence>
-        {!hasSubscription && limitReachedModal && (
+        {!hasSubscription && limitReachedModal && activeInfo && (
           <motion.div
             className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
@@ -272,7 +314,7 @@ export default function UsageBar() {
               </div>
 
               <p className="text-xs text-muted-foreground mb-3">
-                استهلكت جميع أسئلتك المجانية لهذا اليوم ({usageInfo.freeLimit} سؤال). يمكنك المتابعة بإحدى الطرق التالية:
+                استهلكت جميع أسئلتك المجانية لهذا اليوم ({activeInfo.freeLimit} سؤال). يمكنك المتابعة بإحدى الطرق التالية:
               </p>
 
               {/* Reset Timer Info */}
@@ -288,23 +330,45 @@ export default function UsageBar() {
                 </div>
               )}
 
-              {/* Subscription Option */}
-              <div className="mb-3 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
-                <div className="flex items-center gap-2 mb-1">
-                  <Crown className="w-4 h-4 text-yellow-500" />
-                  <span className="text-xs font-bold text-yellow-500">اشتراك شهري</span>
+              {/* Login Option (for guests) */}
+              {isGuest && (
+                <div className="mb-3 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                  <div className="flex items-center gap-2 mb-1">
+                    <LogIn className="w-4 h-4 text-blue-500" />
+                    <span className="text-xs font-bold text-blue-500">سجّل دخولك</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mb-2">سجّل دخولك لتحصل على أسئلة أكثر ومزايا إضافية</p>
+                  <CrystalButton
+                    className="w-full h-8 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-lg"
+                    onClick={() => {
+                      setLimitReachedModal(false);
+                      setCurrentView('profile');
+                    }}
+                  >
+                    تسجيل الدخول
+                  </CrystalButton>
                 </div>
-                <p className="text-[10px] text-muted-foreground mb-2">أسئلة غير محدودة لمدة شهر كامل</p>
-                <CrystalButton
-                  className="w-full h-8 bg-yellow-500 hover:bg-yellow-600 text-white text-xs rounded-lg"
-                  onClick={() => {
-                    setLimitReachedModal(false);
-                    setCurrentView('profile');
-                  }}
-                >
-                  اشترك الآن - {usageInfo.SUBSCRIPTION_PRICE}$
-                </CrystalButton>
-              </div>
+              )}
+
+              {/* Subscription Option */}
+              {!isGuest && (
+                <div className="mb-3 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Crown className="w-4 h-4 text-yellow-500" />
+                    <span className="text-xs font-bold text-yellow-500">اشتراك شهري</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mb-2">أسئلة غير محدودة لمدة شهر كامل</p>
+                  <CrystalButton
+                    className="w-full h-8 bg-yellow-500 hover:bg-yellow-600 text-white text-xs rounded-lg"
+                    onClick={() => {
+                      setLimitReachedModal(false);
+                      setCurrentView('profile');
+                    }}
+                  >
+                    اشترك الآن - {activeInfo.SUBSCRIPTION_PRICE}$
+                  </CrystalButton>
+                </div>
+              )}
 
               {/* Ad Option */}
               <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20">
@@ -313,7 +377,7 @@ export default function UsageBar() {
                   <span className="text-xs font-bold text-green-500">شاهد إعلانات</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground mb-2">
-                  كل {usageInfo.ADS_FOR_BONUS} إعلانات = {usageInfo.BONUS_MESSAGES} أسئلة مجانية
+                  كل {activeInfo.ADS_FOR_BONUS} إعلانات = {activeInfo.BONUS_MESSAGES} أسئلة مجانية
                 </p>
                 <CrystalButton
                   className="w-full h-8 bg-green-500 hover:bg-green-600 text-white text-xs rounded-lg"

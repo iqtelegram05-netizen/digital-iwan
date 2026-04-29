@@ -82,9 +82,18 @@ export default function ChatView() {
   const sendMessage = useCallback(async () => {
     if (!input.trim() || isLoading) return;
 
-    // Check usage limit for non-admin users
+    // Check usage limit for non-admin logged-in users
     if (user && user.role !== 'owner' && user.role !== 'supervisor' && usageInfo) {
       if (!usageInfo.canSend) {
+        setLimitReachedModal(true);
+        return;
+      }
+    }
+
+    // Check usage limit for GUEST (unauthenticated) users via localStorage
+    if (!user) {
+      const guestCheck = (window as any).__iwan_guest_info?.();
+      if (guestCheck && !guestCheck.canSend) {
         setLimitReachedModal(true);
         return;
       }
@@ -115,9 +124,14 @@ export default function ChatView() {
 
       const data = await res.json();
 
-      // Update usage info from response
+      // Update usage info from response (logged-in users)
       if (data.usageInfo) {
         setUsageInfo(data.usageInfo);
+      }
+
+      // Increment guest usage counter via localStorage
+      if (!user) {
+        (window as any).__iwan_guest_increment?.();
       }
 
       // Handle limit reached from server
