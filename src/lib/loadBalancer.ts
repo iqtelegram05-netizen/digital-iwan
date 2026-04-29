@@ -8,6 +8,7 @@ interface SelectedKey {
   id: string;
   provider: string;
   providerLabel: string;
+  providerBaseUrl: string | null;
   decryptedKey: string;
   fingerprint: string;
   keyLabel: string | null;
@@ -80,6 +81,7 @@ export async function selectKey(preferredProvider?: string): Promise<SelectedKey
     id: selected.id,
     provider: selected.provider.name,
     providerLabel: selected.provider.label,
+    providerBaseUrl: selected.provider.baseUrl,
     decryptedKey: decrypt(selected.encryptedKey),
     fingerprint: selected.keyFingerprint || '••••••••',
     keyLabel: selected.label,

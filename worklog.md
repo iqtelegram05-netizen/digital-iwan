@@ -407,3 +407,26 @@ Stage Summary:
 - Other 18 languages fall back to Arabic for any missing keys
 - CSS @import order warnings are pre-existing and unrelated
 - All changes build successfully
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix Groq API key error - "Configuration file not found or invalid"
+
+Work Log:
+- Diagnosed the issue: two problems found
+  1. No `.z-ai-config` file in project directory (only in `/etc/` as read-only)
+  2. Load Balancer keys were NOT actually being used - chat/route.ts always used ZAI.create() ignoring the selected key
+- Created `/home/z/my-project/.z-ai-config` by copying from `/etc/`
+- Completely rewrote `src/app/api/chat/route.ts` to support direct API calls to providers
+- Added provider configuration for: Groq, DeepSeek, OpenAI, Gemini, OpenRouter
+- Added `callProviderApi()` function that makes direct fetch calls to provider endpoints
+- Updated `src/lib/loadBalancer.ts` to include `providerBaseUrl` in SelectedKey interface
+- Build succeeded with no errors
+
+Stage Summary:
+- `.z-ai-config` now exists in project root
+- Chat API now uses Groq/DeepSeek/OpenAI/etc. keys directly via their API endpoints
+- Supports custom base URLs for custom providers
+- Falls back to ZAI default when no load balancer keys are available
+- Added logging for debugging load balancer decisions
