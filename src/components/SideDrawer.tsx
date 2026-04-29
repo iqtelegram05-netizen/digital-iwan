@@ -145,8 +145,9 @@ export default function SideDrawer() {
 
         <Tabs defaultValue="prayers" className="flex-1 min-h-0 flex flex-col" dir="rtl" onValueChange={(val) => {
           if (val === 'qibla') {
-            // Navigate to dedicated Qibla page instead of showing inline
             window.location.href = '/qibla';
+          } else if (val === 'events') {
+            window.location.href = '/hijri';
           }
         }}>
           <TabsList className="w-full grid grid-cols-4 p-1 m-3 rounded-xl bg-muted/50 h-auto">
@@ -226,32 +227,11 @@ export default function SideDrawer() {
               )}
             </TabsContent>
 
-            {/* Events Tab */}
+            {/* Events Tab - redirects to full Hijri calendar page */}
             <TabsContent value="events" className="mt-0">
-              <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">{t('events.title')}</h3>
-              <div className="space-y-2">
-                {HIJRI_EVENTS.map((event, idx) => (
-                  <motion.div
-                    key={idx}
-                    className="flex items-start gap-3 p-3 rounded-xl bg-card/50 border border-border/30"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                  >
-                    <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${event.color}`} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium">{t(event.titleKey)}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {event.day} {monthNames[event.month] || ''}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              <div className="mt-4 p-4 rounded-xl bg-primary/5 border border-primary/10 text-center">
-                <Clock className="w-5 h-5 text-primary mx-auto mb-2" />
-                <p className="text-xs text-muted-foreground">{t('events.countdown')}</p>
+              <div className="flex flex-col items-center justify-center py-8 gap-3">
+                <Calendar className="w-10 h-10 text-primary animate-pulse" />
+                <p className="text-sm text-muted-foreground">جارٍ فتح التقويم الهجري...</p>
               </div>
             </TabsContent>
           </ScrollArea>
