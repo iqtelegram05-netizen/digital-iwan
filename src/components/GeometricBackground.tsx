@@ -70,7 +70,8 @@ export default function GeometricBackground() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const isDark = resolvedTheme === 'dark';
+  // resolvedTheme is undefined during SSR - default to dark to match our defaultTheme
+  const isDark = mounted ? resolvedTheme === 'dark' : true;
 
   const getShapeClass = (type: GeoShape['type']) => {
     switch (type) {

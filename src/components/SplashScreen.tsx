@@ -29,14 +29,15 @@ const floatingShapes = Array.from({ length: 16 }, (_, i) => ({
 export default function SplashScreen() {
   const { splashComplete, setSplashComplete } = useAppStore();
   const { resolvedTheme } = useTheme();
-  const { t } = useTranslation();
-  const isDark = resolvedTheme === 'dark';
+  const { t, isReady: translationsReady } = useTranslation();
   const [mounted, setMounted] = useState(false);
 
-  // Only render random-dependent content on client to avoid hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // resolvedTheme is undefined during SSR - default to dark to match our defaultTheme
+  const isDark = mounted ? resolvedTheme === 'dark' : true;
 
   // Pre-compute particles deterministically
   const particles = useMemo(() =>
@@ -142,7 +143,7 @@ export default function SplashScreen() {
           ))}
 
           {/* Geometric shapes flowing from edges to center */}
-          {floatingShapes.map((shape) => (
+          {mounted && floatingShapes.map((shape) => (
             <motion.div
               key={shape.id}
               className={`absolute geo-shape ${
@@ -213,22 +214,26 @@ export default function SplashScreen() {
               animate={{ rotate: [0, 2, -2, 0] }}
               transition={{ duration: 4, delay: 2.5, repeat: Infinity, ease: 'easeInOut' }}
             />
-            <motion.h1
-              className={`text-2xl sm:text-3xl font-bold ${titleColor} ${glowTextClass}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 2.5, duration: 0.8 }}
-            >
-              {t('app.title')}
-            </motion.h1>
-            <motion.p
-              className={`${subtitleColor} text-sm`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 3, duration: 0.6 }}
-            >
-              {t('app.subtitle')}
-            </motion.p>
+            {mounted && translationsReady && (
+              <motion.h1
+                className={`text-2xl sm:text-3xl font-bold ${titleColor} ${glowTextClass}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 2.5, duration: 0.8 }}
+              >
+                {t('app.title')}
+              </motion.h1>
+            )}
+            {mounted && translationsReady && (
+              <motion.p
+                className={`${subtitleColor} text-sm`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 3, duration: 0.6 }}
+              >
+                {t('app.subtitle')}
+              </motion.p>
+            )}
           </motion.div>
 
           {/* Auto-transition timer */}
