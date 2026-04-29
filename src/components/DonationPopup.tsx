@@ -15,12 +15,9 @@ export default function DonationPopup({ onDismiss }: DonationPopupProps) {
   const scheduledRef = useRef(false);
 
   useEffect(() => {
-    // Skip if already scheduled or dismissed this session
     if (scheduledRef.current) return;
-    const dismissed = sessionStorage.getItem('donation_popup_dismissed');
-    if (dismissed) return;
 
-    // Show popup after splash completes (or immediately if splash already done)
+    // Show popup after splash completes (every page load — no session storage)
     if (splashComplete) {
       scheduledRef.current = true;
       const timer = setTimeout(() => setVisible(true), 1000);
@@ -30,13 +27,11 @@ export default function DonationPopup({ onDismiss }: DonationPopupProps) {
 
   const handleDismiss = () => {
     setVisible(false);
-    sessionStorage.setItem('donation_popup_dismissed', 'true');
     onDismiss();
   };
 
   const handleDonate = () => {
     setVisible(false);
-    sessionStorage.setItem('donation_popup_dismissed', 'true');
     onDismiss();
     window.location.href = '/donate';
   };
@@ -175,7 +170,7 @@ export default function DonationPopup({ onDismiss }: DonationPopupProps) {
 
                 {/* Footer note */}
                 <p className="text-[9px] text-white/25 leading-relaxed">
-                  للتبرع اضغط على كلمة &quot;اغاثة&quot; — بعد إخفائك لهذا الإشعار يمكنك الوصول إليه من زر الأعلى
+                  للتبرع اضغط على كلمة &quot;اغاثة&quot; — يمكنك أيضاً الوصول لصفحة التبرع من زر الأعلى
                 </p>
               </div>
             </div>

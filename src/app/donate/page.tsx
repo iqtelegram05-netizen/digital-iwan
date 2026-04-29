@@ -187,7 +187,7 @@ export default function DonatePage() {
             }}
           >
             <Image
-              src="/barcode-qicard.png"
+              src="/barcode-qicard.jpeg"
               alt="باركود كي كارد للتبرع"
               width={350}
               height={200}
