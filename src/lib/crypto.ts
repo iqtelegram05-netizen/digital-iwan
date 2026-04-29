@@ -41,8 +41,17 @@ export function decrypt(ciphertext: string): string {
   return ciphertext;
 }
 
-// Create a fingerprint for display (first 8 chars + ...)
+// Create a fingerprint for display
+// Uses hash of full token + first 6 chars to guarantee uniqueness
 export function fingerprint(key: string): string {
-  if (key.length <= 8) return '••••••••';
-  return key.slice(0, 8) + '••••••••';
+  if (!key || key.length <= 8) return '••••••••';
+  const prefix = key.slice(0, 6); // e.g. "hf_abc"
+  // Simple hash of full token for uniqueness
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = ((hash << 5) - hash) + key.charCodeAt(i);
+    hash |= 0;
+  }
+  const shortHash = Math.abs(hash).toString(36).slice(0, 4); // 4-char alphanumeric
+  return `${prefix}..${shortHash}..`;
 }

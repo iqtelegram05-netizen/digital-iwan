@@ -538,33 +538,87 @@ export async function getHFKeyStats(): Promise<{
 }
 
 // ========== HF Key Management (CRUD) ==========
+
+// Check if a token already exists in the database (by encrypted value)
+async function isTokenDuplicate(token: string): Promise<boolean> {
+  try {
+    const encrypted = encrypt(token.trim());
+    const count = await db.huggingFaceKey.count({
+      where: { accessToken: encrypted },
+    });
+    return count > 0;
+  } catch {
+    return false;
+  }
+}
+
 export async function addHFKey(token: string, label?: string, model?: string): Promise<HFKeyInfo | null> {
   try {
     if (!token || token.trim().length < 10) return null;
     const trimmedToken = token.trim();
+
+    // Check for true duplicate (same token already in DB)
+    if (await isTokenDuplicate(trimmedToken)) {
+      console.log(`[HF] Token already exists, skipping`);
+      return null;
+    }
+
+    // Generate unique fingerprint with random suffix to avoid collisions
     const fp = makeFP(trimmedToken);
     const selectedModel = model || DEFAULT_MODEL;
+
     const key = await db.huggingFaceKey.create({
       data: { accessToken: encrypt(trimmedToken), fingerprint: fp, tokenLabel: label || null, model: selectedModel, status: 'active' },
     });
     console.log(`[HF] Added key: ${fp} model=${selectedModel}`);
     return { id: key.id, token: trimmedToken, fingerprint: key.fingerprint, label: key.tokenLabel, model: key.model, priority: key.priority, status: key.status, requestCount: 0, successCount: 0, failCount: 0, tokensUsed: 0, tokensLimit: null, lastUsedAt: null, lastError: null, cooldownUntil: null };
-  } catch (err) {
-    console.error('[HF] Failed to add key:', err);
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    // If unique constraint error on fingerprint, add random suffix and retry
+    if (msg.includes('Unique') || msg.includes('unique') || msg.includes('duplicate') || msg.includes('duplicate key')) {
+      console.log(`[HF] Fingerprint collision, retrying with unique suffix`);
+      try {
+        const trimmedToken = token.trim();
+        const fp = makeFP(trimmedToken) + `_${Date.now().toString(36)}`;
+        const selectedModel = model || DEFAULT_MODEL;
+        const key = await db.huggingFaceKey.create({
+          data: { accessToken: encrypt(trimmedToken), fingerprint: fp, tokenLabel: label || null, model: selectedModel, status: 'active' },
+        });
+        console.log(`[HF] Added key with unique suffix: ${fp}`);
+        return { id: key.id, token: trimmedToken, fingerprint: key.fingerprint, label: key.tokenLabel, model: key.model, priority: key.priority, status: key.status, requestCount: 0, successCount: 0, failCount: 0, tokensUsed: 0, tokensLimit: null, lastUsedAt: null, lastError: null, cooldownUntil: null };
+      } catch (retryErr) {
+        console.error('[HF] Retry also failed:', retryErr);
+        return null;
+      }
+    }
+    console.error('[HF] Failed to add key:', msg);
     return null;
   }
 }
 
-export async function bulkAddHFKeys(tokens: string[], model?: string): Promise<{ added: number; errors: number }> {
-  let added = 0, errors = 0;
+export async function bulkAddHFKeys(tokens: string[], model?: string): Promise<{ added: number; errors: number; skipped: number }> {
+  let added = 0, errors = 0, skipped = 0;
+  // Remove whitespace-only duplicates from the input array
+  const seen = new Set<string>();
+  const uniqueTokens: string[] = [];
+
   for (const token of tokens) {
     const trimmed = token.trim();
     if (trimmed.length < 10) { errors++; continue; }
-    const result = await addHFKey(trimmed, undefined, model);
-    if (result) added++; else errors++;
+    if (seen.has(trimmed)) { skipped++; continue; } // Exact duplicate in input
+    seen.add(trimmed);
+    uniqueTokens.push(trimmed);
   }
-  console.log(`[HF] Bulk add: ${added} added, ${errors} errors`);
-  return { added, errors };
+
+  // Add each unique token
+  for (const trimmed of uniqueTokens) {
+    const result = await addHFKey(trimmed, undefined, model);
+    if (result) added++;
+    else skipped++; // Already in DB or collision
+  }
+
+  console.log(`[HF] Bulk add: ${added} added, ${skipped} skipped (dup), ${errors} errors`);
+  return { added, errors, skipped };
 }
 
 export async function deleteHFKey(id: string): Promise<boolean> {

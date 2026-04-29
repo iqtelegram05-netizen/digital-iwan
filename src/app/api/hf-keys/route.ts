@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'لا توجد مفاتيح صالحة' }, { status: 400 });
         }
         const result = await bulkAddHFKeys(validTokens, model);
-        return NextResponse.json({ success: true, added: result.added, errors: result.errors });
+        return NextResponse.json({ success: true, added: result.added, errors: result.errors, skipped: result.skipped || 0 });
       }
 
       default:
