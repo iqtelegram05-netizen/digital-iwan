@@ -167,7 +167,12 @@ export default function AdminPanel() {
   // Load Balancer state
   const [lbStats, setLbStats] = useState<LBStats | null>(null);
   const [bulkText, setBulkText] = useState('');
-  const [showBulkInput, setShowBulkInput] = useState(false);
+  const [showBulkInput, setShowBulkInput] = useState(true);
+  const [singleKey, setSingleKey] = useState('');
+  const [singleKeyLabel, setSingleKeyLabel] = useState('');
+  const [selectedProvider, setSelectedProvider] = useState('auto');
+  const [lbError, setLbError] = useState<string | null>(null);
+  const [lbSuccess, setLbSuccess] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -411,11 +416,30 @@ export default function AdminPanel() {
 
   const handleBulkAdd = async () => {
     if (!bulkText.trim()) return;
+    setLbError(null);
+    setLbSuccess(null);
     const result = await lbAction({ action: 'bulkAdd', text: bulkText });
     if (result) {
       setBulkText('');
-      setShowBulkInput(false);
       await fetchData();
+    }
+  };
+
+  const handleSingleKeyAdd = async () => {
+    if (!singleKey.trim()) {
+      setLbError('يرجى إدخال مفتاح API');
+      return;
+    }
+    setLbError(null);
+    setLbSuccess(null);
+    const result = await lbAction({ action: 'bulkAdd', text: singleKey.trim() });
+    if (result) {
+      setSingleKey('');
+      setSingleKeyLabel('');
+      setLbSuccess(`تم إضافة المفتاح بنجاح (${result.added || 0} مضاف)`);
+      await fetchData();
+    } else {
+      setLbError('فشل في إضافة المفتاح');
     }
   };
 
@@ -861,8 +885,7 @@ export default function AdminPanel() {
                   </CardTitle>
                   <div className="flex gap-2">
                     <CrystalButton variant="outline" size="sm" className="text-[10px] gap-1 border-primary/20 hover:bg-primary/10" onClick={() => setShowBulkInput(!showBulkInput)}>
-                      <Plus className="w-3 h-3" />
-                      {showBulkInput ? t('admin.loadBalancer.manualAdd') : t('admin.loadBalancer.pasteBulk')}
+                      {showBulkInput ? 'إخفاء لصق بالجملة' : 'لصق عدة مفاتيح'}
                     </CrystalButton>
                     <CrystalButton variant="outline" size="sm" className="text-[10px] gap-1 border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-600" onClick={() => lbUpdate({ action: 'reactivateAll' })} disabled={saving}>
                       <RotateCcw className="w-3 h-3" />
@@ -872,11 +895,51 @@ export default function AdminPanel() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
+                {/* Error / Success messages */}
+                {lbError && (
+                  <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-600 text-[11px]">{lbError}</div>
+                )}
+                {lbSuccess && (
+                  <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-[11px]">{lbSuccess}</div>
+                )}
+
+                {/* Single Key Input */}
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-foreground/80">إضافة مفتاح واحد</p>
+                  <div className="flex gap-2">
+                    <Input
+                      value={singleKey}
+                      onChange={(e) => { setSingleKey(e.target.value); setLbError(null); setLbSuccess(null); }}
+                      placeholder="gsk_... أو sk-... أو AIza..."
+                      className="text-xs border-primary/20 bg-card/50 flex-1 font-mono"
+                      onKeyDown={(e) => e.key === 'Enter' && handleSingleKeyAdd()}
+                    />
+                    <Input
+                      value={singleKeyLabel}
+                      onChange={(e) => setSingleKeyLabel(e.target.value)}
+                      placeholder="تسمية (اختياري)"
+                      className="text-xs border-primary/20 bg-card/50 w-28"
+                    />
+                    <CrystalButton
+                      className="shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg"
+                      onClick={handleSingleKeyAdd}
+                      disabled={saving || !singleKey.trim()}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </CrystalButton>
+                  </div>
+                  <p className="text-[9px] text-muted-foreground text-center">يتم كشف مزود الخدمة تلقائيًا (Groq, DeepSeek, Gemini, OpenAI, OpenRouter)</p>
+                </div>
+
+                <Separator className="bg-primary/10" />
+
+                {/* Bulk Paste */}
                 {showBulkInput ? (
                   <>
+                    <p className="text-xs font-medium text-foreground/80">لصق عدة مفاتيح دفعة واحدة</p>
                     <Textarea
                       value={bulkText}
-                      onChange={(e) => setBulkText(e.target.value)}
+                      onChange={(e) => { setBulkText(e.target.value); setLbError(null); setLbSuccess(null); }}
                       placeholder={t('admin.loadBalancer.bulkPlaceholder')}
                       className="min-h-[100px] text-xs border-primary/20 bg-card/50 resize-none font-mono"
                     />
@@ -892,9 +955,7 @@ export default function AdminPanel() {
                     </div>
                     <p className="text-[9px] text-muted-foreground text-center">{t('admin.loadBalancer.autoDetect')}</p>
                   </>
-                ) : (
-                  <p className="text-xs text-muted-foreground text-center py-2">{t('admin.loadBalancer.pressPaste')}</p>
-                )}
+                ) : null}
               </CardContent>
             </Card>
 
@@ -970,8 +1031,8 @@ export default function AdminPanel() {
               <Card className="glass-card border-primary/10">
                 <CardContent className="p-8 text-center">
                   <Zap className="w-10 h-10 text-primary/30 mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground">{t('admin.loadBalancer.pressPaste')}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{t('admin.loadBalancer.pressPaste')}</p>
+                  <p className="text-sm text-muted-foreground">لا توجد مفاتيح API بعد</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">أضف مفتاح Groq أو DeepSeek أو Gemini من الأعلى للبدء</p>
                 </CardContent>
               </Card>
             )}
