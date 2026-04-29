@@ -1,0 +1,193 @@
+{
+  "app": {
+    "title": "Iwan Digital",
+    "subtitle": "AI Iraq Pertama",
+    "description": "Iwan Digital - Pembantu Pintar Sains Islam"
+  },
+  "header": {
+    "selectScholar": "Pilih Seorang Ulama"
+  },
+  "menu": {
+    "mainMenu": "Menu Utama",
+    "browseContent": "Layari doa, khutbah dan acara"
+  },
+  "tabs": {
+    "prayers": "Doa",
+    "qibla": "Kiblat",
+    "sermons": "Khutbah",
+    "events": "Acara"
+  },
+  "prayers": {
+    "title": "Doa",
+    "loading": "Memuatkan...",
+    "empty": "Tiada doa ditambah. Pemilik boleh menambah dari panel kawalan.",
+    "noText": "Tiada teks dipilih",
+    "back": "Kembali",
+    "visits": "Ziarah",
+    "visitsEmpty": "Tiada ziarah ditambah.",
+    "sermonsTitle": "Khutbah",
+    "sermonsEmpty": "Tiada khutbah ditambah. Pemilik boleh menambah dari panel kawalan."
+  },
+  "events": {
+    "title": "Acara Takwim Hijriah",
+    "countdown": "Kiraan mundur acara seterusnya akan muncul di sini"
+  },
+  "chat": {
+    "scientificIwan": "Iwan Sains",
+    "digitalDebater": "Pembahas Digital",
+    "digitalTeacher": "Guru Digital",
+    "askQuestion": "Tanya soalan anda tentang sains Islam...",
+    "presentArgument": "Kemukakan hujah anda untuk perbincangan...",
+    "askAnyTopic": "Tanya topik yang anda ingin fahami...",
+    "clearChat": "Padam Sembang",
+    "errorProcessing": "Maaf, berlaku ralat semasa pemprosesan.",
+    "errorConnection": "Maaf, ralat sambungan. Sila cuba lagi.",
+    "sources": "Sumber:"
+  },
+  "quiz": {
+    "testYourself": "Uji Diri Anda",
+    "selectCategory": "Pilih kategori untuk memulakan kuiz",
+    "generatingQuestions": "Menghasilkan soalan...",
+    "noQuestions": "Soalan tidak dapat dihasilkan. Sila cuba lagi.",
+    "connectionError": "Ralat sambungan",
+    "submitError": "Ralat menghantar jawapan",
+    "questionOf": "Soalan {current} daripada {total}",
+    "previous": "Sebelumnya",
+    "next": "Seterusnya",
+    "finishQuiz": "Selesai Kuiz",
+    "grading": "Memeriksa...",
+    "result": "Keputusan Kuiz",
+    "outOf": "daripada 100",
+    "retry": "Cuba Lagi",
+    "anotherCategory": "Kategori Lain",
+    "correctAnswer": "Jawapan betul:",
+    "grades": {
+      "excellent": "Cemerlang",
+      "veryGood": "Sangat Baik",
+      "good": "Baik",
+      "pass": "Lulus",
+      "needsImprovement": "Perlu Peningkatan"
+    },
+    "categories": {
+      "beliefs": "Akidah",
+      "logic": "Logik",
+      "kalam": "Ilmu Kalam",
+      "grammar": "Nahu",
+      "fiqh": "Feqah"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "loginDescription": "Daftar masuk dengan akaun Google untuk menyimpan keutamaan dan menjejaki kemajuan anda",
+    "loginWithGoogle": "Daftar Masuk dengan Google",
+    "loginInProgress": "Memasuki...",
+    "loginSuccess": "Berjaya masuk!",
+    "googleLoadFailed": "Gagal memuatkan perkhidmatan Google",
+    "googleNotAvailable": "Perkhidmatan Google tidak tersedia",
+    "decodeFailed": "Gagal menyahkod data Google",
+    "loginError": "Ralat semasa daftar masuk",
+    "lastLogin": "Log Masuk Terakhir",
+    "accountStatus": "Status Akaun",
+    "active": "Aktif",
+    "notSet": "Tidak ditetapkan",
+    "editProfile": "Sunting Profil",
+    "name": "Nama",
+    "namePlaceholder": "Masukkan nama anda",
+    "bio": "Tentang Anda",
+    "bioPlaceholder": "Kongsi minat akademik anda...",
+    "interests": "Minat",
+    "selectUpTo": "(Pilih sehingga 5)",
+    "updateProfile": "Kemas Kini Profil",
+    "saved": "Berjaya disimpan!",
+    "controlPanel": "Panel Kawalan",
+    "logout": "Log Keluar",
+    "user": "Pengguna",
+    "features": {
+      "title": "Faedah daftar masuk:",
+      "saveChats": "Simpan sembang dan kuiz anda",
+      "trackProgress": "Jejaki kemajuan dalam sains Islam",
+      "customize": "Sesuaikan pengalaman mengikut minat anda"
+    },
+    "interestsList": [
+      "Akidah",
+      "Feqah",
+      "Tafsir",
+      "Hadis",
+      "Sejarah Islam",
+      "Falsafah Islam",
+      "Logik",
+      "Nahu",
+      "Balaghah",
+      "Usul Feqah"
+    ]
+  },
+  "reader": {
+    "font": "Fon",
+    "color": "Warna",
+    "size": "Saiz",
+    "currentFont": "Fon semasa:",
+    "searchFont": "Cari fon...",
+    "all": "Semua",
+    "showMore": "Lagi",
+    "additionalFonts": "fon tambahan",
+    "showLess": "Kurang",
+    "textColor": "Warna Teks",
+    "fontSize": "Saiz Fon",
+    "colors": {
+      "default": "Lalai",
+      "warm": "Hangat",
+      "gold": "Emas",
+      "sky": "Langit",
+      "emerald": "Zamrud",
+      "rose": "Mawar",
+      "purple": "Ungu",
+      "white": "Putih",
+      "orange": "Oren",
+      "cyan": "Cyan Muda"
+    },
+    "sizes": {
+      "xs": "Sangat Kecil",
+      "sm": "Kecil",
+      "md": "Sederhana",
+      "lg": "Besar",
+      "xl": "Sangat Besar",
+      "2xl": "Ngeri",
+      "3xl": "Raksasa"
+    }
+  },
+  "login": {
+    "title": "Iwan Digital",
+    "subtitle": "Daftar masuk dengan akaun Google anda",
+    "noEmail": "Tiada e-mel ditemui",
+    "error": "Ralat:",
+    "noClientId": "Google Client ID tidak dikonfigurasi"
+  },
+  "admin": {
+    "title": "Panel Kawalan",
+    "addPrayer": "Tambah Doa",
+    "addSermon": "Tambah Khutbah",
+    "addVisit": "Tambah Ziarah",
+    "titleField": "Tajuk",
+    "subtitleField": "Penerangan Ringkas",
+    "categoryField": "Kategori",
+    "textField": "Teks Penuh",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Padam",
+    "edit": "Sunting",
+    "savedSuccess": "Berjaya disimpan!",
+    "deleteConfirm": "Anda pasti mahu memadam?"
+  },
+  "common": {
+    "loading": "Memuatkan...",
+    "error": "Ralat",
+    "success": "Berjaya",
+    "cancel": "Batal",
+    "confirm": "Sahkan",
+    "save": "Simpan",
+    "delete": "Padam",
+    "edit": "Sunting",
+    "search": "Cari",
+    "noData": "Tiada data"
+  }
+}

@@ -3,7 +3,7 @@
 import { useAppStore } from '@/store/appStore';
 import { useTheme } from 'next-themes';
 import { motion } from 'framer-motion';
-import { Menu, Moon, Sun, GraduationCap } from 'lucide-react';
+import { Menu, Moon, Sun, GraduationCap, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -12,6 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { LANGUAGES } from '@/i18n/languages';
+import { useTranslation } from '@/i18n/useTranslation';
 
 const SCHOLARS = [
   'السيد علي السيستاني',
@@ -29,6 +31,10 @@ interface HeaderProps {
 export default function Header({ onMenuClick }: HeaderProps) {
   const { selectedScholar, setSelectedScholar } = useAppStore();
   const { theme, setTheme } = useTheme();
+  const { t, lang, setLanguage } = useTranslation();
+
+  // Find current language info
+  const currentLang = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
 
   return (
     <motion.header
@@ -37,8 +43,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.2 }}
     >
-      <div className="flex items-center justify-between max-w-4xl mx-auto">
-        {/* Right: Menu button */}
+      <div className="flex items-center justify-between max-w-4xl mx-auto gap-1">
+        {/* Menu button */}
         <Button
           variant="ghost"
           size="icon"
@@ -48,13 +54,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
           <Menu className="w-5 h-5" />
         </Button>
 
-        {/* Center: Scholar Selector */}
-        <div className="flex-1 mx-1 sm:mx-4 max-w-[200px] sm:max-w-[280px]">
+        {/* Scholar Selector */}
+        <div className="flex-1 mx-1 max-w-[160px] sm:max-w-[220px] min-w-0">
           <Select value={selectedScholar || ''} onValueChange={setSelectedScholar}>
-            <SelectTrigger className="h-8 sm:h-9 text-[11px] sm:text-sm border-primary/20 bg-primary/5 focus:ring-primary/30">
-              <div className="flex items-center gap-2 min-w-0">
-                <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
-                <SelectValue placeholder="اختر عالماً" className="truncate" />
+            <SelectTrigger className="h-8 sm:h-9 text-[10px] sm:text-xs border-primary/20 bg-primary/5 focus:ring-primary/30">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <GraduationCap className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary shrink-0" />
+                <SelectValue placeholder={t('header.selectScholar')} className="truncate" />
               </div>
             </SelectTrigger>
             <SelectContent className="max-h-48 sm:max-h-64">
@@ -67,7 +73,30 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </Select>
         </div>
 
-        {/* Left: Theme toggle */}
+        {/* Language Selector */}
+        <Select value={lang} onValueChange={setLanguage}>
+          <SelectTrigger className="w-auto min-w-[42px] max-w-[56px] h-8 sm:h-9 px-1.5 border-primary/20 bg-primary/5 focus:ring-primary/30 gap-0.5">
+            <div className="flex items-center justify-center">
+              <span className="text-sm">{currentLang.flag}</span>
+              <span className="text-[9px] sm:text-[10px] font-medium text-muted-foreground hidden sm:inline">
+                {currentLang.code.toUpperCase()}
+              </span>
+            </div>
+          </SelectTrigger>
+          <SelectContent className="max-h-[300px]">
+            {LANGUAGES.map((language) => (
+              <SelectItem key={language.code} value={language.code} className="text-xs sm:text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">{language.flag}</span>
+                  <span>{language.nativeName}</span>
+                  <span className="text-muted-foreground text-[10px]">({language.name})</span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Theme toggle */}
         <Button
           variant="ghost"
           size="icon"

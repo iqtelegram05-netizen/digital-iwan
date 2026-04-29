@@ -1,0 +1,193 @@
+{
+  "app": {
+    "title": "Dijital İvan",
+    "subtitle": "İlk Irak Yapay Zekası",
+    "description": "Dijital İvan - İslami Bilimler için Akıllı Asistan"
+  },
+  "header": {
+    "selectScholar": "Bir Alim Seçin"
+  },
+  "menu": {
+    "mainMenu": "Ana Menü",
+    "browseContent": "Dua, hutbe ve etkinliklere göz atın"
+  },
+  "tabs": {
+    "prayers": "Dualar",
+    "qibla": "Kıble",
+    "sermons": "Hutbeler",
+    "events": "Etkinlikler"
+  },
+  "prayers": {
+    "title": "Dualar",
+    "loading": "Yükleniyor...",
+    "empty": "Henüz dua eklenmedi. Sahip kontrol panelinden ekleyebilir.",
+    "noText": "Metin seçilmedi",
+    "back": "Geri",
+    "visits": "Ziyaretler",
+    "visitsEmpty": "Henüz ziyaret eklenmedi.",
+    "sermonsTitle": "Hutbeler",
+    "sermonsEmpty": "Henüz hutbe eklenmedi. Sahip kontrol panelinden ekleyebilir."
+  },
+  "events": {
+    "title": "Hicri Takvim Etkinlikleri",
+    "countdown": "Sonraki etkinliğin geri sayımı burada görünecek"
+  },
+  "chat": {
+    "scientificIwan": "Bilimsel İvan",
+    "digitalDebater": "Dijital Tartışmacı",
+    "digitalTeacher": "Dijital Öğretmen",
+    "askQuestion": "İslami bilimler hakkında sorunuz sorun...",
+    "presentArgument": "Tartışma için argümanınızı sunun...",
+    "askAnyTopic": "Anlamak istediğiniz herhangi bir konuyu sorun...",
+    "clearChat": "Sohbeti Temizle",
+    "errorProcessing": "Üzgünüz, işleme sırasında bir hata oluştu.",
+    "errorConnection": "Üzgünüz, bağlantı hatası oluştu. Lütfen tekrar deneyin.",
+    "sources": "Kaynaklar:"
+  },
+  "quiz": {
+    "testYourself": "Kendinizi Sınayın",
+    "selectCategory": "Sınavı başlatmak için bir kategori seçin",
+    "generatingQuestions": "Sorular oluşturuluyor...",
+    "noQuestions": "Sorular oluşturulamadı. Lütfen tekrar deneyin.",
+    "connectionError": "Bağlantı hatası",
+    "submitError": "Cevaplar gönderilirken hata",
+    "questionOf": "Soru {current} / {total}",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "finishQuiz": "Sınavı Bitir",
+    "grading": "Puanlanıyor...",
+    "result": "Sınav Sonucu",
+    "outOf": "100 üzerinden",
+    "retry": "Tekrar Dene",
+    "anotherCategory": "Başka Kategori",
+    "correctAnswer": "Doğru cevap:",
+    "grades": {
+      "excellent": "Mükemmel",
+      "veryGood": "Çok İyi",
+      "good": "İyi",
+      "pass": "Geçer",
+      "needsImprovement": "Geliştirme Gerekli"
+    },
+    "categories": {
+      "beliefs": "Akaid",
+      "logic": "Mantık",
+      "kalam": "Kelam",
+      "grammar": "Nahiv",
+      "fiqh": "Fıkıh"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "loginDescription": "Tercihlerinizi kaydetmek ve ilerlemenizi takip etmek için Google hesabınızla giriş yapın",
+    "loginWithGoogle": "Google ile Giriş Yap",
+    "loginInProgress": "Giriş yapılıyor...",
+    "loginSuccess": "Başarıyla giriş yapıldı!",
+    "googleLoadFailed": "Google hizmeti yüklenemedi",
+    "googleNotAvailable": "Google hizmeti kullanılamıyor",
+    "decodeFailed": "Google verisi çözülemedi",
+    "loginError": "Giriş sırasında hata oluştu",
+    "lastLogin": "Son Giriş",
+    "accountStatus": "Hesap Durumu",
+    "active": "Aktif",
+    "notSet": "Belirlenmedi",
+    "editProfile": "Profili Düzenle",
+    "name": "İsim",
+    "namePlaceholder": "Adınızı girin",
+    "bio": "Hakkınızda",
+    "bioPlaceholder": "Akademik ilgi alanlarınızı paylaşın...",
+    "interests": "İlgi Alanları",
+    "selectUpTo": "(5'e kadar seçin)",
+    "updateProfile": "Profili Güncelle",
+    "saved": "Başarıyla kaydedildi!",
+    "controlPanel": "Kontrol Paneli",
+    "logout": "Çıkış",
+    "user": "Kullanıcı",
+    "features": {
+      "title": "Giriş yapmanın faydaları:",
+      "saveChats": "Sohbetlerinizi ve sınavlarınızı kaydedin",
+      "trackProgress": "İslami bilimlerde ilerlemenizi takip edin",
+      "customize": "Deneyiminizi ilgi alanlarınıza göre özelleştirin"
+    },
+    "interestsList": [
+      "Akaid",
+      "Fıkıh",
+      "Tefsir",
+      "Hadis",
+      "İslam Tarihi",
+      "İslam Felsefesi",
+      "Mantık",
+      "Nahiv",
+      "Belagat",
+      "Usul-i Fıkıh"
+    ]
+  },
+  "reader": {
+    "font": "Yazı Tipi",
+    "color": "Renk",
+    "size": "Boyut",
+    "currentFont": "Mevcut yazı tipi:",
+    "searchFont": "Yazı tipi ara...",
+    "all": "Tümü",
+    "showMore": "Daha Fazla",
+    "additionalFonts": "ek yazı tipi",
+    "showLess": "Daha Az",
+    "textColor": "Metin Rengi",
+    "fontSize": "Yazı Boyutu",
+    "colors": {
+      "default": "Varsayılan",
+      "warm": "Sıcak",
+      "gold": "Altın",
+      "sky": "Gökyüzü",
+      "emerald": "Zümrüt",
+      "rose": "Gül",
+      "purple": "Mor",
+      "white": "Beyaz",
+      "orange": "Turuncu",
+      "cyan": "Açık Camgöbeği"
+    },
+    "sizes": {
+      "xs": "Çok Küçük",
+      "sm": "Küçük",
+      "md": "Orta",
+      "lg": "Büyük",
+      "xl": "Çok Büyük",
+      "2xl": "Devasa",
+      "3xl": "Dev"
+    }
+  },
+  "login": {
+    "title": "Dijital İvan",
+    "subtitle": "Google hesabınızla giriş yapın",
+    "noEmail": "E-posta bulunamadı",
+    "error": "Bir hata oluştu:",
+    "noClientId": "Google Client ID yapılandırılmamış"
+  },
+  "admin": {
+    "title": "Kontrol Paneli",
+    "addPrayer": "Dua Ekle",
+    "addSermon": "Hutbe Ekle",
+    "addVisit": "Ziyaret Ekle",
+    "titleField": "Başlık",
+    "subtitleField": "Kısa Açıklama",
+    "categoryField": "Kategori",
+    "textField": "Tam Metin",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "savedSuccess": "Başarıyla kaydedildi!",
+    "deleteConfirm": "Silmek istediğinizden emin misiniz?"
+  },
+  "common": {
+    "loading": "Yükleniyor...",
+    "error": "Hata",
+    "success": "Başarılı",
+    "cancel": "İptal",
+    "confirm": "Onayla",
+    "save": "Kaydet",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "search": "Ara",
+    "noData": "Veri yok"
+  }
+}

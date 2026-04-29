@@ -1,0 +1,193 @@
+{
+  "app": {
+    "title": "Iwan Digital",
+    "subtitle": "AI Irak Pertama",
+    "description": "Iwan Digital - Asisten Cerdas untuk Ilmu Islam"
+  },
+  "header": {
+    "selectScholar": "Pilih Seorang Ulama"
+  },
+  "menu": {
+    "mainMenu": "Menu Utama",
+    "browseContent": "Jelajahi doa, khutbah, dan acara"
+  },
+  "tabs": {
+    "prayers": "Doa",
+    "qibla": "Kiblat",
+    "sermons": "Khutbah",
+    "events": "Acara"
+  },
+  "prayers": {
+    "title": "Doa",
+    "loading": "Memuat...",
+    "empty": "Belum ada doa ditambahkan. Pemilik dapat menambahkannya dari panel kontrol.",
+    "noText": "Tidak ada teks dipilih",
+    "back": "Kembali",
+    "visits": "Ziarah",
+    "visitsEmpty": "Belum ada ziarah ditambahkan.",
+    "sermonsTitle": "Khutbah",
+    "sermonsEmpty": "Belum ada khutbah ditambahkan. Pemilik dapat menambahkannya dari panel kontrol."
+  },
+  "events": {
+    "title": "Acara Kalender Hijriah",
+    "countdown": "Hitung mundur acara berikutnya akan muncul di sini"
+  },
+  "chat": {
+    "scientificIwan": "Iwan Ilmiah",
+    "digitalDebater": "Pembahas Digital",
+    "digitalTeacher": "Guru Digital",
+    "askQuestion": "Tanyakan pertanyaan Anda tentang ilmu Islam...",
+    "presentArgument": "Sajikan argumen Anda untuk diskusi...",
+    "askAnyTopic": "Tanyakan topik apa pun yang ingin Anda pahami...",
+    "clearChat": "Hapus Obrolan",
+    "errorProcessing": "Maaf, terjadi kesalahan saat pemrosesan.",
+    "errorConnection": "Maaf, terjadi kesalahan koneksi. Silakan coba lagi.",
+    "sources": "Sumber:"
+  },
+  "quiz": {
+    "testYourself": "Uji Diri Anda",
+    "selectCategory": "Pilih kategori untuk memulai kuis",
+    "generatingQuestions": "Membuat soal...",
+    "noQuestions": "Soal tidak dapat dibuat. Silakan coba lagi.",
+    "connectionError": "Kesalahan koneksi",
+    "submitError": "Kesalahan mengirim jawaban",
+    "questionOf": "Soal {current} dari {total}",
+    "previous": "Sebelumnya",
+    "next": "Selanjutnya",
+    "finishQuiz": "Selesai Kuis",
+    "grading": "Memeriksa...",
+    "result": "Hasil Kuis",
+    "outOf": "dari 100",
+    "retry": "Coba Lagi",
+    "anotherCategory": "Kategori Lain",
+    "correctAnswer": "Jawaban benar:",
+    "grades": {
+      "excellent": "Sempurna",
+      "veryGood": "Sangat Baik",
+      "good": "Baik",
+      "pass": "Cukup",
+      "needsImprovement": "Perlu Perbaikan"
+    },
+    "categories": {
+      "beliefs": "Akidah",
+      "logic": "Logika",
+      "kalam": "Ilmu Kalam",
+      "grammar": "Nahwu",
+      "fiqh": "Fikih"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "loginDescription": "Masuk dengan akun Google Anda untuk menyimpan preferensi dan melacak kemajuan Anda",
+    "loginWithGoogle": "Masuk dengan Google",
+    "loginInProgress": "Sedang masuk...",
+    "loginSuccess": "Berhasil masuk!",
+    "googleLoadFailed": "Gagal memuat layanan Google",
+    "googleNotAvailable": "Layanan Google tidak tersedia",
+    "decodeFailed": "Gagal mendekode data Google",
+    "loginError": "Kesalahan saat masuk",
+    "lastLogin": "Masuk Terakhir",
+    "accountStatus": "Status Akun",
+    "active": "Aktif",
+    "notSet": "Tidak ditetapkan",
+    "editProfile": "Edit Profil",
+    "name": "Nama",
+    "namePlaceholder": "Masukkan nama Anda",
+    "bio": "Tentang Anda",
+    "bioPlaceholder": "Ceritakan minat akademis Anda...",
+    "interests": "Minat",
+    "selectUpTo": "(Pilih hingga 5)",
+    "updateProfile": "Perbarui Profil",
+    "saved": "Berhasil disimpan!",
+    "controlPanel": "Panel Kontrol",
+    "logout": "Keluar",
+    "user": "Pengguna",
+    "features": {
+      "title": "Manfaat masuk:",
+      "saveChats": "Simpan obrolan dan kuis Anda",
+      "trackProgress": "Lacak kemajuan dalam ilmu Islam",
+      "customize": "Sesuaikan pengalaman sesuai minat Anda"
+    },
+    "interestsList": [
+      "Akidah",
+      "Fikih",
+      "Tafsir",
+      "Hadis",
+      "Sejarah Islam",
+      "Filsafat Islam",
+      "Logika",
+      "Nahwu",
+      "Balaghah",
+      "Ushul Fikih"
+    ]
+  },
+  "reader": {
+    "font": "Font",
+    "color": "Warna",
+    "size": "Ukuran",
+    "currentFont": "Font saat ini:",
+    "searchFont": "Cari font...",
+    "all": "Semua",
+    "showMore": "Lihat Lebih",
+    "additionalFonts": "font tambahan",
+    "showLess": "Lihat Lebih Sedikit",
+    "textColor": "Warna Teks",
+    "fontSize": "Ukuran Font",
+    "colors": {
+      "default": "Bawaan",
+      "warm": "Hangat",
+      "gold": "Emas",
+      "sky": "Langit",
+      "emerald": "Zamrud",
+      "rose": "Mawar",
+      "purple": "Ungu",
+      "white": "Putih",
+      "orange": "Oranye",
+      "cyan": "Sian Muda"
+    },
+    "sizes": {
+      "xs": "Sangat Kecil",
+      "sm": "Kecil",
+      "md": "Sedang",
+      "lg": "Besar",
+      "xl": "Sangat Besar",
+      "2xl": "Sangat Besar",
+      "3xl": "Raksasa"
+    }
+  },
+  "login": {
+    "title": "Iwan Digital",
+    "subtitle": "Masuk dengan akun Google Anda",
+    "noEmail": "Email tidak ditemukan",
+    "error": "Terjadi kesalahan:",
+    "noClientId": "Google Client ID tidak dikonfigurasi"
+  },
+  "admin": {
+    "title": "Panel Kontrol",
+    "addPrayer": "Tambah Doa",
+    "addSermon": "Tambah Khutbah",
+    "addVisit": "Tambah Ziarah",
+    "titleField": "Judul",
+    "subtitleField": "Deskripsi Singkat",
+    "categoryField": "Kategori",
+    "textField": "Teks Lengkap",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "savedSuccess": "Berhasil disimpan!",
+    "deleteConfirm": "Yakin ingin menghapus?"
+  },
+  "common": {
+    "loading": "Memuat...",
+    "error": "Kesalahan",
+    "success": "Berhasil",
+    "cancel": "Batal",
+    "confirm": "Konfirmasi",
+    "save": "Simpan",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "search": "Cari",
+    "noData": "Tidak ada data"
+  }
+}

@@ -11,6 +11,8 @@ import { BookOpen, Compass, Mic, Calendar, Clock } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import QiblaCompass from './QiblaCompass';
 import { type ReaderItem } from '@/store/appStore';
+import { useTranslation } from '@/i18n/useTranslation';
+import { isRTL } from '@/i18n/languages';
 
 // ========== EVENTS DATA ==========
 const HIJRI_EVENTS = [
@@ -94,6 +96,9 @@ export default function SideDrawer() {
   const { sheetOpen, setSheetOpen, openReader } = useAppStore();
   const [prayers, setPrayers] = useState<PrayerItem[]>([]);
   const [prayersLoading, setPrayersLoading] = useState(true);
+  const { t, lang } = useTranslation();
+  const dir = isRTL(lang) ? 'rtl' : 'ltr';
+  const side = dir === 'rtl' ? 'right' : 'right';
 
   const fetchPrayers = useCallback(async () => {
     try {
@@ -136,20 +141,20 @@ export default function SideDrawer() {
       <SheetContent side="right" className="w-[90vw] max-w-md p-0 bg-background/95 backdrop-blur-xl">
         <SheetHeader className="p-4 pb-0 border-b border-border/20">
           <SheetTitle className="flex items-center gap-2 text-primary text-lg">
-            القائمة الرئيسية
+            {t('menu.mainMenu')}
           </SheetTitle>
           <SheetDescription className="text-xs text-muted-foreground">
-            تصفح الأدعية والخطب والمناسبات
+            {t('menu.browseContent')}
           </SheetDescription>
         </SheetHeader>
 
         <Tabs defaultValue="prayers" className="flex-1 min-h-0 flex flex-col" dir="rtl">
           <TabsList className="w-full grid grid-cols-4 p-1 m-3 rounded-xl bg-muted/50 h-auto">
             {[
-              { value: 'prayers', label: 'الأدعية', icon: BookOpen },
-              { value: 'qibla', label: 'القبلة', icon: Compass },
-              { value: 'sermons', label: 'الخطب', icon: Mic },
-              { value: 'events', label: 'المناسبات', icon: Calendar },
+              { value: 'prayers', label: t('tabs.prayers'), icon: BookOpen },
+              { value: 'qibla', label: t('tabs.qibla'), icon: Compass },
+              { value: 'sermons', label: t('tabs.sermons'), icon: Mic },
+              { value: 'events', label: t('tabs.events'), icon: Calendar },
             ].map((tab) => (
               <TabsTrigger
                 key={tab.value}
@@ -165,11 +170,11 @@ export default function SideDrawer() {
           <ScrollArea className="flex-1 min-h-0 px-3 pb-6" style={{ overflowX: 'hidden' } as React.CSSProperties}>
             {/* Prayers Tab */}
             <TabsContent value="prayers" className="mt-0 space-y-4">
-              <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">الأدعية</h3>
+              <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">{t('prayers.title')}</h3>
               {prayersLoading ? (
                 <div className="flex items-center justify-center py-6 text-muted-foreground text-xs">
                   <motion.div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin-slow ml-2" />
-                  جارٍ التحميل...
+                  {t('prayers.loading')}
                 </div>
               ) : duaItems.length > 0 ? (
                 <div className="space-y-2">
@@ -178,11 +183,11 @@ export default function SideDrawer() {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground text-center py-4">لا توجد أدعية مضافة بعد. يمكن للمالك إضافتها من لوحة التحكم.</p>
+                <p className="text-xs text-muted-foreground text-center py-4">{t('prayers.empty')}</p>
               )}
 
               <Separator className="my-4 bg-primary/10" />
-              <h3 className="text-sm font-bold text-foreground/80 mb-3">الزيارات</h3>
+              <h3 className="text-sm font-bold text-foreground/80 mb-3">{t('prayers.visits')}</h3>
               {ziyaratItems.length > 0 ? (
                 <div className="space-y-2">
                   {ziyaratItems.map((prayer) => (
@@ -190,7 +195,7 @@ export default function SideDrawer() {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground text-center py-4">لا توجد زيارات مضافة بعد.</p>
+                <p className="text-xs text-muted-foreground text-center py-4">{t('prayers.visitsEmpty')}</p>
               )}
             </TabsContent>
 
@@ -201,11 +206,11 @@ export default function SideDrawer() {
 
             {/* Sermons Tab */}
             <TabsContent value="sermons" className="mt-0 space-y-4">
-              <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">الخطب</h3>
+              <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">{t('prayers.sermonsTitle')}</h3>
               {prayersLoading ? (
                 <div className="flex items-center justify-center py-6 text-muted-foreground text-xs">
                   <motion.div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin-slow ml-2" />
-                  جارٍ التحميل...
+                  {t('prayers.loading')}
                 </div>
               ) : sermonItems.length > 0 ? (
                 <div className="space-y-2">
@@ -214,13 +219,13 @@ export default function SideDrawer() {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground text-center py-4">لا توجد خطب مضافة بعد. يمكن للمالك إضافتها من لوحة التحكم.</p>
+                <p className="text-xs text-muted-foreground text-center py-4">{t('prayers.sermonsEmpty')}</p>
               )}
             </TabsContent>
 
             {/* Events Tab */}
             <TabsContent value="events" className="mt-0">
-              <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">مناسبات التاريخ الهجري</h3>
+              <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">{t('events.title')}</h3>
               <div className="space-y-2">
                 {HIJRI_EVENTS.map((event, idx) => (
                   <motion.div
@@ -243,7 +248,7 @@ export default function SideDrawer() {
 
               <div className="mt-4 p-4 rounded-xl bg-primary/5 border border-primary/10 text-center">
                 <Clock className="w-5 h-5 text-primary mx-auto mb-2" />
-                <p className="text-xs text-muted-foreground">العد التنازلي للمناسبة القادمة سيظهر هنا</p>
+                <p className="text-xs text-muted-foreground">{t('events.countdown')}</p>
               </div>
             </TabsContent>
           </ScrollArea>

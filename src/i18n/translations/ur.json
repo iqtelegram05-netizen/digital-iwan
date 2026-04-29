@@ -1,0 +1,193 @@
+{
+  "app": {
+    "title": "ڈیجیٹل ایوان",
+    "subtitle": "پہلا عراقی مصنوعی ذہانت",
+    "description": "ڈیجیٹل ایوان - اسلامی علوم کا ذہین معاون"
+  },
+  "header": {
+    "selectScholar": "عالم منتخب کریں"
+  },
+  "menu": {
+    "mainMenu": "مرکزی مینو",
+    "browseContent": "دعائیں، خطبے اور تقریبات دیکھیں"
+  },
+  "tabs": {
+    "prayers": "دعائیں",
+    "qibla": "قبلہ",
+    "sermons": "خطبے",
+    "events": "تقریبات"
+  },
+  "prayers": {
+    "title": "دعائیں",
+    "loading": "لوڈ ہو رہا ہے...",
+    "empty": "ابھی تک کوئی دعا شامل نہیں۔ مالک کنٹرول پینل سے شامل کر سکتا ہے۔",
+    "noText": "کوئی متن منتخب نہیں",
+    "back": "واپس",
+    "visits": "زیارات",
+    "visitsEmpty": "ابھی تک کوئی زیارت شامل نہیں۔",
+    "sermonsTitle": "خطبے",
+    "sermonsEmpty": "ابھی تک کوئی خطبہ شامل نہیں۔ مالک کنٹرول پینل سے شامل کر سکتا ہے۔"
+  },
+  "events": {
+    "title": "ہجری تاریخ کی تقریبات",
+    "countdown": "اگلی تقریب کا شمار وہاں نظر آئے گا"
+  },
+  "chat": {
+    "scientificIwan": "علمی ایوان",
+    "digitalDebater": "ڈیجیٹل محاورہ",
+    "digitalTeacher": "ڈیجیٹل استاد",
+    "askQuestion": "اسلامی علوم کے بارے میں اپنا سوال پوچھیں...",
+    "presentArgument": "بحث کے لیے اپنا دلائل پیش کریں...",
+    "askAnyTopic": "کوئی بھی موضوع پوچھیں جسے آپ سمجھنا چاہتے ہیں...",
+    "clearChat": " گفتگو صاف کریں",
+    "errorProcessing": "معذرت، پروسیسنگ کے دوران خرابی پیش آئی۔",
+    "errorConnection": "معذرت، رابطے میں خرابی۔ براہ کرم دوبارہ کوشش کریں۔",
+    "sources": "ذرائع:"
+  },
+  "quiz": {
+    "testYourself": "اپنا امتحان لیں",
+    "selectCategory": "امتحان شروع کرنے کے لیے زمروں میں سے منتخب کریں",
+    "generatingQuestions": "سوالات تیار ہو رہے ہیں...",
+    "noQuestions": "سوالات نہیں بن سکے۔ براہ کرم دوبارہ کوشش کریں۔",
+    "connectionError": "رابطے میں خرابی",
+    "submitError": "جوابات جمع کرانے میں خرابی",
+    "questionOf": "سوال {current} از {total}",
+    "previous": "پچھلا",
+    "next": "اگلا",
+    "finishQuiz": "امتحان ختم کریں",
+    "grading": "چیک ہو رہا ہے...",
+    "result": "امتحان کا نتیجہ",
+    "outOf": "میں سے 100",
+    "retry": "دوبارہ کریں",
+    "anotherCategory": "دوسرا زمرہ",
+    "correctAnswer": "صحیح جواب:",
+    "grades": {
+      "excellent": "شاندار",
+      "veryGood": "بہت اچھا",
+      "good": "اچھا",
+      "pass": "قبول",
+      "needsImprovement": "بہتر بنتا ہے"
+    },
+    "categories": {
+      "beliefs": "عقائد",
+      "logic": "منطق",
+      "kalam": "علم کلام",
+      "grammar": "نحو",
+      "fiqh": "فقہ"
+    }
+  },
+  "profile": {
+    "title": "پروفائل",
+    "loginDescription": "اپنی ترجیحات محفوظ کرنے اور اسلامی علوم میں پیش رفت کرنے کے لیے اپنے Google اکاؤنٹ سے سائن ان کریں",
+    "loginWithGoogle": "Google سے سائن ان",
+    "loginInProgress": "سائن ان ہو رہا ہے...",
+    "loginSuccess": "کامیابی سے سائن ان ہو گیا!",
+    "googleLoadFailed": "Google سروس لوڈ نہیں ہو سکی",
+    "googleNotAvailable": "Google سروس دستیاب نہیں",
+    "decodeFailed": "Google ڈیٹا ڈی کوڈ نہیں ہو سکا",
+    "loginError": "سائن ان کے دوران خرابی",
+    "lastLogin": "آخرین لاگ ان",
+    "accountStatus": "اکاؤنٹ کی حالت",
+    "active": "فعال",
+    "notSet": "تعین نہیں",
+    "editProfile": "پروفائل میں ترمیم",
+    "name": "نام",
+    "namePlaceholder": "اپنا نام درج کریں",
+    "bio": "اپنے بارے میں",
+    "bioPlaceholder": "ہمیں اپنی سائنسی دلچسپیوں کے بارے میں بتائیں...",
+    "interests": "دلچسپیاں",
+    "selectUpTo": "(5 تک منتخب کریں)",
+    "updateProfile": "پروفائل اپ ڈیٹ کریں",
+    "saved": "کامیابی سے محفوظ ہو گیا!",
+    "controlPanel": "کنٹرول پینل",
+    "logout": "لاگ آؤٹ",
+    "user": "صارف",
+    "features": {
+      "title": "سائن ان کے فوائد:",
+      "saveChats": "اپنی گفتگو اور امتحانات محفوظ کریں",
+      "trackProgress": "اسلامی علوم میں اپنی پیش رفت دیکھیں",
+      "customize": "اپنی دلچسپیوں کے مطابق تجربہ حاصل کریں"
+    },
+    "interestsList": [
+      "عقائد",
+      "فقہ",
+      "تفسیر",
+      "حدیث",
+      "اسلامی تاریخ",
+      "اسلامی فلسفہ",
+      "منطق",
+      "نحو",
+      "بلاغت",
+      "اصول فقہ"
+    ]
+  },
+  "reader": {
+    "font": "فونٹ",
+    "color": "رنگ",
+    "size": "سائز",
+    "currentFont": "موجودہ فونٹ:",
+    "searchFont": "فونٹ تلاش کریں...",
+    "all": "سب",
+    "showMore": "مزید دیکھیں",
+    "additionalFonts": "اضافی فونٹس",
+    "showLess": "کم دیکھیں",
+    "textColor": "متن کا رنگ",
+    "fontSize": "فونٹ کا سائز",
+    "colors": {
+      "default": "ڈیفالٹ",
+      "warm": "گرم",
+      "gold": "سنہری",
+      "sky": "آسمانی",
+      "emerald": "زمرد",
+      "rose": "گلابی",
+      "purple": "جامنی",
+      "white": "سفید",
+      "orange": "نارنجی",
+      "cyan": "ہلکا سائان"
+    },
+    "sizes": {
+      "xs": "بہت چھوٹا",
+      "sm": "چھوٹا",
+      "md": "درمیانہ",
+      "lg": "بڑا",
+      "xl": "بہت بڑا",
+      "2xl": "بہت بڑا",
+      "3xl": "دیوہیکل"
+    }
+  },
+  "login": {
+    "title": "ڈیجیٹل ایوان",
+    "subtitle": "اپنے Google اکاؤنٹ سے سائن ان کریں",
+    "noEmail": "کوئی ای میل نہیں ملا",
+    "error": "خرابی:",
+    "noClientId": "Google Client ID سیٹ نہیں ہے"
+  },
+  "admin": {
+    "title": "کنٹرول پینل",
+    "addPrayer": "دعا شامل کریں",
+    "addSermon": "خطبہ شامل کریں",
+    "addVisit": "زیارت شامل کریں",
+    "titleField": "عنوان",
+    "subtitleField": "مختصر وضاحت",
+    "categoryField": "زمرہ",
+    "textField": "مکمل متن",
+    "save": "محفوظ کریں",
+    "cancel": "منسوخ",
+    "delete": "حذف",
+    "edit": "ترمیم",
+    "savedSuccess": "کامیابی سے محفوظ!",
+    "deleteConfirm": "کیا آپ حذف کرنے کے لیے یقینی ہیں؟"
+  },
+  "common": {
+    "loading": "لوڈ ہو رہا ہے...",
+    "error": "خرابی",
+    "success": "کامیابی",
+    "cancel": "منسوخ",
+    "confirm": "تائید",
+    "save": "محفوظ کریں",
+    "delete": "حذف",
+    "edit": "ترمیم",
+    "search": "تلاش",
+    "noData": "کوئی ڈیٹا دستیاب نہیں"
+  }
+}

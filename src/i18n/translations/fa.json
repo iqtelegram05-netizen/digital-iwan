@@ -1,0 +1,193 @@
+{
+  "app": {
+    "title": "ایوان دیجیتال",
+    "subtitle": "اولین هوش مصنوعی عراقی",
+    "description": "ایوان دیجیتال - دستیار هوشمند علوم اسلامی"
+  },
+  "header": {
+    "selectScholar": "انتخاب مرجع"
+  },
+  "menu": {
+    "mainMenu": "منوی اصلی",
+    "browseContent": "مرور دعاها، خطبه‌ها و مناسبت‌ها"
+  },
+  "tabs": {
+    "prayers": "دعاها",
+    "qibla": "قبله",
+    "sermons": "خطبه‌ها",
+    "events": "مناسبت‌ها"
+  },
+  "prayers": {
+    "title": "دعاها",
+    "loading": "در حال بارگذاری...",
+    "empty": "هنوز دعایی اضافه نشده. مالک می‌تواند از پنل کنترل اضافه کند.",
+    "noText": "متن انتخاب نشده",
+    "back": "بازگشت",
+    "visits": "زیارت‌ها",
+    "visitsEmpty": "هنوز زیارتی اضافه نشده.",
+    "sermonsTitle": "خطبه‌ها",
+    "sermonsEmpty": "هنوز خطبه‌ای اضافه نشده. مالک می‌تواند از پنل کنترل اضافه کند."
+  },
+  "events": {
+    "title": "مناسبت‌های تاریخ هجری",
+    "countdown": "شمارش معکوس مناسبت بعدی اینجا نمایش داده می‌شود"
+  },
+  "chat": {
+    "scientificIwan": "ایوان علمی",
+    "digitalDebater": "محاوره‌گر دیجیتال",
+    "digitalTeacher": "استاد دیجیتال",
+    "askQuestion": "سوال خود را در علوم اسلامی بپرسید...",
+    "presentArgument": "استدلال خود را برای بحث ارائه دهید...",
+    "askAnyTopic": "درباره هر موضوعی که می‌خواهید بپرسید...",
+    "clearChat": "پاک کردن گفتگو",
+    "errorProcessing": "متأسفانه در پردازش خطایی رخ داد.",
+    "errorConnection": "متأسفانه خطای اتصال رخ داد. لطفاً دوباره تلاش کنید.",
+    "sources": "منابع:"
+  },
+  "quiz": {
+    "testYourself": "خود را بسنجید",
+    "selectCategory": "دسته‌بندی را برای شروع آزمون انتخاب کنید",
+    "generatingQuestions": "در حال تولید سوالات...",
+    "noQuestions": "سوالات تولید نشد. لطفاً دوباره تلاش کنید.",
+    "connectionError": "خطای اتصال",
+    "submitError": "خطا در ارسال پاسخ‌ها",
+    "questionOf": "سوال {current} از {total}",
+    "previous": "قبلی",
+    "next": "بعدی",
+    "finishQuiz": "پایان آزمون",
+    "grading": "در حال تصحیح...",
+    "result": "نتیجه آزمون",
+    "outOf": "از 100",
+    "retry": "تلاش مجدد",
+    "anotherCategory": "دسته‌بندی دیگر",
+    "correctAnswer": "پاسخ صحیح:",
+    "grades": {
+      "excellent": "عالی",
+      "veryGood": "خیلی خوب",
+      "good": "خوب",
+      "pass": "قبول",
+      "needsImprovement": "نیازمند بهبود"
+    },
+    "categories": {
+      "beliefs": "عقاید",
+      "logic": "منطق",
+      "kalam": "کلام",
+      "grammar": "نحو",
+      "fiqh": "فقه"
+    }
+  },
+  "profile": {
+    "title": "پروفایل",
+    "loginDescription": "با حساب Google خود وارد شوید تا ترجیحاتتان ذخیره و پیشرفتتان در علوم اسلامی پیگیری شود",
+    "loginWithGoogle": "ورود با Google",
+    "loginInProgress": "در حال ورود...",
+    "loginSuccess": "با موفقیت وارد شدید!",
+    "googleLoadFailed": "بارگذاری سرویس Google ناموفق",
+    "googleNotAvailable": "سرویس Google در دسترس نیست",
+    "decodeFailed": "رمزگشایی داده Google ناموفق",
+    "loginError": "خطا در ورود",
+    "lastLogin": "آخرین ورود",
+    "accountStatus": "وضعیت حساب",
+    "active": "فعال",
+    "notSet": "تنظیم نشده",
+    "editProfile": "ویرایش پروفایل",
+    "name": "نام",
+    "namePlaceholder": "نام خود را وارد کنید",
+    "bio": "درباره شما",
+    "bioPlaceholder": "درباره علاقه‌مندی‌های علمی خود بگویید...",
+    "interests": "علاقه‌مندی‌ها",
+    "selectUpTo": "(تا ۵ مورد انتخاب کنید)",
+    "updateProfile": "به‌روزرسانی پروفایل",
+    "saved": "با موفقیت ذخیره شد!",
+    "controlPanel": "پنل کنترل",
+    "logout": "خروج",
+    "user": "کاربر",
+    "features": {
+      "title": "مزایای ورود:",
+      "saveChats": "ذخیره گفتگوها و آزمون‌هایتان",
+      "trackProgress": "پیگیری پیشرفت در علوم اسلامی",
+      "customize": "شخصی‌سازی تجربه بر اساس علاقه‌مندی‌هایتان"
+    },
+    "interestsList": [
+      "عقاید",
+      "فقه",
+      "تفسیر",
+      "حدیث",
+      "تاریخ اسلام",
+      "فلسفه اسلامی",
+      "منطق",
+      "نحو",
+      "بلاغت",
+      "اصول فقه"
+    ]
+  },
+  "reader": {
+    "font": "فونت",
+    "color": "رنگ",
+    "size": "اندازه",
+    "currentFont": "فونت فعلی:",
+    "searchFont": "جستجوی فونت...",
+    "all": "همه",
+    "showMore": "بیشتر",
+    "additionalFonts": "فونت اضافی",
+    "showLess": "کمتر",
+    "textColor": "رنگ متن",
+    "fontSize": "اندازه فونت",
+    "colors": {
+      "default": "پیش‌فرض",
+      "warm": "گرم",
+      "gold": "طلایی",
+      "sky": "آسمانی",
+      "emerald": "زمردی",
+      "rose": "صورتی",
+      "purple": "بنفش",
+      "white": "سفید",
+      "orange": "نارنجی",
+      "cyan": "فیروزه‌ای روشن"
+    },
+    "sizes": {
+      "xs": "خیلی کوچک",
+      "sm": "کوچک",
+      "md": "متوسط",
+      "lg": "بزرگ",
+      "xl": "خیلی بزرگ",
+      "2xl": "عظیم",
+      "3xl": "غول‌پیکر"
+    }
+  },
+  "login": {
+    "title": "ایوان دیجیتال",
+    "subtitle": "با حساب Google خود وارد شوید",
+    "noEmail": "ایمیلی یافت نشد",
+    "error": "خطا:",
+    "noClientId": "Google Client ID تنظیم نشده"
+  },
+  "admin": {
+    "title": "پنل کنترل",
+    "addPrayer": "افزودن دعا",
+    "addSermon": "افزودن خطبه",
+    "addVisit": "افزودن زیارت",
+    "titleField": "عنوان",
+    "subtitleField": "توضیح کوتاه",
+    "categoryField": "دسته‌بندی",
+    "textField": "متن کامل",
+    "save": "ذخیره",
+    "cancel": "لغو",
+    "delete": "حذف",
+    "edit": "ویرایش",
+    "savedSuccess": "با موفقیت ذخیره شد!",
+    "deleteConfirm": "آیا مطمئن هستید که می‌خواهید حذف کنید؟"
+  },
+  "common": {
+    "loading": "در حال بارگذاری...",
+    "error": "خطا",
+    "success": "موفقیت",
+    "cancel": "لغو",
+    "confirm": "تأیید",
+    "save": "ذخیره",
+    "delete": "حذف",
+    "edit": "ویرایش",
+    "search": "جستجو",
+    "noData": "داده‌ای موجود نیست"
+  }
+}

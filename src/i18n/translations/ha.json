@@ -1,0 +1,193 @@
+{
+  "app": {
+    "title": "Iwan na Diyanal",
+    "subtitle": "Farkon AI na Iraq",
+    "description": "Iwan na Diyanal - Mai Taimakon Fasaha na Islama"
+  },
+  "header": {
+    "selectScholar": "Zabi Malami"
+  },
+  "menu": {
+    "mainMenu": "Babban Menu",
+    "browseContent": "Gani bukuku, wa'azi da abubuwan da su faru"
+  },
+  "tabs": {
+    "prayers": "Bukuku",
+    "qibla": "Qibla",
+    "sermons": "Wa'azi",
+    "events": "Abubuwan Da Suka Faru"
+  },
+  "prayers": {
+    "title": "Bukuku",
+    "loading": "Ana aikewa...",
+    "empty": "Babu bukuku da aka ƙara. Mai shi zai iya ƙara daga panel na iko.",
+    "noText": "Babu rubutu da aka zaɓa",
+    "back": "Komawa",
+    "visits": "Ziyara",
+    "visitsEmpty": "Babu ziyara da aka ƙara.",
+    "sermonsTitle": "Wa'azi",
+    "sermonsEmpty": "Babu wa'azi da aka ƙara. Mai shi zai iya ƙara daga panel na iko."
+  },
+  "events": {
+    "title": "Abubuwan Kalanda ta Hijira",
+    "countdown": "Kidayar baya ga abin da zai faru zai bayyana a nan"
+  },
+  "chat": {
+    "scientificIwan": "Iwan na Kimiyya",
+    "digitalDebater": "Muhawara ta Diyanal",
+    "digitalTeacher": "Malamin Diyanal",
+    "askQuestion": "Ya ce tambayar ku game da kimiyyar Islama...",
+    "presentArgument": "Bayyana hujjar ku don tattaunawa...",
+    "askAnyTopic": "Tambaya game da kowane abu da kuke so fahimta...",
+    "clearChat": "Cire Magana",
+    "errorProcessing": "Yi hakuri, kuskure ya faru a lokacin sarrafa.",
+    "errorConnection": "Yi hakuri, kuskure na haɗi. Da fatan sake ƙoƙari.",
+    "sources": "Tushen:"
+  },
+  "quiz": {
+    "testYourself": "Gwada Kai",
+    "selectCategory": "Zaɓi nau'in don fara gwajin",
+    "generatingQuestions": "Ana ƙirƙirar tambayoyi...",
+    "noQuestions": "Tambayoyi ba su ka samu. Da fatan sake ƙoƙari.",
+    "connectionError": "Kuskure na haɗi",
+    "submitError": "Kuskure a lokacin aika amsoshi",
+    "questionOf": "Tambaya {current} daga {total}",
+    "previous": "Da farko",
+    "next": "Na gaba",
+    "finishQuiz": "Kammala Gwajin",
+    "grading": "Ana tantance...",
+    "result": "Sakamakon Gwajin",
+    "outOf": "daga 100",
+    "retry": "Sake ƙoƙari",
+    "anotherCategory": "Sauran Nau'in",
+    "correctAnswer": "Amsa da ta dace:",
+    "grades": {
+      "excellent": "Mai Girma",
+      "veryGood": "Girma Ga Girma",
+      "good": "Girma",
+      "pass": "Ya Wuce",
+      "needsImprovement": "Yana Bukatar Kyautatawa"
+    },
+    "categories": {
+      "beliefs": "Imani",
+      "logic": "Mantiqa",
+      "kalam": "Kalam",
+      "grammar": "Ilimin Nahawu",
+      "fiqh": "Fikhu"
+    }
+  },
+  "profile": {
+    "title": "Bayanan Kai",
+    "loginDescription": "Shiga ta amfani da asusun Google don ajiye abubuwan da kuka zaɓa",
+    "loginWithGoogle": "Shiga ta Google",
+    "loginInProgress": "Ana shiga...",
+    "loginSuccess": "Shiga ya yi nasara!",
+    "googleLoadFailed": "Aikace-aikacen Google ya gaza",
+    "googleNotAvailable": "Aikace-aikacen Google ba ya nan",
+    "decodeFailed": "Bayanan Google ba su ka warware",
+    "loginError": "Kuskure a lokacin shiga",
+    "lastLogin": "Shiga Na Karshe",
+    "accountStatus": "Matsayin Asusi",
+    "active": "Aiki",
+    "notSet": "Babu",
+    "editProfile": "Gyara Bayanan Kai",
+    "name": "Sunan",
+    "namePlaceholder": "Rubuta sunan ku",
+    "bio": "Game da Kai",
+    "bioPlaceholder": "Ka gaya mana game da sha'awar ku na ilimi...",
+    "interests": "Sha'awar",
+    "selectUpTo": "(Zaɓi har 5)",
+    "updateProfile": "Sabunta Bayanan Kai",
+    "saved": "An ajiye cikin nasara!",
+    "controlPanel": "Panel na Iko",
+    "logout": "Fita",
+    "user": "Mai Amfani",
+    "features": {
+      "title": "Abubuwan Amfani na shiga:",
+      "saveChats": "Ajiye maganganu da gwajin ku",
+      "trackProgress": "Gano ci gaban ku a cikin kimiyyar Islama",
+      "customize": "Daidaita abin da kuke gani bisa sha'awar ku"
+    },
+    "interestsList": [
+      "Imani",
+      "Fikhu",
+      "Tafsiri",
+      "Hadisi",
+      "Tarihin Musulunci",
+      "Falsafar Musulunci",
+      "Mantiqa",
+      "Nahawu",
+      "Balagah",
+      "Usul al-Fikhu"
+    ]
+  },
+  "reader": {
+    "font": "Font",
+    "color": "Launi",
+    "size": "Girma",
+    "currentFont": "Font na yanzu:",
+    "searchFont": "Neman font...",
+    "all": "Duka",
+    "showMore": "Nuna Ƙari",
+    "additionalFonts": "Ƙarin fontuna",
+    "showLess": "Nuna Ƙanƙanta",
+    "textColor": "Launin Rubutu",
+    "fontSize": "Girman Font",
+    "colors": {
+      "default": "Tsoho",
+      "warm": "Dumi",
+      "gold": "Zinare",
+      "sky": "Samaniya",
+      "emerald": "Azurfa",
+      "rose": "Cudanya",
+      "purple": "Ja-fuska",
+      "white": "Fari",
+      "orange": "Orange",
+      "cyan": "Cyan Haske"
+    },
+    "sizes": {
+      "xs": "Kanana Kenan",
+      "sm": "Kanana",
+      "md": "Tsaka-tsaki",
+      "lg": "Babba",
+      "xl": "Babba Kenan",
+      "2xl": "Girgije",
+      "3xl": "Dodo"
+    }
+  },
+  "login": {
+    "title": "Iwan na Diyanal",
+    "subtitle": "Shiga ta amfani da asusun Google",
+    "noEmail": "Babu imel da aka samu",
+    "error": "Kuskure ya faru:",
+    "noClientId": "Google Client ID ba a saita ba"
+  },
+  "admin": {
+    "title": "Panel na Iko",
+    "addPrayer": "Ƙara Bukuku",
+    "addSermon": "Ƙara Wa'azi",
+    "addVisit": "Ƙara Ziyara",
+    "titleField": "Taken",
+    "subtitleField": "Bayani Ƙanƙanta",
+    "categoryField": "Nau'in",
+    "textField": "Rubutu Gaba Ɗaya",
+    "save": "Ajiye",
+    "cancel": "Soke",
+    "delete": "Goge",
+    "edit": "Gyara",
+    "savedSuccess": "An ajiye cikin nasara!",
+    "deleteConfirm": "Kuna tabbacin kana son goge?"
+  },
+  "common": {
+    "loading": "Ana aikewa...",
+    "error": "Kuskure",
+    "success": "Nasara",
+    "cancel": "Soke",
+    "confirm": "Tabbatar",
+    "save": "Ajiye",
+    "delete": "Goge",
+    "edit": "Gyara",
+    "search": "Nema",
+    "noData": "Babu bayanai"
+  }
+}

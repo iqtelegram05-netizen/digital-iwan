@@ -1,0 +1,193 @@
+{
+  "app": {
+    "title": "Digital Iwan",
+    "subtitle": "The First Iraqi AI",
+    "description": "Digital Iwan - Smart Assistant for Islamic Sciences"
+  },
+  "header": {
+    "selectScholar": "Select a Scholar"
+  },
+  "menu": {
+    "mainMenu": "Main Menu",
+    "browseContent": "Browse supplications, sermons, and events"
+  },
+  "tabs": {
+    "prayers": "Supplications",
+    "qibla": "Qibla",
+    "sermons": "Sermons",
+    "events": "Events"
+  },
+  "prayers": {
+    "title": "Supplications",
+    "loading": "Loading...",
+    "empty": "No supplications added yet. The owner can add them from the control panel.",
+    "noText": "No text selected",
+    "back": "Back",
+    "visits": "Visits",
+    "visitsEmpty": "No visits added yet.",
+    "sermonsTitle": "Sermons",
+    "sermonsEmpty": "No sermons added yet. The owner can add them from the control panel."
+  },
+  "events": {
+    "title": "Hijri Calendar Events",
+    "countdown": "Countdown to the next event will appear here"
+  },
+  "chat": {
+    "scientificIwan": "Scientific Iwan",
+    "digitalDebater": "Digital Debater",
+    "digitalTeacher": "Digital Teacher",
+    "askQuestion": "Ask your question about Islamic sciences...",
+    "presentArgument": "Present your argument for discussion...",
+    "askAnyTopic": "Ask any topic you want to understand simply...",
+    "clearChat": "Clear Chat",
+    "errorProcessing": "Sorry, an error occurred during processing.",
+    "errorConnection": "Sorry, a connection error occurred. Please try again.",
+    "sources": "Sources:"
+  },
+  "quiz": {
+    "testYourself": "Test Yourself",
+    "selectCategory": "Select a category to start the quiz",
+    "generatingQuestions": "Generating questions...",
+    "noQuestions": "Questions could not be generated. Please try again.",
+    "connectionError": "Connection error occurred",
+    "submitError": "Error submitting answers",
+    "questionOf": "Question {current} of {total}",
+    "previous": "Previous",
+    "next": "Next",
+    "finishQuiz": "Finish Quiz",
+    "grading": "Grading...",
+    "result": "Quiz Result",
+    "outOf": "out of 100",
+    "retry": "Retry",
+    "anotherCategory": "Another Category",
+    "correctAnswer": "Correct answer:",
+    "grades": {
+      "excellent": "Excellent",
+      "veryGood": "Very Good",
+      "good": "Good",
+      "pass": "Pass",
+      "needsImprovement": "Needs Improvement"
+    },
+    "categories": {
+      "beliefs": "Beliefs",
+      "logic": "Logic",
+      "kalam": "Kalam",
+      "grammar": "Grammar",
+      "fiqh": "Fiqh"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "loginDescription": "Sign in with your Google account to save your preferences and track your progress in Islamic sciences",
+    "loginWithGoogle": "Sign in with Google",
+    "loginInProgress": "Signing in...",
+    "loginSuccess": "Signed in successfully!",
+    "googleLoadFailed": "Failed to load Google service",
+    "googleNotAvailable": "Google service is not available",
+    "decodeFailed": "Failed to decode Google data",
+    "loginError": "An error occurred during sign in",
+    "lastLogin": "Last Login",
+    "accountStatus": "Account Status",
+    "active": "Active",
+    "notSet": "Not set",
+    "editProfile": "Edit Profile",
+    "name": "Name",
+    "namePlaceholder": "Enter your name",
+    "bio": "About You",
+    "bioPlaceholder": "Tell us about your academic interests...",
+    "interests": "Interests",
+    "selectUpTo": "(Select up to 5)",
+    "updateProfile": "Update Profile",
+    "saved": "Saved successfully!",
+    "controlPanel": "Control Panel",
+    "logout": "Sign Out",
+    "user": "User",
+    "features": {
+      "title": "Sign in benefits:",
+      "saveChats": "Save your chats and quizzes",
+      "trackProgress": "Track your progress in Islamic sciences",
+      "customize": "Customize your experience based on your interests"
+    },
+    "interestsList": [
+      "Beliefs",
+      "Fiqh",
+      "Tafsir",
+      "Hadith",
+      "Islamic History",
+      "Islamic Philosophy",
+      "Logic",
+      "Grammar",
+      "Rhetoric",
+      "Usul al-Fiqh"
+    ]
+  },
+  "reader": {
+    "font": "Font",
+    "color": "Color",
+    "size": "Size",
+    "currentFont": "Current font:",
+    "searchFont": "Search for a font...",
+    "all": "All",
+    "showMore": "Show More",
+    "additionalFonts": "additional fonts",
+    "showLess": "Show Less",
+    "textColor": "Text Color",
+    "fontSize": "Font Size",
+    "colors": {
+      "default": "Default",
+      "warm": "Warm",
+      "gold": "Gold",
+      "sky": "Sky",
+      "emerald": "Emerald",
+      "rose": "Rose",
+      "purple": "Purple",
+      "white": "White",
+      "orange": "Orange",
+      "cyan": "Light Cyan"
+    },
+    "sizes": {
+      "xs": "Very Small",
+      "sm": "Small",
+      "md": "Medium",
+      "lg": "Large",
+      "xl": "Very Large",
+      "2xl": "Huge",
+      "3xl": "Giant"
+    }
+  },
+  "login": {
+    "title": "Digital Iwan",
+    "subtitle": "Sign in with your Google account",
+    "noEmail": "No email found",
+    "error": "An error occurred:",
+    "noClientId": "Google Client ID is not configured"
+  },
+  "admin": {
+    "title": "Control Panel",
+    "addPrayer": "Add Supplication",
+    "addSermon": "Add Sermon",
+    "addVisit": "Add Visit",
+    "titleField": "Title",
+    "subtitleField": "Short Description",
+    "categoryField": "Category",
+    "textField": "Full Text",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "savedSuccess": "Saved successfully!",
+    "deleteConfirm": "Are you sure you want to delete?"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "noData": "No data available"
+  }
+}

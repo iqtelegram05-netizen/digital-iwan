@@ -1,0 +1,193 @@
+{
+  "app": {
+    "title": "Iwan Digital",
+    "subtitle": "A Primeira IA Iraquiana",
+    "description": "Iwan Digital - Assistente Inteligente de Ciências Islâmicas"
+  },
+  "header": {
+    "selectScholar": "Selecionar um Erudito"
+  },
+  "menu": {
+    "mainMenu": "Menu Principal",
+    "browseContent": "Navegar súplicas, sermões e eventos"
+  },
+  "tabs": {
+    "prayers": "Súplicas",
+    "qibla": "Qibla",
+    "sermons": "Sermões",
+    "events": "Eventos"
+  },
+  "prayers": {
+    "title": "Súplicas",
+    "loading": "Carregando...",
+    "empty": "Nenhuma súplica adicionada. O proprietário pode adicionar do painel de controle.",
+    "noText": "Nenhum texto selecionado",
+    "back": "Voltar",
+    "visits": "Visitas",
+    "visitsEmpty": "Nenhuma visita adicionada.",
+    "sermonsTitle": "Sermões",
+    "sermonsEmpty": "Nenhum sermão adicionado. O proprietário pode adicionar do painel de controle."
+  },
+  "events": {
+    "title": "Eventos do Calendário Hijri",
+    "countdown": "A contagem regressiva do próximo evento aparecerá aqui"
+  },
+  "chat": {
+    "scientificIwan": "Iwan Científico",
+    "digitalDebater": "Debatedor Digital",
+    "digitalTeacher": "Professor Digital",
+    "askQuestion": "Faça sua pergunta sobre ciências islâmicas...",
+    "presentArgument": "Apresente seu argumento para discussão...",
+    "askAnyTopic": "Pergunte sobre qualquer tema que deseje entender...",
+    "clearChat": "Limpar Chat",
+    "errorProcessing": "Desculpe, ocorreu um erro durante o processamento.",
+    "errorConnection": "Desculpe, ocorreu um erro de conexão. Por favor, tente novamente.",
+    "sources": "Fontes:"
+  },
+  "quiz": {
+    "testYourself": "Teste seus Conhecimentos",
+    "selectCategory": "Selecione uma categoria para iniciar o questionário",
+    "generatingQuestions": "Gerando questões...",
+    "noQuestions": "Não foi possível gerar questões. Por favor, tente novamente.",
+    "connectionError": "Erro de conexão",
+    "submitError": "Erro ao enviar respostas",
+    "questionOf": "Questão {current} de {total}",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "finishQuiz": "Finalizar Questionário",
+    "grading": "Corrigindo...",
+    "result": "Resultado do Questionário",
+    "outOf": "de 100",
+    "retry": "Tentar Novamente",
+    "anotherCategory": "Outra Categoria",
+    "correctAnswer": "Resposta correta:",
+    "grades": {
+      "excellent": "Excelente",
+      "veryGood": "Muito Bom",
+      "good": "Bom",
+      "pass": "Aprovado",
+      "needsImprovement": "Precisa Melhorar"
+    },
+    "categories": {
+      "beliefs": "Crenças",
+      "logic": "Lógica",
+      "kalam": "Kalam",
+      "grammar": "Gramática",
+      "fiqh": "Fiqh"
+    }
+  },
+  "profile": {
+    "title": "Perfil",
+    "loginDescription": "Entre com sua conta Google para salvar suas preferências e acompanhar seu progresso",
+    "loginWithGoogle": "Entrar com Google",
+    "loginInProgress": "Entrando...",
+    "loginSuccess": "Login realizado com sucesso!",
+    "googleLoadFailed": "Falha ao carregar serviço do Google",
+    "googleNotAvailable": "Serviço do Google indisponível",
+    "decodeFailed": "Falha ao decodificar dados do Google",
+    "loginError": "Erro durante o login",
+    "lastLogin": "Último Login",
+    "accountStatus": "Status da Conta",
+    "active": "Ativo",
+    "notSet": "Não definido",
+    "editProfile": "Editar Perfil",
+    "name": "Nome",
+    "namePlaceholder": "Digite seu nome",
+    "bio": "Sobre Você",
+    "bioPlaceholder": "Conte-nos sobre seus interesses acadêmicos...",
+    "interests": "Interesses",
+    "selectUpTo": "(Selecione até 5)",
+    "updateProfile": "Atualizar Perfil",
+    "saved": "Salvo com sucesso!",
+    "controlPanel": "Painel de Controle",
+    "logout": "Sair",
+    "user": "Usuário",
+    "features": {
+      "title": "Benefícios do login:",
+      "saveChats": "Salve seus chats e questionários",
+      "trackProgress": "Acompanhe seu progresso em ciências islâmicas",
+      "customize": "Personalize sua experiência de acordo com seus interesses"
+    },
+    "interestsList": [
+      "Crenças",
+      "Fiqh",
+      "Tafsir",
+      "Hadith",
+      "História do Islã",
+      "Filosofia Islâmica",
+      "Lógica",
+      "Gramática",
+      "Retórica",
+      "Usul al-Fiqh"
+    ]
+  },
+  "reader": {
+    "font": "Fonte",
+    "color": "Cor",
+    "size": "Tamanho",
+    "currentFont": "Fonte atual:",
+    "searchFont": "Buscar fonte...",
+    "all": "Todos",
+    "showMore": "Ver Mais",
+    "additionalFonts": "fontes adicionais",
+    "showLess": "Ver Menos",
+    "textColor": "Cor do Texto",
+    "fontSize": "Tamanho da Fonte",
+    "colors": {
+      "default": "Padrão",
+      "warm": "Quente",
+      "gold": "Dourado",
+      "sky": "Céu",
+      "emerald": "Esmeralda",
+      "rose": "Rosa",
+      "purple": "Roxo",
+      "white": "Branco",
+      "orange": "Laranja",
+      "cyan": "Ciano Claro"
+    },
+    "sizes": {
+      "xs": "Muito Pequeno",
+      "sm": "Pequeno",
+      "md": "Médio",
+      "lg": "Grande",
+      "xl": "Muito Grande",
+      "2xl": "Enorme",
+      "3xl": "Gigante"
+    }
+  },
+  "login": {
+    "title": "Iwan Digital",
+    "subtitle": "Entre com sua conta Google",
+    "noEmail": "Nenhum e-mail encontrado",
+    "error": "Ocorreu um erro:",
+    "noClientId": "Google Client ID não configurado"
+  },
+  "admin": {
+    "title": "Painel de Controle",
+    "addPrayer": "Adicionar Súplica",
+    "addSermon": "Adicionar Sermão",
+    "addVisit": "Adicionar Visita",
+    "titleField": "Título",
+    "subtitleField": "Descrição Curta",
+    "categoryField": "Categoria",
+    "textField": "Texto Completo",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "savedSuccess": "Salvo com sucesso!",
+    "deleteConfirm": "Tem certeza de que deseja excluir?"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "search": "Buscar",
+    "noData": "Nenhum dado disponível"
+  }
+}

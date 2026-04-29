@@ -1,0 +1,193 @@
+{
+  "app": {
+    "title": "デジタル・イワーン",
+    "subtitle": "イラク初のAI",
+    "description": "デジタル・イワーン - イスラム学知のスマートアシスタント"
+  },
+  "header": {
+    "selectScholar": "学者を選択"
+  },
+  "menu": {
+    "mainMenu": "メインメニュー",
+    "browseContent": "祈り、説教、イベントを閲覧"
+  },
+  "tabs": {
+    "prayers": "祈り",
+    "qibla": "キブラ",
+    "sermons": "説教",
+    "events": "イベント"
+  },
+  "prayers": {
+    "title": "祈り",
+    "loading": "読み込み中...",
+    "empty": "祈りはまだ追加されていません。所有者が管理パネルから追加できます。",
+    "noText": "テキストが選択されていません",
+    "back": "戻る",
+    "visits": "訪問",
+    "visitsEmpty": "訪問はまだ追加されていません。",
+    "sermonsTitle": "説教",
+    "sermonsEmpty": "説教はまだ追加されていません。所有者が管理パネルから追加できます。"
+  },
+  "events": {
+    "title": "ヒジュラ暦イベント",
+    "countdown": "次のイベントまでのカウントダウンがここに表示されます"
+  },
+  "chat": {
+    "scientificIwan": "科学イワーン",
+    "digitalDebater": "デジタル討論者",
+    "digitalTeacher": "デジタル教師",
+    "askQuestion": "イスラム学知について質問してください...",
+    "presentArgument": "議論のためにあなたの論点を提示してください...",
+    "askAnyTopic": "理解したいトピックを質問してください...",
+    "clearChat": "チャットをクリア",
+    "errorProcessing": "申し訳ありません、処理中にエラーが発生しました。",
+    "errorConnection": "申し訳ありません、接続エラー。もう一度お試しください。",
+    "sources": "出典:"
+  },
+  "quiz": {
+    "testYourself": "自分をテスト",
+    "selectCategory": "クイズを開始するカテゴリーを選択",
+    "generatingQuestions": "問題を生成中...",
+    "noQuestions": "問題を生成できませんでした。もう一度お試しください。",
+    "connectionError": "接続エラー",
+    "submitError": "回答の送信エラー",
+    "questionOf": "問題 {current} / {total}",
+    "previous": "前へ",
+    "next": "次へ",
+    "finishQuiz": "クイズ終了",
+    "grading": "採点中...",
+    "result": "クイズ結果",
+    "outOf": "100点中",
+    "retry": "再試行",
+    "anotherCategory": "他のカテゴリー",
+    "correctAnswer": "正解:",
+    "grades": {
+      "excellent": "優秀",
+      "veryGood": "大変良い",
+      "good": "良い",
+      "pass": "合格",
+      "needsImprovement": "改善が必要"
+    },
+    "categories": {
+      "beliefs": "信仰",
+      "logic": "論理学",
+      "kalam": "カラーム",
+      "grammar": "文法",
+      "fiqh": "フィクフ"
+    }
+  },
+  "profile": {
+    "title": "プロフィール",
+    "loginDescription": "Googleアカウントでログインして設定を保存し、進捗を追跡してください",
+    "loginWithGoogle": "Googleでログイン",
+    "loginInProgress": "ログイン中...",
+    "loginSuccess": "ログイン成功！",
+    "googleLoadFailed": "Googleサービスの読み込みに失敗",
+    "googleNotAvailable": "Googleサービスが利用できません",
+    "decodeFailed": "Googleデータのデコードに失敗",
+    "loginError": "ログイン中にエラー",
+    "lastLogin": "最終ログイン",
+    "accountStatus": "アカウント状態",
+    "active": "アクティブ",
+    "notSet": "未設定",
+    "editProfile": "プロフィール編集",
+    "name": "名前",
+    "namePlaceholder": "お名前を入力",
+    "bio": "自己紹介",
+    "bioPlaceholder": "学術的な興味を教えてください...",
+    "interests": "興味",
+    "selectUpTo": "（最大5つ選択）",
+    "updateProfile": "プロフィール更新",
+    "saved": "保存成功！",
+    "controlPanel": "管理パネル",
+    "logout": "ログアウト",
+    "user": "ユーザー",
+    "features": {
+      "title": "ログインのメリット:",
+      "saveChats": "チャットとクイズを保存",
+      "trackProgress": "イスラム学知の進捗を追跡",
+      "customize": "興味に合わせて体験をカスタマイズ"
+    },
+    "interestsList": [
+      "信仰",
+      "フィクフ",
+      "タフスィール",
+      "ハディース",
+      "イスラム史",
+      "イスラム哲学",
+      "論理学",
+      "文法",
+      "修辞学",
+      "ウスール・アル・フィクフ"
+    ]
+  },
+  "reader": {
+    "font": "フォント",
+    "color": "色",
+    "size": "サイズ",
+    "currentFont": "現在のフォント:",
+    "searchFont": "フォントを検索...",
+    "all": "すべて",
+    "showMore": "もっと見る",
+    "additionalFonts": "個の追加フォント",
+    "showLess": "少なく見る",
+    "textColor": "テキストの色",
+    "fontSize": "フォントサイズ",
+    "colors": {
+      "default": "デフォルト",
+      "warm": "暖色",
+      "gold": "金色",
+      "sky": "空色",
+      "emerald": "エメラルド",
+      "rose": "ローズ",
+      "purple": "紫",
+      "white": "白",
+      "orange": "オレンジ",
+      "cyan": "シアン"
+    },
+    "sizes": {
+      "xs": "極小",
+      "sm": "小",
+      "md": "中",
+      "lg": "大",
+      "xl": "特大",
+      "2xl": "巨大",
+      "3xl": "超特大"
+    }
+  },
+  "login": {
+    "title": "デジタル・イワーン",
+    "subtitle": "Googleアカウントでログイン",
+    "noEmail": "メールが見つかりません",
+    "error": "エラーが発生しました:",
+    "noClientId": "Google Client IDが設定されていません"
+  },
+  "admin": {
+    "title": "管理パネル",
+    "addPrayer": "祈りを追加",
+    "addSermon": "説教を追加",
+    "addVisit": "訪問を追加",
+    "titleField": "タイトル",
+    "subtitleField": "短い説明",
+    "categoryField": "カテゴリー",
+    "textField": "全文",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "savedSuccess": "保存成功！",
+    "deleteConfirm": "本当に削除しますか？"
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "search": "検索",
+    "noData": "データなし"
+  }
+}

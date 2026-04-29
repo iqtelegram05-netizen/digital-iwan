@@ -1,0 +1,193 @@
+{
+  "app": {
+    "title": "数字伊旺",
+    "subtitle": "第一个伊拉克人工智能",
+    "description": "数字伊旺 - 伊斯兰科学智能助手"
+  },
+  "header": {
+    "selectScholar": "选择学者"
+  },
+  "menu": {
+    "mainMenu": "主菜单",
+    "browseContent": "浏览祈祷文、演讲和活动"
+  },
+  "tabs": {
+    "prayers": "祈祷文",
+    "qibla": "朝向",
+    "sermons": "演讲",
+    "events": "活动"
+  },
+  "prayers": {
+    "title": "祈祷文",
+    "loading": "加载中...",
+    "empty": "尚未添加祈祷文。所有者可以从控制面板添加。",
+    "noText": "未选择文本",
+    "back": "返回",
+    "visits": "访问",
+    "visitsEmpty": "尚未添加访问。",
+    "sermonsTitle": "演讲",
+    "sermonsEmpty": "尚未添加演讲。所有者可以从控制面板添加。"
+  },
+  "events": {
+    "title": "伊斯兰历活动",
+    "countdown": "下一个活动的倒计时将显示在这里"
+  },
+  "chat": {
+    "scientificIwan": "科学伊旺",
+    "digitalDebater": "数字辩论者",
+    "digitalTeacher": "数字教师",
+    "askQuestion": "提出关于伊斯兰科学的问题...",
+    "presentArgument": "提出您的论点进行讨论...",
+    "askAnyTopic": "询问您想了解的任何话题...",
+    "clearChat": "清除聊天",
+    "errorProcessing": "抱歉，处理过程中出现错误。",
+    "errorConnection": "抱歉，连接错误。请重试。",
+    "sources": "来源:"
+  },
+  "quiz": {
+    "testYourself": "测试自己",
+    "selectCategory": "选择一个类别开始测试",
+    "generatingQuestions": "正在生成问题...",
+    "noQuestions": "无法生成问题。请重试。",
+    "connectionError": "连接错误",
+    "submitError": "提交答案时出错",
+    "questionOf": "第{current}题，共{total}题",
+    "previous": "上一题",
+    "next": "下一题",
+    "finishQuiz": "完成测试",
+    "grading": "评分中...",
+    "result": "测试结果",
+    "outOf": "满分100",
+    "retry": "重试",
+    "anotherCategory": "其他类别",
+    "correctAnswer": "正确答案:",
+    "grades": {
+      "excellent": "优秀",
+      "veryGood": "非常好",
+      "good": "良好",
+      "pass": "及格",
+      "needsImprovement": "需要改进"
+    },
+    "categories": {
+      "beliefs": "信仰",
+      "logic": "逻辑",
+      "kalam": "教义学",
+      "grammar": "语法",
+      "fiqh": "教法"
+    }
+  },
+  "profile": {
+    "title": "个人资料",
+    "loginDescription": "使用Google账号登录以保存偏好设置并跟踪进度",
+    "loginWithGoogle": "使用Google登录",
+    "loginInProgress": "登录中...",
+    "loginSuccess": "登录成功！",
+    "googleLoadFailed": "无法加载Google服务",
+    "googleNotAvailable": "Google服务不可用",
+    "decodeFailed": "无法解码Google数据",
+    "loginError": "登录时出错",
+    "lastLogin": "上次登录",
+    "accountStatus": "账户状态",
+    "active": "活跃",
+    "notSet": "未设置",
+    "editProfile": "编辑资料",
+    "name": "姓名",
+    "namePlaceholder": "输入您的姓名",
+    "bio": "关于您",
+    "bioPlaceholder": "告诉我们您的学术兴趣...",
+    "interests": "兴趣",
+    "selectUpTo": "(最多选择5个)",
+    "updateProfile": "更新资料",
+    "saved": "保存成功！",
+    "controlPanel": "控制面板",
+    "logout": "退出登录",
+    "user": "用户",
+    "features": {
+      "title": "登录好处：",
+      "saveChats": "保存您的聊天和测试记录",
+      "trackProgress": "跟踪您在伊斯兰科学方面的进步",
+      "customize": "根据您的兴趣定制体验"
+    },
+    "interestsList": [
+      "信仰",
+      "教法",
+      "古兰经注释",
+      "圣训",
+      "伊斯兰历史",
+      "伊斯兰哲学",
+      "逻辑",
+      "语法",
+      "修辞学",
+      "教法原理"
+    ]
+  },
+  "reader": {
+    "font": "字体",
+    "color": "颜色",
+    "size": "大小",
+    "currentFont": "当前字体：",
+    "searchFont": "搜索字体...",
+    "all": "全部",
+    "showMore": "显示更多",
+    "additionalFonts": "个额外字体",
+    "showLess": "显示较少",
+    "textColor": "文字颜色",
+    "fontSize": "字体大小",
+    "colors": {
+      "default": "默认",
+      "warm": "暖色",
+      "gold": "金色",
+      "sky": "天空蓝",
+      "emerald": "翡翠绿",
+      "rose": "玫瑰色",
+      "purple": "紫色",
+      "white": "白色",
+      "orange": "橙色",
+      "cyan": "浅青色"
+    },
+    "sizes": {
+      "xs": "极小",
+      "sm": "小",
+      "md": "中",
+      "lg": "大",
+      "xl": "极大",
+      "2xl": "巨大",
+      "3xl": "超大"
+    }
+  },
+  "login": {
+    "title": "数字伊旺",
+    "subtitle": "使用您的Google账号登录",
+    "noEmail": "未找到电子邮箱",
+    "error": "发生错误：",
+    "noClientId": "Google Client ID未配置"
+  },
+  "admin": {
+    "title": "控制面板",
+    "addPrayer": "添加祈祷文",
+    "addSermon": "添加演讲",
+    "addVisit": "添加访问",
+    "titleField": "标题",
+    "subtitleField": "简短描述",
+    "categoryField": "类别",
+    "textField": "全文",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "savedSuccess": "保存成功！",
+    "deleteConfirm": "确定要删除吗？"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "cancel": "取消",
+    "confirm": "确认",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "search": "搜索",
+    "noData": "暂无数据"
+  }
+}

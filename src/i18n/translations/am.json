@@ -1,0 +1,193 @@
+{
+  "app": {
+    "title": "ዲጂታል እዋን",
+    "subtitle": "የመጀመሪያው ኢራቲ የሰው ሰራሽ አስተውሎት",
+    "description": "ዲጂታል እዋን - ለእስላማዊ ሳይንሶች ብልህ ረዳት"
+  },
+  "header": {
+    "selectScholar": "ሊቀ ማማች ይምረጡ"
+  },
+  "menu": {
+    "mainMenu": "ዋና ምናሌ",
+    "browseContent": "ጸሎቶችን እና ዝግጅቶችን ያስሱ"
+  },
+  "tabs": {
+    "prayers": "ጸሎቶች",
+    "qibla": "ቂብላ",
+    "sermons": "ዝግጅቶች",
+    "events": "ዝግጅቶች"
+  },
+  "prayers": {
+    "title": "ጸሎቶች",
+    "loading": "በማስገባት ላይ...",
+    "empty": "ጸሎቶች ገና አልተጨመሩም። ባለቤት ከመቆጣጠሪያ ፓነል ማከል ይችላል።",
+    "noText": "ጽሑፍ አልተመረጠም",
+    "back": "ተመለስ",
+    "visits": "ጉብኝቶች",
+    "visitsEmpty": "ጉብኝቶች ገና አልተጨመሩም።",
+    "sermonsTitle": "ዝግጅቶች",
+    "sermonsEmpty": "ዝግጅቶች ገና አልተጨመሩም። ባለቤት ከመቆጣጠሪያ ፓነል ማከል ይችላል።"
+  },
+  "events": {
+    "title": "የሂጅራ ቀን መቁጠሪያ ዝግጅቶች",
+    "countdown": "የሚቀጥለው ዝግጅት ቆጠራ እዚህ ይታያል"
+  },
+  "chat": {
+    "scientificIwan": "ሳይንሳዊ እዋን",
+    "digitalDebater": "ዲጂታል ተወዳዳሪ",
+    "digitalTeacher": "ዲጂታል መምህር",
+    "askQuestion": "ስለ እስላማዊ ሳይንሶች ጥያቄዎን ያቀርቡ...",
+    "presentArgument": "ለውይይት ክርክርዎን ያቀርቡ...",
+    "askAnyTopic": "ማንኛውንም ርዕስ የሚፈልጉትን ይጠይቁ...",
+    "clearChat": "ውይይት አጥፋ",
+    "errorProcessing": "ይቅርታ፣ በማቀነባበር ላይ ስህተት ተፈጥሯል።",
+    "errorConnection": "ይቅርታ፣ ግንኙነት ስህተት። እባክዎ እንደገና ይሞክሩ።",
+    "sources": "ምንጮች:"
+  },
+  "quiz": {
+    "testYourself": "ራስዎን ይፈትሙ",
+    "selectCategory": "ፈተና ለመጀመር ምድብ ይምረጡ",
+    "generatingQuestions": "ጥያቄዎችን በማዘጋጀት ላይ...",
+    "noQuestions": "ጥያቄዎች አልተዘጋጁም። እባክዎ እንደገና ይሞክሩ።",
+    "connectionError": "ግንኙነት ስህተት",
+    "submitError": "መልሶችን በማስገባት ላይ ስህተት",
+    "questionOf": "ጥያቄ {current} ከ {total}",
+    "previous": "ቀዳሚ",
+    "next": "ይቀጥሉ",
+    "finishQuiz": "ፈተና ጨርስ",
+    "grading": "በማስተካከል ላይ...",
+    "result": "የፈተና ውጤት",
+    "outOf": "ከ100",
+    "retry": "እንደገና ይሞክሩ",
+    "anotherCategory": "ሌላ ምድብ",
+    "correctAnswer": "ትክክለኛ መልስ:",
+    "grades": {
+      "excellent": "በጣም ጥሩ",
+      "veryGood": "ጥሩ በጣም",
+      "good": "ጥሩ",
+      "pass": "ይሰራል",
+      "needsImprovement": "ማሻሻል ይፈልጋል"
+    },
+    "categories": {
+      "beliefs": "አቆያ",
+      "logic": "ሎጂክ",
+      "kalam": "ካላም",
+      "grammar": "ሰላም",
+      "fiqh": "ፊቅህ"
+    }
+  },
+  "profile": {
+    "title": "መገለጫ",
+    "loginDescription": "ምርጫዎን ለማስቀመጥ እና ለመከታተል Google መለያዎን ይግቡ",
+    "loginWithGoogle": "በGoogle ይግቡ",
+    "loginInProgress": "በመግባት ላይ...",
+    "loginSuccess": "በተሳካ ሁኔታ ገብቷል!",
+    "googleLoadFailed": "Google አገልግሎት መጫን አልተቻለም",
+    "googleNotAvailable": "Google አገልግሎት አይገኝም",
+    "decodeFailed": "Google ውሂብ ማስተረፍ አልተቻለም",
+    "loginError": "በመግባት ላይ ስህተት",
+    "lastLogin": "የመጨረሻ መግባት",
+    "accountStatus": "የመለያ ሁኔታ",
+    "active": "ንቁ",
+    "notSet": "አልተዘጋጀም",
+    "editProfile": "መገለጫ ያርትዑ",
+    "name": "ስም",
+    "namePlaceholder": "ስምዎን ያስገቡ",
+    "bio": "ስለ እርስዎ",
+    "bioPlaceholder": "ስለ አካዳሚ አስተያየቶችዎ ይንገሩን...",
+    "interests": "አስተያየቶች",
+    "selectUpTo": "(እስከ 5 ይምረጡ)",
+    "updateProfile": "መገለጫ ያዘምኑ",
+    "saved": "በተሳካ ሁኔታ ተቀምጧል!",
+    "controlPanel": "መቆጣጠሪያ ፓነል",
+    "logout": "ውጣ",
+    "user": "ተጠቃሚ",
+    "features": {
+      "title": "የመግባት ጥቅሞች:",
+      "saveChats": "ውይይቶችዎን እና ፈተናዎችን ያስቀመጡ",
+      "trackProgress": "በእስላማዊ ሳይንሶች ውስጥ ሂደትዎን ይከታተሉ",
+      "customize": "እርስዎን በመሰረት ልምድዎን ያስተካክሉ"
+    },
+    "interestsList": [
+      "አቆያ",
+      "ፊቅህ",
+      "ተፈርክት",
+      "ሐዲስ",
+      "የእስላም ታሪክ",
+      "የእስላማዊ ፍልስፍና",
+      "ሎጂክ",
+      "ሰላም",
+      "ትንቢት",
+      "ኡሱል አል-ፊቅህ"
+    ]
+  },
+  "reader": {
+    "font": "ፊደል",
+    "color": "ቀለም",
+    "size": "መጠን",
+    "currentFont": "የአሁን ፊደል:",
+    "searchFont": "ፊደል ፈልግ...",
+    "all": "ሁሉም",
+    "showMore": "ተጨማሪ አሳይ",
+    "additionalFonts": "ተጨማሪ ፊደሎች",
+    "showLess": "ያነሰ አሳይ",
+    "textColor": "የጽሑፍ ቀለም",
+    "fontSize": "የፊደል መጠን",
+    "colors": {
+      "default": "ነባሪ",
+      "warm": "ሞቅ",
+      "gold": "ወርቃማ",
+      "sky": "ሰማያዊ",
+      "emerald": "ሰማያዊ አረንጓዴ",
+      "rose": "ሮዛ",
+      "purple": "ለይም",
+      "white": "ነጭ",
+      "orange": "ራስ ጥቁር",
+      "cyan": "ቀለም ሰማያዊ"
+    },
+    "sizes": {
+      "xs": "በጣም ትንሽ",
+      "sm": "ትንሽ",
+      "md": "መካከለኛ",
+      "lg": "ትልቅ",
+      "xl": "በጣም ትልቅ",
+      "2xl": "ትልቅ በጣም",
+      "3xl": "ዝምድና"
+    }
+  },
+  "login": {
+    "title": "ዲጂታል እዋን",
+    "subtitle": "በGoogle መለያዎ ይግቡ",
+    "noEmail": "ኢሜል አልተገኘም",
+    "error": "ስህተት ተፈጥሯል:",
+    "noClientId": "Google Client ID አልተዘጋጀም"
+  },
+  "admin": {
+    "title": "መቆጣጠሪያ ፓነል",
+    "addPrayer": "ጸሎት ያክሉ",
+    "addSermon": "ዝግጅት ያክሉ",
+    "addVisit": "ጉብኝት ያክሉ",
+    "titleField": "ርዕስ",
+    "subtitleField": "አጭር መግለጫ",
+    "categoryField": "ምድብ",
+    "textField": "ሙሉ ጽሑፍ",
+    "save": "አስቀምጥ",
+    "cancel": "ሰርዝ",
+    "delete": "ሰርዝ",
+    "edit": "ያርትዑ",
+    "savedSuccess": "በተሳካ ሁኔታ ተቀምጧል!",
+    "deleteConfirm": "መሰረዝ ይፈልጋሉ?"
+  },
+  "common": {
+    "loading": "በማስገባት ላይ...",
+    "error": "ስህተት",
+    "success": "ተሳካ",
+    "cancel": "ሰርዝ",
+    "confirm": "አረጋግጥ",
+    "save": "አስቀምጥ",
+    "delete": "ሰርዝ",
+    "edit": "ያርትዑ",
+    "search": "ፈልግ",
+    "noData": "ውሂብ የለም"
+  }
+}

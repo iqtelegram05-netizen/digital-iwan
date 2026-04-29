@@ -1,0 +1,193 @@
+{
+  "app": {
+    "title": "Al-Iwan Numérique",
+    "subtitle": "La Première IA Irakienne",
+    "description": "Al-Iwan Numérique - Assistant Intelligent pour les Sciences Islamiques"
+  },
+  "header": {
+    "selectScholar": "Choisir un Savant"
+  },
+  "menu": {
+    "mainMenu": "Menu Principal",
+    "browseContent": "Parcourir les invocations, sermons et événements"
+  },
+  "tabs": {
+    "prayers": "Invocations",
+    "qibla": "Qibla",
+    "sermons": "Sermons",
+    "events": "Événements"
+  },
+  "prayers": {
+    "title": "Invocations",
+    "loading": "Chargement...",
+    "empty": "Aucune invocation ajoutée. Le propriétaire peut en ajouter depuis le panneau de contrôle.",
+    "noText": "Aucun texte sélectionné",
+    "back": "Retour",
+    "visits": "Visites",
+    "visitsEmpty": "Aucune visite ajoutée.",
+    "sermonsTitle": "Sermons",
+    "sermonsEmpty": "Aucun sermon ajouté. Le propriétaire peut en ajouter depuis le panneau de contrôle."
+  },
+  "events": {
+    "title": "Événements du Calendrier Hijri",
+    "countdown": "Le compte à rebours pour le prochain événement apparaîtra ici"
+  },
+  "chat": {
+    "scientificIwan": "Iwan Scientifique",
+    "digitalDebater": "Débateur Numérique",
+    "digitalTeacher": "Professeur Numérique",
+    "askQuestion": "Posez votre question sur les sciences islamiques...",
+    "presentArgument": "Présentez votre argument pour la discussion...",
+    "askAnyTopic": "Posez une question sur un sujet que vous souhaitez comprendre...",
+    "clearChat": "Effacer la Conversation",
+    "errorProcessing": "Désolé, une erreur s'est produite lors du traitement.",
+    "errorConnection": "Désolé, une erreur de connexion s'est produite. Veuillez réessayer.",
+    "sources": "Sources :"
+  },
+  "quiz": {
+    "testYourself": "Testez-vous",
+    "selectCategory": "Sélectionnez une catégorie pour commencer le quiz",
+    "generatingQuestions": "Génération des questions...",
+    "noQuestions": "Les questions n'ont pas pu être générées. Veuillez réessayer.",
+    "connectionError": "Erreur de connexion",
+    "submitError": "Erreur lors de l'envoi des réponses",
+    "questionOf": "Question {current} sur {total}",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "finishQuiz": "Terminer le Quiz",
+    "grading": "Correction...",
+    "result": "Résultat du Quiz",
+    "outOf": "sur 100",
+    "retry": "Réessayer",
+    "anotherCategory": "Autre Catégorie",
+    "correctAnswer": "Bonne réponse :",
+    "grades": {
+      "excellent": "Excellent",
+      "veryGood": "Très Bien",
+      "good": "Bien",
+      "pass": "Passable",
+      "needsImprovement": "À Améliorer"
+    },
+    "categories": {
+      "beliefs": "Croyances",
+      "logic": "Logique",
+      "kalam": "Kalâm",
+      "grammar": "Grammaire",
+      "fiqh": "Fiqh"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "loginDescription": "Connectez-vous avec votre compte Google pour sauvegarder vos préférences et suivre votre progression",
+    "loginWithGoogle": "Se connecter avec Google",
+    "loginInProgress": "Connexion en cours...",
+    "loginSuccess": "Connecté avec succès !",
+    "googleLoadFailed": "Échec du chargement du service Google",
+    "googleNotAvailable": "Service Google non disponible",
+    "decodeFailed": "Échec du décodage des données Google",
+    "loginError": "Erreur lors de la connexion",
+    "lastLogin": "Dernière Connexion",
+    "accountStatus": "Statut du Compte",
+    "active": "Actif",
+    "notSet": "Non défini",
+    "editProfile": "Modifier le Profil",
+    "name": "Nom",
+    "namePlaceholder": "Entrez votre nom",
+    "bio": "À propos de vous",
+    "bioPlaceholder": "Parlez-nous de vos intérêts académiques...",
+    "interests": "Intérêts",
+    "selectUpTo": "(Sélectionnez jusqu'à 5)",
+    "updateProfile": "Mettre à jour le Profil",
+    "saved": "Enregistré avec succès !",
+    "controlPanel": "Panneau de Contrôle",
+    "logout": "Déconnexion",
+    "user": "Utilisateur",
+    "features": {
+      "title": "Avantages de la connexion :",
+      "saveChats": "Sauvegarder vos conversations et quiz",
+      "trackProgress": "Suivre votre progression en sciences islamiques",
+      "customize": "Personnaliser votre expérience selon vos intérêts"
+    },
+    "interestsList": [
+      "Croyances",
+      "Fiqh",
+      "Tafsir",
+      "Hadith",
+      "Histoire de l'Islam",
+      "Philosophie Islamique",
+      "Logique",
+      "Grammaire",
+      "Rhétorique",
+      "Usul al-Fiqh"
+    ]
+  },
+  "reader": {
+    "font": "Police",
+    "color": "Couleur",
+    "size": "Taille",
+    "currentFont": "Police actuelle :",
+    "searchFont": "Rechercher une police...",
+    "all": "Tout",
+    "showMore": "Voir Plus",
+    "additionalFonts": "polices supplémentaires",
+    "showLess": "Voir Moins",
+    "textColor": "Couleur du Texte",
+    "fontSize": "Taille de Police",
+    "colors": {
+      "default": "Par défaut",
+      "warm": "Chaud",
+      "gold": "Or",
+      "sky": "Ciel",
+      "emerald": "Émeraude",
+      "rose": "Rose",
+      "purple": "Violet",
+      "white": "Blanc",
+      "orange": "Orange",
+      "cyan": "Cyan Clair"
+    },
+    "sizes": {
+      "xs": "Très Petit",
+      "sm": "Petit",
+      "md": "Moyen",
+      "lg": "Grand",
+      "xl": "Très Grand",
+      "2xl": "Énorme",
+      "3xl": "Géant"
+    }
+  },
+  "login": {
+    "title": "Al-Iwan Numérique",
+    "subtitle": "Connectez-vous avec votre compte Google",
+    "noEmail": "Aucun e-mail trouvé",
+    "error": "Une erreur s'est produite :",
+    "noClientId": "Google Client ID non configuré"
+  },
+  "admin": {
+    "title": "Panneau de Contrôle",
+    "addPrayer": "Ajouter une Invocation",
+    "addSermon": "Ajouter un Sermon",
+    "addVisit": "Ajouter une Visite",
+    "titleField": "Titre",
+    "subtitleField": "Description Courte",
+    "categoryField": "Catégorie",
+    "textField": "Texte Complet",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "savedSuccess": "Enregistré avec succès !",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ?"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "search": "Rechercher",
+    "noData": "Aucune donnée disponible"
+  }
+}

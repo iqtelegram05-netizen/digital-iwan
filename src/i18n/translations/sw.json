@@ -1,0 +1,193 @@
+{
+  "app": {
+    "title": "Iwan Digital",
+    "subtitle": "AI ya Kwanza ya Iraki",
+    "description": "Iwan Digital - Msaidizi Hodari wa Sayansi za Kiislamu"
+  },
+  "header": {
+    "selectScholar": "Chagua Mwenye Ujuzi"
+  },
+  "menu": {
+    "mainMenu": "Menyu Kuu",
+    "browseContent": "Vinjari dua, hotuba na matukio"
+  },
+  "tabs": {
+    "prayers": "Dua",
+    "qibla": "Qibla",
+    "sermons": "Hotuba",
+    "events": "Matukio"
+  },
+  "prayers": {
+    "title": "Dua",
+    "loading": "Inapakia...",
+    "empty": "Hakuna dua zilizoongezwa. Mmiliki anaweza kuongeza kutoka kwenye paneli ya udhibiti.",
+    "noText": "Hakuna maandishi yaliyochaguliwa",
+    "back": "Rudi",
+    "visits": "Ziara",
+    "visitsEmpty": "Hakuna ziara zilizoongezwa.",
+    "sermonsTitle": "Hotuba",
+    "sermonsEmpty": "Hakuna hotuba zilizoongezwa. Mmiliki anaweza kuongeza kutoka kwenye paneli ya udhibiti."
+  },
+  "events": {
+    "title": "Matukio ya Kalenda ya Hijri",
+    "countdown": "Kuhesabu nyuma kwa tukio lijalo litaonekana hapa"
+  },
+  "chat": {
+    "scientificIwan": "Iwan ya Kisayansi",
+    "digitalDebater": "Mjadala wa Kidijitali",
+    "digitalTeacher": "Mwalimu wa Kidijitali",
+    "askQuestion": "Uliza swali lako kuhusu sayansi za Kiislamu...",
+    "presentArgument": "Wasilisha hoja yako kwa mjadala...",
+    "askAnyTopic": "Uliza chochote unachotaka kuelewa...",
+    "clearChat": "Futa Mazungumzo",
+    "errorProcessing": "Samahani, kuna hitilafu katika usindikaji.",
+    "errorConnection": "Samahani, hitilafu ya muunganisho. Tafadhali jaribu tena.",
+    "sources": "Vyanzo:"
+  },
+  "quiz": {
+    "testYourself": "Jaribu Nafasi Yako",
+    "selectCategory": "Chagua kategoria iliyoanza jaribio",
+    "generatingQuestions": "Inatengeneza maswali...",
+    "noQuestions": "Maswali hayakuweza kutengenezwa. Tafadhali jaribu tena.",
+    "connectionError": "Hitilafu ya muunganisho",
+    "submitError": "Hitilafu katika kuwasilisha majibu",
+    "questionOf": "Swali la {current} kati ya {total}",
+    "previous": "Iliyopita",
+    "next": "Inayofuata",
+    "finishQuiz": "Maliza Jaribio",
+    "grading": "Inapima...",
+    "result": "Matokeo ya Jaribio",
+    "outOf": "kati ya 100",
+    "retry": "Jaribu Tena",
+    "anotherCategory": "Kategoria Nyingine",
+    "correctAnswer": "Jibu sahihi:",
+    "grades": {
+      "excellent": "Bora",
+      "veryGood": "Vizuri Sana",
+      "good": "Vizuri",
+      "pass": "Kupita",
+      "needsImprovement": "Inahitaji Kuboreshwa"
+    },
+    "categories": {
+      "beliefs": "Imani",
+      "logic": "Mantiki",
+      "kalam": "Kalamu",
+      "grammar": "Sarufi",
+      "fiqh": "Fikhi"
+    }
+  },
+  "profile": {
+    "title": "Wasifu",
+    "loginDescription": "Ingia kwa akaunti yako ya Google kuokoa mapendeleo yako na kufuatilia maendeleo yako",
+    "loginWithGoogle": "Ingia na Google",
+    "loginInProgress": "Inaingia...",
+    "loginSuccess": "Umeingia kwa mafanikio!",
+    "googleLoadFailed": "Haiwezi kupakia huduma ya Google",
+    "googleNotAvailable": "Huduma ya Google haipatikani",
+    "decodeFailed": "Haiwezi kufafanua data ya Google",
+    "loginError": "Hitilafu wakati wa kuingia",
+    "lastLogin": "Kuingia Mwisho",
+    "accountStatus": "Hali ya Akaunti",
+    "active": "Amilifu",
+    "notSet": "Haijawekwa",
+    "editProfile": "Hariri Wasifu",
+    "name": "Jina",
+    "namePlaceholder": "Ingiza jina lako",
+    "bio": "Kuhusu Wewe",
+    "bioPlaceholder": "Tuambie kuhusu maslahi yako ya kitaaluma...",
+    "interests": "Maslahi",
+    "selectUpTo": "(Chagua hadi 5)",
+    "updateProfile": "Sasisha Wasifu",
+    "saved": "Imehifadhiwa kwa mafanikio!",
+    "controlPanel": "Paneli ya Udhibiti",
+    "logout": "Toka",
+    "user": "Mtumiaji",
+    "features": {
+      "title": "Faida za kuingia:",
+      "saveChats": "Okoa mazungumzo yako na jaribio",
+      "trackProgress": "Fuatilia maendeleo yako katika sayansi za Kiislamu",
+      "customize": "Badilisha uzoefu wako kulingana na maslahi yako"
+    },
+    "interestsList": [
+      "Imani",
+      "Fikhi",
+      "Tafsiri",
+      "Hadithi",
+      "Historia ya Uislamu",
+      "Falsafa ya Kiislamu",
+      "Mantiki",
+      "Sarufi",
+      "Balagha",
+      "Usul wa Fikhi"
+    ]
+  },
+  "reader": {
+    "font": "Fonti",
+    "color": "Rangi",
+    "size": "Ukubwa",
+    "currentFont": "Fonti ya sasa:",
+    "searchFont": "Tafuta fonti...",
+    "all": "Yote",
+    "showMore": "Onyesha Zaidi",
+    "additionalFonts": "fonti za ziada",
+    "showLess": "Onyesha Kidogo",
+    "textColor": "Rangi ya Maandishi",
+    "fontSize": "Ukubwa wa Fonti",
+    "colors": {
+      "default": "Chaguo-msingi",
+      "warm": "Moto",
+      "gold": "Dhahabu",
+      "sky": "Samawati",
+      "emerald": "Zambaradi",
+      "rose": "Waridi",
+      "purple": "Zambarau",
+      "white": "Nyeupe",
+      "orange": "Chungwa",
+      "cyan": "Cyan Mwangaza"
+    },
+    "sizes": {
+      "xs": "Ndogo Sana",
+      "sm": "Ndogo",
+      "md": "Kati",
+      "lg": "Kubwa",
+      "xl": "Kubwa Sana",
+      "2xl": "Kubwa Zaidi",
+      "3xl": "Jitu"
+    }
+  },
+  "login": {
+    "title": "Iwan Digital",
+    "subtitle": "Ingia kwa akaunti yako ya Google",
+    "noEmail": "Hakuna barua pepe iliyopatikana",
+    "error": "Kuna hitilafu:",
+    "noClientId": "Google Client ID haijawekwa"
+  },
+  "admin": {
+    "title": "Paneli ya Udhibiti",
+    "addPrayer": "Ongeza Dua",
+    "addSermon": "Ongeza Hotuba",
+    "addVisit": "Ongeza Ziara",
+    "titleField": "Kichwa",
+    "subtitleField": "Maelezo Mafupi",
+    "categoryField": "Kategoria",
+    "textField": "Maandishi Kamili",
+    "save": "Hifadhi",
+    "cancel": "Ghairi",
+    "delete": "Futa",
+    "edit": "Hariri",
+    "savedSuccess": "Imehifadhiwa kwa mafanikio!",
+    "deleteConfirm": "Je, una uhakika unataka kufuta?"
+  },
+  "common": {
+    "loading": "Inapakia...",
+    "error": "Hitilafu",
+    "success": "Mafanikio",
+    "cancel": "Ghairi",
+    "confirm": "Thibitisha",
+    "save": "Hifadhi",
+    "delete": "Futa",
+    "edit": "Hariri",
+    "search": "Tafuta",
+    "noData": "Hakuna data"
+  }
+}
