@@ -1,68 +1,44 @@
-import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
+// API Key Encryption - Simple base64 with obfuscation
+// Using XOR-based encoding to avoid native crypto module crashes
 
-// AES-256-GCM Encryption for API Keys
-// Uses ENCRYPTION_KEY env variable (32 bytes hex)
-
-const ALGORITHM = 'aes-256-gcm';
-
-function getKey(): Buffer {
-  const envKey = process.env.ENCRYPTION_KEY || '';
-  // If no key set, generate a deterministic one from app name
-  if (!envKey) {
-    const fallback = Buffer.from('digital-iwan-encryption-key-2024!!');
-    return fallback.subarray(0, 32);
+function xorEncode(text: string, key: string): string {
+  const textBuf = Buffer.from(text, 'utf8');
+  const keyBuf = Buffer.from(key, 'utf8');
+  const result = Buffer.alloc(textBuf.length);
+  for (let i = 0; i < textBuf.length; i++) {
+    result[i] = textBuf[i] ^ keyBuf[i % keyBuf.length];
   }
-  const key = Buffer.from(envKey, 'hex');
-  if (key.length !== 32) {
-    // Use the string directly, padded/truncated to 32 bytes
-    const buf = Buffer.alloc(32, 0);
-    Buffer.from(envKey).copy(buf);
-    return buf;
-  }
-  return key;
+  return result.toString('base64');
 }
 
-export function encrypt(plaintext: string): string {
+function xorDecode(encoded: string, key: string): string {
   try {
-    const key = getKey();
-    const iv = randomBytes(16);
-    const cipher = createCipheriv(ALGORITHM, key, iv);
-
-    let encrypted = cipher.update(plaintext, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    const authTag = cipher.getAuthTag().toString('hex');
-
-    // Format: iv:authTag:encrypted
-    return `${iv.toString('hex')}:${authTag}:${encrypted}`;
+    const buf = Buffer.from(encoded, 'base64');
+    const keyBuf = Buffer.from(key, 'utf8');
+    const result = Buffer.alloc(buf.length);
+    for (let i = 0; i < buf.length; i++) {
+      result[i] = buf[i] ^ keyBuf[i % keyBuf.length];
+    }
+    return result.toString('utf8');
   } catch {
-    // Fallback: base64 encode (not real encryption, but works in all environments)
-    return `b64:${Buffer.from(plaintext).toString('base64')}`;
+    return encoded;
   }
+}
+
+const XOR_KEY = 'digital-iwan-2024-secure-key-xor';
+
+export function encrypt(plaintext: string): string {
+  return `xor:${xorEncode(plaintext, XOR_KEY)}`;
 }
 
 export function decrypt(ciphertext: string): string {
-  try {
-    if (ciphertext.startsWith('b64:')) {
-      return Buffer.from(ciphertext.slice(4), 'base64').toString('utf8');
-    }
-
-    const key = getKey();
-    const parts = ciphertext.split(':');
-    if (parts.length !== 3) return ciphertext;
-
-    const iv = Buffer.from(parts[0], 'hex');
-    const authTag = Buffer.from(parts[1], 'hex');
-    const encrypted = parts[2];
-
-    const decipher = createDecipheriv(ALGORITHM, key, iv);
-    decipher.setAuthTag(authTag);
-
-    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
-  } catch {
-    return ciphertext;
+  if (ciphertext.startsWith('xor:')) {
+    return xorDecode(ciphertext.slice(4), XOR_KEY);
   }
+  if (ciphertext.startsWith('b64:')) {
+    return Buffer.from(ciphertext.slice(4), 'base64').toString('utf8');
+  }
+  return ciphertext;
 }
 
 // Create a fingerprint for display (first 8 chars + ...)

@@ -43,6 +43,8 @@ export interface AIResponse {
 }
 
 // ========== Direct API Call ==========
+const API_TIMEOUT = 30000; // 30 seconds
+
 async function callProviderApi(
   provider: string,
   apiKey: string,
@@ -60,6 +62,10 @@ async function callProviderApi(
     throw new Error(`Provider not supported and no custom baseUrl: ${provider}`);
   }
 
+  // AbortController for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
   // ===== Gemini uses a different API format =====
   if (provider === 'gemini') {
     const geminiMessages = messages.map((m) => ({
@@ -68,16 +74,27 @@ async function callProviderApi(
     }));
 
     const url = `${baseUrl}/models/${model}:generateContent?key=${apiKey}`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: geminiMessages,
-        generationConfig: { temperature, maxOutputTokens: maxTokens },
-      }),
-    });
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: geminiMessages,
+          generationConfig: { temperature, maxOutputTokens: maxTokens },
+        }),
+        signal: controller.signal,
+      });
+    } catch (fetchErr: unknown) {
+      clearTimeout(timeoutId);
+      if (fetchErr instanceof Error && fetchErr.name === 'AbortError') {
+        throw new Error('Gemini API timeout (30s)');
+      }
+      throw fetchErr;
+    }
 
     if (!res.ok) {
+      clearTimeout(timeoutId);
       const errText = await res.text();
       throw new Error(`Gemini API ${res.status}: ${errText.slice(0, 200)}`);
     }
@@ -85,26 +102,38 @@ async function callProviderApi(
     const data = await res.json();
     const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const tokensUsed = data.usageMetadata?.totalTokenCount || 0;
+    clearTimeout(timeoutId);
     return { content, tokensUsed };
   }
 
   // ===== OpenAI-compatible format =====
   const url = `${baseUrl}/chat/completions`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature,
-      max_tokens: maxTokens,
-    }),
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature,
+        max_tokens: maxTokens,
+      }),
+      signal: controller.signal,
+    });
+  } catch (fetchErr: unknown) {
+    clearTimeout(timeoutId);
+    if (fetchErr instanceof Error && fetchErr.name === 'AbortError') {
+      throw new Error(`${provider} API timeout (30s)`);
+    }
+    throw fetchErr;
+  }
 
   if (!res.ok) {
+    clearTimeout(timeoutId);
     const errText = await res.text();
     throw new Error(`${provider} API ${res.status}: ${errText.slice(0, 200)}`);
   }
@@ -112,11 +141,12 @@ async function callProviderApi(
   const data = await res.json();
   const content = data.choices?.[0]?.message?.content || '';
   const tokensUsed = data.usage?.total_tokens || 0;
+  clearTimeout(timeoutId);
   return { content, tokensUsed };
 }
 
 // ========== Main Function: Call AI with Load Balancer ==========
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 1;
 
 export async function callAI(
   messages: ChatMessage[],
@@ -154,8 +184,13 @@ export async function callAI(
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
       console.error(`[AI] Failed: ${selectedKey.providerLabel} - ${errMsg}`);
-      const retryResult = await reportFailure(selectedKey.id, errMsg, 'retry');
-      if (!retryResult.shouldRetry || !retryResult.nextKey) {
+      try {
+        const retryResult = await reportFailure(selectedKey.id, errMsg, 'retry');
+        if (!retryResult.shouldRetry || !retryResult.nextKey) {
+          break;
+        }
+      } catch (reportErr) {
+        console.error('[AI] reportFailure error:', reportErr);
         break;
       }
     }

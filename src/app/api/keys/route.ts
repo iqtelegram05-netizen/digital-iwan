@@ -3,6 +3,16 @@ import { db } from '@/lib/db';
 import { encrypt, fingerprint } from '@/lib/crypto';
 import { getKeyStats } from '@/lib/loadBalancer';
 
+// Catch unhandled errors to prevent process crash
+if (typeof process !== 'undefined') {
+  process.on('uncaughtException', (err) => {
+    console.error('UNCAUGHT EXCEPTION:', err);
+  });
+  process.on('unhandledRejection', (reason) => {
+    console.error('UNHANDLED REJECTION:', reason);
+  });
+}
+
 // ========== PROVIDER MANAGEMENT ==========
 
 // GET: Get all providers and keys with stats
@@ -102,19 +112,72 @@ export async function POST(request: NextRequest) {
       const rawKeys = text
         .split(/[\n,;\s]+/)
         .map(k => k.trim())
-        .filter(k => k.length > 10); // API keys are typically long
+        .filter(k => k.length > 10);
 
       if (rawKeys.length === 0) {
         return NextResponse.json({ error: 'لم يتم العثور على مفاتيح صالحة' }, { status: 400 });
       }
 
-      // Auto-detect provider and create keys
-      const detectionResults = await detectAndCreateKeys(rawKeys);
+      // Auto-detect provider and create keys inline
+      const results: Record<string, number> = { added: 0, skipped: 0 };
+
+      for (const rawKey of rawKeys) {
+        try {
+          let providerName = 'generic';
+          let providerLabel = 'عام (آخر)';
+          let providerBaseUrl: string | null = null;
+
+          // Detect provider from key pattern
+          if (/^AIza[0-9A-Za-z_-]{30,}$/.test(rawKey)) {
+            providerName = 'gemini'; providerLabel = 'Google Gemini';
+          } else if (/^gsk_[a-zA-Z0-9]{30,}$/.test(rawKey)) {
+            providerName = 'groq'; providerLabel = 'Groq';
+          } else if (/^sk-proj-[a-zA-Z0-9_-]{30,}$/.test(rawKey)) {
+            providerName = 'openai'; providerLabel = 'OpenAI';
+          } else if (/^sk-or-v1-[a-zA-Z0-9_-]{30,}$/.test(rawKey)) {
+            providerName = 'openrouter'; providerLabel = 'OpenRouter';
+          } else if (/^sk-[a-zA-Z0-9]{30,}$/.test(rawKey)) {
+            providerName = 'deepseek'; providerLabel = 'DeepSeek';
+          }
+
+          // Ensure provider exists
+          let provider = await db.apiProvider.upsert({
+            where: { name: providerName },
+            update: {},
+            create: { name: providerName, label: providerLabel, baseUrl: providerBaseUrl },
+          });
+
+          // Check duplicate
+          const fp = fingerprint(rawKey);
+          const existing = await db.apiKey.findFirst({
+            where: { providerId: provider.id, keyFingerprint: fp },
+          });
+
+          if (!existing) {
+            await db.apiKey.create({
+              data: {
+                providerId: provider.id,
+                encryptedKey: encrypt(rawKey),
+                keyFingerprint: fp,
+                status: 'active',
+              },
+            });
+            results.added++;
+          } else {
+            results.skipped++;
+          }
+        } catch (keyErr) {
+          console.error('Error processing key:', keyErr);
+          results.skipped++;
+        }
+      }
+
       const stats = await getKeyStats();
 
       return NextResponse.json({
-        message: `تمت معالجة ${rawKeys.length} مفتاح: ${detectionResults.added} مضاف، ${detectionResults.skipped} مكرر/خطأ`,
-        ...detectionResults,
+        message: `تمت معالجة ${rawKeys.length} مفتاح: ${results.added} مضاف، ${results.skipped} مكرر/خطأ`,
+        added: results.added,
+        skipped: results.skipped,
         stats,
       });
     }

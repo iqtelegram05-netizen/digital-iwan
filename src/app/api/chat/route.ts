@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { callAI, ChatMessage } from '@/lib/aiProvider';
 
+// Catch unhandled errors to prevent process crash
+if (typeof process !== 'undefined') {
+  process.on('uncaughtException', (err) => {
+    console.error('UNCAUGHT EXCEPTION:', err);
+  });
+  process.on('unhandledRejection', (reason) => {
+    console.error('UNHANDLED REJECTION:', reason);
+  });
+}
+
 const SYSTEM_PROMPTS: Record<string, string> = {
   chat: `أنت مساعد ذكي متخصص في العلوم الإسلامية واللغة العربية والفلسفة والمنطق والفقه. تقدم إجابات مدروسة ودقيقة. عندما يتم تحديد عالم معين، استشهد بمنهجه وآرائه. أجب باللغة العربية.`,
 
@@ -83,19 +93,35 @@ export async function POST(request: NextRequest) {
     ];
 
     // Call AI via load balancer / direct provider
-    const aiResult = await callAI(apiMessages, {
-      temperature: mode === 'debate' ? 0.7 : 0.8,
-      maxTokens: 2048,
-    });
+    let aiResult;
+    try {
+      aiResult = await callAI(apiMessages, {
+        temperature: mode === 'debate' ? 0.7 : 0.8,
+        maxTokens: 2048,
+      });
+    } catch (aiError) {
+      console.error('AI Provider Error:', aiError);
+      const errMsg = aiError instanceof Error ? aiError.message : String(aiError);
+      aiResult = {
+        content: `عذرًا، حدث خطأ في الاتصال بمزود الخدمة: ${errMsg.slice(0, 100)}. يرجى المحاولة مرة أخرى أو تغيير المفتاح.`,
+        provider: 'Error',
+        tokensUsed: 0,
+        loadBalanced: false,
+      };
+    }
 
     // Store assistant message
-    await db.message.create({
-      data: {
-        sessionId: session.id,
-        role: 'assistant',
-        content: aiResult.content,
-      },
-    });
+    try {
+      await db.message.create({
+        data: {
+          sessionId: session.id,
+          role: 'assistant',
+          content: aiResult.content,
+        },
+      });
+    } catch (dbErr) {
+      console.error('Failed to store message:', dbErr);
+    }
 
     return NextResponse.json({
       message: aiResult.content,
