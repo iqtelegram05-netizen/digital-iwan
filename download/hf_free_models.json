@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://huggingface.co/docs/inference-providers/index",
+    "name": "Inference Providers",
+    "snippet": "Hugging Face's Inference Providers give developers access to hundreds of machine learning models, powered by world-class inference providers. Read more",
+    "host_name": "huggingface.co",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/inference/models",
+    "name": "Hugging Face Inference Providers · Supported Models",
+    "snippet": "Exhaustive list of models supported by Hugging Face Inference Providers with detailed features and performance metrics.",
+    "host_name": "huggingface.co",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/LocalLLaMA/comments/1fi90kw/free_hugging_face_inference_api_now_clearly_lists",
+    "name": "Free Hugging Face Inference api now clearly lists limits +",
+    "snippet": "The HF Inference API could be used pretty effectively for personal use, especially if you had a pro account (around 10USD per month, cancellable at any time). Read more",
+    "host_name": "www.reddit.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/blog/inference-pro",
+    "name": "Inference for PROs",
+    "snippet": "Sep 22, 2566 BE — Hugging Face PRO users now have access to exclusive API endpoints for a curated list of powerful models that benefit from ultra-fast inference ... Read more",
+    "host_name": "huggingface.co",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/huggingface/smolagents/issues/967",
+    "name": "List of Free Local LLM Models - Up and Running · Issue #967",
+    "snippet": "Mar 13, 2568 BE — You can use ollama + LiteLLM instead of HfApiModel() to Run model locally and and for free without any limits. Below Code is how you can load the model run. Read more",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  }
+]

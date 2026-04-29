@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://discuss.huggingface.co/t/request-to-serverless-inference-api-failed-with-400-status-code/143956",
+    "name": "Request to Serverless Inference API failed with 400 status code",
+    "snippet": "You'll need to adapt your code to match Hugging Face's format or use an OpenAI-compatible provider that supports the /v1/chat/completions ... Missing: 2026 | Show results with: 2026",
+    "host_name": "discuss.huggingface.co",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discuss.huggingface.co/t/inference-api-stopped-working/150492",
+    "name": "Inference API stopped working - Hugging Face Forums",
+    "snippet": "I seem to be encountering a sudden issue with the Hugging Face Inference API. I was successfully using it for image-to-image tasks (specifically with models ... Missing: 400 | Show results with: 400",
+    "host_name": "discuss.huggingface.co",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discuss.huggingface.co/t/error-400-even-i-have-access-to-model/133356",
+    "name": "Error 400 Even I have access to model - Hugging Face Forums",
+    "snippet": "Recently I got access to Llama-3.3-70B-Instruct but when I use a token I get error 400 Model requires a Pro subscription; check out Hugging ... Missing: 2026 | Show results with: 2026",
+    "host_name": "discuss.huggingface.co",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discuss.huggingface.co/t/this-model-is-not-currently-available-via-any-of-the-supported-inference-providers/143655",
+    "name": "\"This model is not currently available via any of the supported",
+    "snippet": "The Serverless Inference API is frequently returning 400 and other errors for models other than mine ... Inference API stopped working.",
+    "host_name": "discuss.huggingface.co",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/huggingface/transformers/issues/12115",
+    "name": "Hosted inference api keeps returning 400 error #12115 - GitHub",
+    "snippet": "Problem description. When I try to inference a public model (facebook/blenderbot-1B-distill), it keeps returning 400 error with message below, ...",
+    "host_name": "github.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://forum.langchain.com/t/huggingface-api-error-404-client-error-not-found-for-url-https-router-huggingface-co-hf-inference-models-google-gemma-2-2b-it-v1-chat-completions/2756",
+    "name": "HuggingFace API error: 404 Client Error: Not Found for url: https",
+    "snippet": "I'm trying AI Agent in LangChain and build a very basic agent with HuggingFace free model. But when I run the code I got the following error.",
+    "host_name": "forum.langchain.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/learn/cookbook/enterprise_hub_serverless_inference_api",
+    "name": "Serverless Inference API - Hugging Face",
+    "snippet": "Hugging Face provides a Serverless Inference API as a way for users to quickly test and evaluate thousands of publicly accessible (or your own privately ... Missing: 400 2025 2026",
+    "host_name": "huggingface.co",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discuss.huggingface.co/t/request-to-serverless-inference-api-failed-with-400-status-code/143956/2",
+    "name": "Request to Serverless Inference API failed with 400 status code",
+    "snippet": "I'm consistently encountering issues with the HuggingFace Serverless API, specifically with the hf-inference provider.",
+    "host_name": "discuss.huggingface.co",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/inference/models",
+    "name": "Hugging Face Inference Providers · Supported Models",
+    "snippet": "Exhaustive list of models supported by Hugging Face Inference Providers with detailed features and performance metrics.",
+    "host_name": "huggingface.co",
+    "rank": 8,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discuss.huggingface.co/t/error-400-when-i-update-endpoints-to-lastest-version/151229",
+    "name": "Error 400 - when I update endpoints to lastest version",
+    "snippet": "Hi everyone,. I have updated my source code in HF models hub. Then I tried to update endpoints with latest version but i have received Error 400 ... Missing: serverless not",
+    "host_name": "discuss.huggingface.co",
+    "rank": 9,
+    "date": "",
+    "favicon": ""
+  }
+]

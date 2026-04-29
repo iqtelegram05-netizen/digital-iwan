@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://discuss.huggingface.co/t/issues-accessing-models-model-requires-a-pro-subscription-error/128356",
+    "name": "\"Model Requires a Pro Subscription\" Error - Beginners",
+    "snippet": "29 Nov 2024 — `Bad request: Model requires a Pro subscription ; check out Hugging Face – Pricing to learn more. Make sure to include your HF token in your ...",
+    "host_name": "discuss.huggingface.co",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discuss.huggingface.co/t/request-to-serverless-inference-api-failed-with-400-status-code/143956",
+    "name": "Request to Serverless Inference API failed with 400 status",
+    "snippet": "4 Mar 2025 — It looks like you're encountering a 400 Bad Request error when trying to access the Serverless Inference API . This usually happens due to incorrect input.",
+    "host_name": "discuss.huggingface.co",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discuss.huggingface.co/t/model-requires-a-pro-subscription/80833",
+    "name": "Model requires a Pro subscription - Beginners",
+    "snippet": "9 Apr 2024 — Hi, complete beginner here I'm trying to hit free API llama 2 and I'm getting this error I'm not sure why .Do I need to pay for PRO to use ...",
+    "host_name": "discuss.huggingface.co",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discuss.huggingface.co/t/error-400-even-i-have-access-to-model/133356",
+    "name": "Error 400 Even I have access to model",
+    "snippet": "28 Dec 2024 — Recently I got access to Llama-3.3-70B-Instruct but when I use a token I get error 400 Model requires a Pro subscription ; check out Hugging Face ...",
+    "host_name": "discuss.huggingface.co",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discuss.huggingface.co/t/api-inference-limit-changed/144157",
+    "name": "API inference limit changed? - Intermediate",
+    "snippet": "5 Mar 2025 — But now I get an error response saying “You have exceeded your monthly included credits for Inference Providers. Pay-as-you-go above your ...\n5 Mar 2025 — Subscribe to PRO to get 20x more monthly allowance.” did anything change in terms of the limits for free tiers ??! 3 Likes. Inference Provider ...",
+    "host_name": "discuss.huggingface.co",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  }
+]
