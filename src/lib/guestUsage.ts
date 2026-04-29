@@ -72,13 +72,14 @@ export function getGuestUsageInfo(): UsageInfoData {
     saveGuestUsage({ ...data, messagesUsed: 0, lastResetDate });
   }
 
-  const freeRemaining = Math.max(0, FREE_MESSAGE_LIMIT - messagesUsed);
+  const GUEST_LIMIT = 5;
+  const freeRemaining = Math.max(0, GUEST_LIMIT - messagesUsed);
   const adsProgress = data.adsWatchedTotal % ADS_FOR_BONUS;
   const adsUntilBonus = ADS_FOR_BONUS - adsProgress;
 
   return {
     messagesUsed,
-    freeLimit: FREE_MESSAGE_LIMIT,
+    freeLimit: GUEST_LIMIT,
     freeRemaining,
     bonusMessages: data.bonusMessages,
     isPremium: false,
