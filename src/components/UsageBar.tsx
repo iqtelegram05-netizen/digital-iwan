@@ -47,7 +47,11 @@ export default function UsageBar() {
     fetchUsage();
   }, [fetchUsage]);
 
-  const isPremium = usageInfo.isPremium;
+  const isPremium = usageInfo?.isPremium || false;
+
+  // Don't show for admin/owner
+  if (!user || user.role === 'owner' || user.role === 'supervisor') return null;
+  if (!usageInfo) return null;
 
   return (
     <>
