@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { callAI, ChatMessage } from '@/lib/aiProvider';
+import { filterArabicText } from '@/lib/arabicFilter';
 
 // Catch unhandled errors to prevent process crash
 if (typeof process !== 'undefined') {
@@ -12,7 +13,14 @@ if (typeof process !== 'undefined') {
   });
 }
 
-const ARABIC_ONLY_RULE = `\n\nقاعدة صارمة: أجب حصريًا باللغة العربية الفصحى. لا تستخدم أي كلمة أو مصطلح أو جملة بلغة أجنبية (إنجليزية، فرنسية، فارسية، إلخ) داخل النص العربي. إذا احتجت لذكر مصطلح أجنبي، ترجمه إلى العربية أو اكتبه بين قوسين مع ترجمته. يجب أن يكون الرد كاملًا بالعربية دون أي تداخل لغوي.`;
+const ARABIC_ONLY_RULE = `\n\nتحذير شديد الأهمية - لا تنتهك هذا البند أبداً:
+- يجب أن تكون إجابتك باللغة العربية حصرياً وبالكامل.
+- يحظر منعاً باتاً كتابة أي كلمة إنجليزية أو فارسية أو فرنسية أو أي لغة أخرى داخل النص العربي.
+- إذا أردت ذكر مصطلح بلغة أجنبية، اكتب ترجمته العربي فقط دون الكلمة الأجنبية.
+- مثال خاطئ: "مفهوم ranging في اللغة العربية" ← يجب ألا تكتب هكذا أبداً.
+- مثال صحيح: "مفهوم المدى في اللغة العربية" ← اكتب المعنى بالعربية مباشرة.
+- لا تكتب أبداً كلمات مثل: the, is, of, in, to, or أي كلمة إنجليزية داخل الجملة العربية.
+- كل حرف في إجابتك يجب أن يكون عربياً. المخالفة خطأ كبير.`;
 
 const SYSTEM_PROMPTS: Record<string, string> = {
   chat: `أنت مساعد ذكي متخصص في العلوم الإسلامية واللغة العربية والفلسفة والمنطق والفقه. تقدم إجابات مدروسة ودقيقة. عندما يتم تحديد عالم معين، استشهد بمنهجه وآرائه.${ARABIC_ONLY_RULE}`,
@@ -147,13 +155,16 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    // Store assistant message
+    // Apply Arabic text filter to remove non-Arabic words
+    const filteredContent = filterArabicText(aiResult.content);
+
+    // Store assistant message (filtered version)
     try {
       await db.message.create({
         data: {
           sessionId: session.id,
           role: 'assistant',
-          content: aiResult.content,
+          content: filteredContent,
         },
       });
     } catch (dbErr) {
@@ -161,7 +172,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      message: aiResult.content,
+      message: filteredContent,
       sessionId: session.id,
       mode: session.mode,
       loadBalanced: aiResult.loadBalanced,

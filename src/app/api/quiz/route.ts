@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callAI } from '@/lib/aiProvider';
+import { filterArabicText } from '@/lib/arabicFilter';
 
 const CATEGORY_PROMPTS: Record<string, string> = {
   'عقائد': 'أسئلة في العقيدة الإسلامية تشمل أصول الإيمان والتوحيد وأسماء الله وصفاته والقضاء والقدر والإيمان بالملائكة والكتب والرسل واليوم الآخر',
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
 قم بتوليد 10 أسئلة اختبار متعددة الخيارات (4 خيارات لكل سؤال). 
 الأسئلة يجب أن تكون عميقة وتختبر الفهم الحقيقي وليس مجرد الحفظ.
 كل خيار يجب أن يكون معقولًا ومقنعًا.
-قاعدة صارمة: جميع الأسئلة والخيارات يجب أن تكون باللغة العربية فقط. لا تستخدم أي إيموجي أو رموز غريبة في الأسئلة أو الخيارات.
+تحذير شديد: جميع الأسئلة والخيارات يجب أن تكون باللغة العربية حصرياً. يحظر منعاً باتاً كتابة أي كلمة إنجليزية أو أجنبية في الأسئلة أو الخيارات. مثال: لا تكتب "ranging" بل اكتب "المدى". كل كلمة في الأسئلة والخيارات يجب أن تكون عربية فقط. لا تستخدم أي إيموجي أو رموز غريبة.
 أجب فقط بصيغة JSON التالية بدون أي نص إضافي:
 {
   "questions": [
@@ -95,11 +96,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Validate and format questions
+    // Validate, filter, and format questions
     const questions: QuizQuestion[] = quizData.questions.map((q, index) => ({
       id: `q_${Date.now()}_${index}`,
-      question: q.question,
-      options: q.options.slice(0, 4),
+      question: filterArabicText(q.question),
+      options: q.options.slice(0, 4).map((opt: string) => filterArabicText(opt)),
       correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
     }));
 
