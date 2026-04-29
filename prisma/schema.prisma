@@ -130,7 +130,7 @@ model HuggingFaceKey {
   tokenLabel    String?   // optional friendly label
   fingerprint   String    // first 12 chars for display
   status        String    @default("active") // "active", "cooldown", "exhausted", "disabled"
-  model         String    @default("Qwen/Qwen2.5-72B-Instruct") // HF model ID
+  model         String    @default("Qwen/Qwen2.5-7B-Instruct") // HF model ID
   priority      Int       @default(0) // higher = used first
   tokensUsed    Int       @default(0)
   tokensLimit   Int?      // optional daily limit

@@ -1,10 +1,19 @@
 /**
- * HuggingFace Provider Engine
- * - Smart Round-Robin rotation across all active HF tokens
- * - 10-minute auto cooldown on failure
- * - Request batching (queue + batch flush)
- * - Fallback to Gemini/Groq when all HF tokens exhausted
- * - Usage tracking per day
+ * ====================================================
+ * HuggingFace Provider Engine v2 — Serverless Inference
+ * ====================================================
+ *
+ * Uses HF FREE Serverless Inference API:
+ *   Endpoint: https://router.huggingface.co/hf-inference/models/{model}
+ *   Format:   { inputs, parameters }
+ *   Response: [{ generated_text }]
+ *
+ * Features:
+ *   - Smart Round-Robin rotation across all active hf_xxx tokens
+ *   - 10-minute auto cooldown on 429 rate limits
+ *   - Batching: collects 10-20 questions, processes in parallel
+ *   - Fallback to Gemini/Groq when all HF tokens fail
+ *   - Daily usage tracking per day
  */
 
 import { db } from '@/lib/db';
@@ -37,15 +46,51 @@ export interface HFCallResult {
   usedFallback: boolean;
 }
 
-// ========== Round-Robin Index ==========
-let hfRobinIndex = 0;
-let lastHFCooldownCheck = 0;
-const HF_COOLDOWN_CHECK = 15_000; // 15 seconds
+// ========== Configuration ==========
+const DEFAULT_MODEL = 'Qwen/Qwen2.5-7B-Instruct';
+const HF_INFERENCE_URL = 'https://router.huggingface.co/hf-inference/models/';
+const HF_TIMEOUT = 60000; // 60 seconds for serverless inference (cold starts)
+const COOLDOWN_DURATION = 10 * 60 * 1000; // 10 minutes
+
+// ========== Round-Robin State ==========
+let robinIndex = 0;
+let lastCooldownCheck = 0;
+const COOLDOWN_CHECK_INTERVAL = 15_000; // 15 seconds
+
+// ========== Batching State ==========
+interface BatchItem {
+  id: string;               // unique batch item ID for debugging
+  systemPrompt: string;
+  userMessage: string;
+  maxTokens: number;
+  temperature: number;
+  createdAt: number;         // timestamp when added
+  resolve: (value: string) => void;
+  reject: (reason: Error) => void;
+}
+
+let batchQueue: BatchItem[] = [];
+let batchFlushScheduled = false;
+
+// Batching config: collect 10-20 items, max wait 1.5s
+const BATCH_MIN_SIZE = 10;
+const BATCH_MAX_SIZE = 20;
+const BATCH_MAX_WAIT_MS = 1500;
+
+// ========== Utility ==========
+let batchIdCounter = 0;
+function nextBatchId(): string {
+  return `batch-${++batchIdCounter}-${Date.now()}`;
+}
+
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 3.5); // Qwen tokenizer ~3.5 chars/token
+}
 
 // ========== Cooldown Reactivation ==========
-async function reactivateHFCooldownKeys(): Promise<void> {
+async function reactivateCooldownKeys(): Promise<void> {
   try {
-    const count = await db.huggingFaceKey.updateMany({
+    const result = await db.huggingFaceKey.updateMany({
       where: {
         status: 'cooldown',
         cooldownUntil: { lte: new Date() },
@@ -54,23 +99,30 @@ async function reactivateHFCooldownKeys(): Promise<void> {
         status: 'active',
         cooldownUntil: null,
         lastError: null,
+        lastErrorAt: null,
       },
     });
-    if (count.count > 0) {
-      console.log(`[HF] Reactivated ${count.count} cooldown keys`);
+    if (result.count > 0) {
+      console.log(`[HF] Reactivated ${result.count} cooldown keys`);
     }
   } catch (err) {
-    console.error('[HF] Failed to reactivate cooldown keys:', err);
+    console.error('[HF] Cooldown reactivation error:', err);
   }
 }
 
 // ========== Daily Usage Tracker ==========
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
-export async function trackUsage(type: 'cacheHits' | 'aiCalls' | 'hfCalls' | 'fallbackCalls' | 'failedCalls', tokens: number = 0): Promise<void> {
+export async function trackUsage(
+  type: 'cacheHits' | 'aiCalls' | 'hfCalls' | 'fallbackCalls' | 'failedCalls',
+  tokens: number = 0
+): Promise<void> {
   try {
     const date = todayStr();
-    const update: Record<string, unknown> = { [type]: { increment: 1 }, totalRequests: { increment: 1 } };
+    const update: Record<string, unknown> = {
+      [type]: { increment: 1 },
+      totalRequests: { increment: 1 },
+    };
     if (tokens > 0) update.totalTokens = { increment: tokens };
 
     await db.dailyUsage.upsert({
@@ -79,7 +131,7 @@ export async function trackUsage(type: 'cacheHits' | 'aiCalls' | 'hfCalls' | 'fa
       create: { date, ...update },
     });
   } catch {
-    // silently fail - don't block the main flow
+    // Silent - don't block main flow
   }
 }
 
@@ -95,16 +147,18 @@ export async function getDailyUsageStats(): Promise<{
 } | null> {
   try {
     const stats = await db.dailyUsage.findUnique({ where: { date: todayStr() } });
-    return stats ? {
-      date: stats.date,
-      totalRequests: stats.totalRequests,
-      cacheHits: stats.cacheHits,
-      aiCalls: stats.aiCalls,
-      hfCalls: stats.hfCalls,
-      fallbackCalls: stats.fallbackCalls,
-      failedCalls: stats.failedCalls,
-      totalTokens: stats.totalTokens,
-    } : null;
+    return stats
+      ? {
+          date: stats.date,
+          totalRequests: stats.totalRequests,
+          cacheHits: stats.cacheHits,
+          aiCalls: stats.aiCalls,
+          hfCalls: stats.hfCalls,
+          fallbackCalls: stats.fallbackCalls,
+          failedCalls: stats.failedCalls,
+          totalTokens: stats.totalTokens,
+        }
+      : null;
   } catch {
     return null;
   }
@@ -115,12 +169,12 @@ export async function selectHFKey(): Promise<HFKeyInfo | null> {
   try {
     // Periodic cooldown reactivation
     const now = Date.now();
-    if (now - lastHFCooldownCheck > HF_COOLDOWN_CHECK) {
-      await reactivateHFCooldownKeys();
-      lastHFCooldownCheck = now;
+    if (now - lastCooldownCheck > COOLDOWN_CHECK_INTERVAL) {
+      await reactivateCooldownKeys();
+      lastCooldownCheck = now;
     }
 
-    // Get all active keys, ordered by priority (highest first), then by least recently used
+    // Get all active keys ordered by priority (desc), then least recently used
     const keys = await db.huggingFaceKey.findMany({
       where: { status: 'active' },
       orderBy: [{ priority: 'desc' }, { lastUsedAt: 'asc' }],
@@ -129,8 +183,8 @@ export async function selectHFKey(): Promise<HFKeyInfo | null> {
     if (keys.length === 0) return null;
 
     // Round-robin within same priority tier
-    const index = hfRobinIndex % keys.length;
-    hfRobinIndex++;
+    const index = robinIndex % keys.length;
+    robinIndex++;
 
     const selected = keys[index];
     return {
@@ -138,7 +192,7 @@ export async function selectHFKey(): Promise<HFKeyInfo | null> {
       token: decrypt(selected.accessToken),
       fingerprint: selected.fingerprint,
       label: selected.tokenLabel,
-      model: selected.model,
+      model: selected.model || DEFAULT_MODEL,
       priority: selected.priority,
       status: selected.status,
       requestCount: selected.requestCount,
@@ -151,12 +205,12 @@ export async function selectHFKey(): Promise<HFKeyInfo | null> {
       cooldownUntil: selected.cooldownUntil,
     };
   } catch (err) {
-    console.error('[HF] Failed to select key:', err);
+    console.error('[HF] Key selection error:', err);
     return null;
   }
 }
 
-// ========== Report HF Key Result ==========
+// ========== Report Key Result ==========
 export async function reportHFSuccess(keyId: string, tokensUsed: number = 0): Promise<void> {
   try {
     await db.huggingFaceKey.update({
@@ -171,67 +225,83 @@ export async function reportHFSuccess(keyId: string, tokensUsed: number = 0): Pr
       },
     });
   } catch {
-    // silently fail
+    // Silent
   }
 }
 
 export async function reportHFFailure(keyId: string, error: string): Promise<boolean> {
   try {
-    const isRateLimit = error.includes('429') || error.includes('rate') || error.includes('quota') || error.includes('overloaded');
-    const isAuthError = error.includes('401') || error.includes('403') || error.includes('authorization');
-    const isNotSupported = error.includes('Model not supported') || error.includes('Invalid username');
+    const isRateLimit =
+      error.includes('429') ||
+      error.includes('rate') ||
+      error.includes('quota') ||
+      error.includes('overloaded') ||
+      error.includes('Too Many Requests');
 
-    // If model just not supported (HF free tier), keep active and let other providers try
-    if (isNotSupported) {
-      console.log(`[HF] Key ${keyId}: model not supported by this provider, will retry with other providers`);
+    const isAuthError =
+      error.includes('401') ||
+      error.includes('403') ||
+      error.includes('authorization') ||
+      error.includes('Unauthorized') ||
+      error.includes('invalid token');
+
+    const isModelNotFound =
+      error.includes('404') ||
+      error.includes('not found') ||
+      error.includes('does not exist') ||
+      error.includes('Model not found');
+
+    const isServerError =
+      error.includes('500') ||
+      error.includes('502') ||
+      error.includes('503') ||
+      error.includes('loading') ||
+      error.includes('currently loading');
+
+    // Auth error = token is permanently invalid, mark exhausted
+    if (isAuthError) {
       await db.huggingFaceKey.update({
         where: { id: keyId },
         data: {
+          status: 'exhausted',
           failCount: { increment: 1 },
-          lastError: `Not supported - trying other providers`,
+          lastError: `Auth Error: ${error.slice(0, 150)}`,
           lastErrorAt: new Date(),
         },
       });
-      return true; // try next key
+      return true; // Can try next key
     }
 
-    if (isAuthError) {
-      // Auth errors = key is invalid for ALL providers, mark as exhausted
-      // But only if ALL providers rejected it
-      const allProvidersFailed = error.includes('all providers') || error.includes('جميع مزودي');
-      if (allProvidersFailed) {
-        await db.huggingFaceKey.update({
-          where: { id: keyId },
-          data: {
-            status: 'exhausted',
-            failCount: { increment: 1 },
-            lastError: error.slice(0, 200),
-            lastErrorAt: new Date(),
-          },
-        });
-        return false;
-      }
-      // Individual provider auth error - keep active, try other providers
-      return true;
-    }
-
+    // Rate limit = temporary cooldown
     if (isRateLimit) {
-      // Rate limit = 10-minute cooldown
-      const cooldownUntil = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+      const cooldownUntil = new Date(Date.now() + COOLDOWN_DURATION);
       await db.huggingFaceKey.update({
         where: { id: keyId },
         data: {
           status: 'cooldown',
           cooldownUntil,
           failCount: { increment: 1 },
-          lastError: `Rate Limit - cooldown until ${cooldownUntil.toISOString()}`,
+          lastError: `Rate Limited - cooldown until ${cooldownUntil.toISOString()}`,
           lastErrorAt: new Date(),
         },
       });
-      return true; // can try next key
+      return true; // Can try next key
     }
 
-    // Other errors - mark but keep active
+    // Server error / model loading = temporary, keep active
+    if (isServerError || isModelNotFound) {
+      await db.huggingFaceKey.update({
+        where: { id: keyId },
+        data: {
+          failCount: { increment: 1 },
+          lastError: `Server: ${error.slice(0, 150)}`,
+          lastErrorAt: new Date(),
+        },
+      });
+      return true; // Can try next key
+    }
+
+    // Unknown error - keep active but log
     await db.huggingFaceKey.update({
       where: { id: keyId },
       data: {
@@ -240,227 +310,146 @@ export async function reportHFFailure(keyId: string, error: string): Promise<boo
         lastErrorAt: new Date(),
       },
     });
-    return true; // can try next key
+    return true;
   } catch {
     return false;
   }
 }
 
-// ========== Call HuggingFace API ==========
-const HF_TIMEOUT = 45000; // 45 seconds
-
-/**
- * Multi-provider call: tries multiple endpoints for maximum compatibility.
- * Tokens in the HF keys table can be ANY OpenAI-compatible API key:
- *   - HuggingFace (PRO subscription)
- *   - Groq (free at groq.com)
- *   - OpenRouter (free tier at openrouter.ai)
- *   - Together AI, DeepSeek, etc.
- *
- * We auto-detect the provider by trying endpoints in order.
- */
-const HF_PROVIDERS = [
-  {
-    name: 'Groq',
-    // Free tier: unlimited requests, very fast
-    url: 'https://api.groq.com/openai/v1/chat/completions',
-    defaultModel: 'llama-3.3-70b-versatile',
-    buildBody: (model: string, sys: string, user: string, maxTok: number, temp: number) => JSON.stringify({
-      model,
-      messages: [{ role: 'system', content: sys }, { role: 'user', content: user }],
-      max_tokens: maxTok,
-      temperature: temp,
-      top_p: 0.9,
-    }),
-    parseResponse: (data: any) => ({
-      content: data.choices?.[0]?.message?.content || '',
-      tokensUsed: data.usage?.total_tokens || 0,
-    }),
-    isNotSupported: () => false,
-    detectByError: (err: string) => false,
-  },
-  {
-    name: 'Together AI',
-    url: 'https://api.together.xyz/v1/chat/completions',
-    defaultModel: 'meta-llama/Llama-3.3-70B-Instruct-Turbo',
-    buildBody: (model: string, sys: string, user: string, maxTok: number, temp: number) => JSON.stringify({
-      model,
-      messages: [{ role: 'system', content: sys }, { role: 'user', content: user }],
-      max_tokens: maxTok,
-      temperature: temp,
-      top_p: 0.9,
-    }),
-    parseResponse: (data: any) => ({
-      content: data.choices?.[0]?.message?.content || '',
-      tokensUsed: data.usage?.total_tokens || 0,
-    }),
-    isNotSupported: () => false,
-    detectByError: () => false,
-  },
-  {
-    name: 'OpenRouter',
-    url: 'https://openrouter.ai/api/v1/chat/completions',
-    defaultModel: 'qwen/qwen-2.5-72b-instruct:free',
-    buildBody: (model: string, sys: string, user: string, maxTok: number, temp: number) => JSON.stringify({
-      model,
-      messages: [{ role: 'system', content: sys }, { role: 'user', content: user }],
-      max_tokens: maxTok,
-      temperature: temp,
-      top_p: 0.9,
-      route: 'fallback',
-    }),
-    parseResponse: (data: any) => ({
-      content: data.choices?.[0]?.message?.content || '',
-      tokensUsed: data.usage?.total_tokens || 0,
-    }),
-    isNotSupported: () => false,
-    detectByError: (err: string) => err.includes('Invalid API key') && !err.includes('groq'),
-  },
-  {
-    name: 'HuggingFace Router',
-    // Requires PRO subscription
-    url: 'https://router.huggingface.co/hf-inference/v1/chat/completions',
-    defaultModel: 'Qwen/Qwen2.5-72B-Instruct',
-    buildBody: (model: string, sys: string, user: string, maxTok: number, temp: number) => JSON.stringify({
-      model,
-      messages: [{ role: 'system', content: sys }, { role: 'user', content: user }],
-      max_tokens: maxTok,
-      temperature: temp,
-      top_p: 0.9,
-    }),
-    parseResponse: (data: any) => ({
-      content: data.choices?.[0]?.message?.content || '',
-      tokensUsed: data.usage?.total_tokens || 0,
-    }),
-    isNotSupported: (err: string) => err.includes('Model not supported') || err.includes('Invalid username'),
-  },
-];
-
-async function callHuggingFaceAPI(
+// ========== Call HF Serverless Inference API ==========
+async function callHFServerlessAPI(
   keyInfo: HFKeyInfo,
   systemPrompt: string,
   userMessage: string,
   maxTokens: number = 512,
   temperature: number = 0.8
 ): Promise<{ content: string; tokensUsed: number }> {
+  const model = keyInfo.model || DEFAULT_MODEL;
+  const url = `${HF_INFERENCE_URL}${model}`;
+
+  // Build the prompt: combine system + user message
+  // For text-generation models, we include system context in the user prompt
+  const fullPrompt = systemPrompt
+    ? `[التعليمات]: ${systemPrompt}\n\n[السؤال]: ${userMessage}\n\n[الإجابة]:`
+    : userMessage;
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), HF_TIMEOUT);
 
   try {
-    // Try each provider in order until one works
-    for (const provider of HF_PROVIDERS) {
-      try {
-        const url = provider.url;
-        // Use the provider's default model if the configured model is HF-specific
-        // and this is not the HF provider
-        const model = provider.name === 'HuggingFace Router' 
-          ? keyInfo.model 
-          : (provider as any).defaultModel;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${keyInfo.token}`,
-            'Content-Type': 'application/json',
-            ...(provider.name === 'OpenRouter' ? { 'HTTP-Referer': 'https://digital-iwan.vercel.app' } : {}),
-          },
-          body: provider.buildBody(model, systemPrompt, userMessage, maxTokens, temperature),
-          signal: controller.signal,
-        });
+    console.log(`[HF] Serverless API call: ${model} via key ${keyInfo.fingerprint}`);
 
-        if (!res.ok) {
-          const errText = await res.text();
-          // If model not supported by this provider, try next
-          if (provider.isNotSupported(errText)) {
-            console.log(`[HF] ${provider.name}: model not supported, trying next provider...`);
-            continue;
-          }
-          throw new Error(`${provider.name} API ${res.status}: ${errText.slice(0, 200)}`);
-        }
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${keyInfo.token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        inputs: fullPrompt,
+        parameters: {
+          max_new_tokens: maxTokens,
+          temperature: temperature,
+          top_p: 0.9,
+          return_full_text: false, // Only return generated text
+          do_sample: true,
+        },
+      }),
+      signal: controller.signal,
+    });
 
-        const data = await res.json();
-        const parsed = provider.parseResponse(data);
+    clearTimeout(timeoutId);
 
-        if (!parsed.content) {
-          continue; // Empty response, try next provider
-        }
+    if (!response.ok) {
+      const errText = await response.text().catch(() => 'Unknown error');
+      const errStatus = response.status;
 
-        if (parsed.tokensUsed === 0) {
-          parsed.tokensUsed = estimateTokens(userMessage) + estimateTokens(parsed.content);
-        }
+      console.error(`[HF] API Error ${errStatus}: ${errText.slice(0, 300)}`);
 
-        return parsed;
-      } catch (err: unknown) {
-        if (err instanceof Error && err.name === 'AbortError') {
-          throw new Error('HF API timeout (45s)');
-        }
-        // If this provider failed, try next
-        const msg = err instanceof Error ? err.message : String(err);
-        console.log(`[HF] ${provider.name} failed: ${msg.slice(0, 100)}`);
-        continue;
+      // Special handling for model loading
+      if (errStatus === 503 && errText.includes('loading')) {
+        throw new Error(`503: Model "${model}" is currently loading. Please wait 20-30 seconds and retry.`);
       }
+
+      throw new Error(`${errStatus}: ${errText.slice(0, 200)}`);
     }
 
-    // All providers failed
-    throw new Error('جميع مزودي API فشلوا. تأكد من صلاحية المفاتيح.');
+    const data = await response.json();
+
+    // Parse Serverless Inference response format: [{ generated_text: "..." }]
+    let content = '';
+    if (Array.isArray(data) && data.length > 0) {
+      content = data[0]?.generated_text || '';
+    } else if (data?.generated_text) {
+      content = data.generated_text;
+    } else if (data?.[0]?.generated_text) {
+      content = data[0].generated_text;
+    }
+
+    if (!content || content.trim().length === 0) {
+      throw new Error('Empty response from HF API');
+    }
+
+    // Clean up the response
+    content = content.trim();
+
+    // Estimate tokens
+    const tokensUsed = estimateTokens(fullPrompt) + estimateTokens(content);
+
+    console.log(`[HF] Success: ${content.length} chars, ~${tokensUsed} tokens via ${keyInfo.fingerprint}`);
+    return { content, tokensUsed };
   } catch (err: unknown) {
     clearTimeout(timeoutId);
+
     if (err instanceof Error && err.name === 'AbortError') {
-      throw new Error('HF API timeout (45s)');
+      throw new Error(`HF API timeout (${HF_TIMEOUT / 1000}s) - model may be cold starting`);
     }
+
     throw err;
   }
 }
 
 // ========== BATCH QUEUE ==========
-interface BatchItem {
-  systemPrompt: string;
-  userMessage: string;
-  maxTokens: number;
-  temperature: number;
-  resolve: (value: string) => void;
-  reject: (reason: Error) => void;
-}
-
-let batchQueue: BatchItem[] = [];
-let batchFlushScheduled = false;
-const BATCH_MAX_SIZE = 5; // Max items per batch
-const BATCH_MAX_WAIT = 800; // Max 800ms wait for batch accumulation
-const BATCH_MIN_SIZE = 2; // Min items to trigger batch flush
-
-function estimateTokens(text: string): number {
-  return Math.ceil(text.length / 4);
-}
-
 async function flushBatch(): Promise<void> {
   if (batchQueue.length === 0) {
     batchFlushScheduled = false;
     return;
   }
 
-  // Take items from queue
+  // Take items from queue (up to BATCH_MAX_SIZE)
   const batch = batchQueue.splice(0, BATCH_MAX_SIZE);
   batchFlushScheduled = false;
 
-  if (batch.length === 1) {
-    // Single item - call directly
-    const item = batch[0];
-    await executeHFCall(item);
-    return;
+  console.log(`[HF BATCH] Flushing ${batch.length} items (queue remaining: ${batchQueue.length})`);
+
+  // Process all items in parallel - each gets its own key via round-robin
+  const results = await Promise.allSettled(
+    batch.map((item) => executeSingleCall(item))
+  );
+
+  // Log any failures
+  const failures = results.filter((r) => r.status === 'rejected');
+  if (failures.length > 0) {
+    console.log(`[HF BATCH] ${failures.length}/${batch.length} items failed`);
   }
 
-  // Multiple items - process as batch (parallel calls to different keys if available)
-  console.log(`[HF BATCH] Processing ${batch.length} items`);
-  await Promise.allSettled(batch.map(item => executeHFCall(item)));
+  // If there are still items in queue, schedule another flush
+  if (batchQueue.length > 0 && !batchFlushScheduled) {
+    batchFlushScheduled = true;
+    setTimeout(flushBatch, 100); // Immediate flush for remaining items
+  }
 }
 
-async function executeHFCall(item: BatchItem): Promise<void> {
-  const maxRetries = 2;
+async function executeSingleCall(item: BatchItem): Promise<void> {
+  const maxRetries = 3; // Try up to 3 different keys
   let lastError = '';
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
     const keyInfo = await selectHFKey();
+
     if (!keyInfo) {
       // No HF keys available - use fallback
+      console.log(`[HF] No active keys, falling back for item ${item.id}`);
       await executeFallback(item.systemPrompt, item.userMessage, item.maxTokens, item.temperature)
         .then(item.resolve)
         .catch(item.reject);
@@ -469,8 +458,9 @@ async function executeHFCall(item: BatchItem): Promise<void> {
     }
 
     try {
-      console.log(`[HF] Call attempt ${attempt + 1}: ${keyInfo.fingerprint}`);
-      const result = await callHuggingFaceAPI(
+      console.log(`[HF] Item ${item.id} attempt ${attempt + 1}: key ${keyInfo.fingerprint}`);
+
+      const result = await callHFServerlessAPI(
         keyInfo,
         item.systemPrompt,
         item.userMessage,
@@ -486,20 +476,35 @@ async function executeHFCall(item: BatchItem): Promise<void> {
       }
     } catch (err: unknown) {
       lastError = err instanceof Error ? err.message : String(err);
-      console.error(`[HF] Key ${keyInfo.fingerprint} failed: ${lastError}`);
+      console.error(`[HF] Item ${item.id} key ${keyInfo.fingerprint} failed: ${lastError.slice(0, 100)}`);
+
       const shouldRetry = await reportHFFailure(keyInfo.id, lastError);
-      if (!shouldRetry) break; // Key exhausted/auth error, try next
+      if (!shouldRetry) break; // Key exhausted, don't retry with same type of error
+
+      // If model loading, wait and retry
+      if (lastError.includes('loading') || lastError.includes('503')) {
+        await new Promise((r) => setTimeout(r, 2000)); // Wait 2s for model to load
+      }
     }
   }
 
-  // All HF keys failed - fallback
+  // All HF keys failed - fallback to Gemini/Groq
+  console.log(`[HF] All keys failed for item ${item.id}, using fallback`);
   await trackUsage('failedCalls');
+
   try {
-    const fallbackResult = await executeFallback(item.systemPrompt, item.userMessage, item.maxTokens, item.temperature);
+    const fallbackResult = await executeFallback(
+      item.systemPrompt,
+      item.userMessage,
+      item.maxTokens,
+      item.temperature
+    );
     item.resolve(fallbackResult);
     await trackUsage('fallbackCalls');
-  } catch (err) {
-    item.reject(err instanceof Error ? err : new Error(String(err)));
+  } catch (fbErr) {
+    const errMsg = fbErr instanceof Error ? fbErr.message : String(fbErr);
+    console.error(`[HF] Fallback also failed for item ${item.id}: ${errMsg}`);
+    item.reject(fbErr instanceof Error ? fbErr : new Error(errMsg));
   }
 }
 
@@ -512,12 +517,14 @@ export async function callHuggingFace(
   const temperature = options.temperature ?? 0.8;
   const maxTokens = options.maxTokens ?? 512;
 
-  return new Promise<HFCallResult>((resolve, reject) => {
+  return new Promise<HFCallResult>((resolve) => {
     const batchItem: BatchItem = {
+      id: nextBatchId(),
       systemPrompt,
       userMessage,
       maxTokens,
       temperature,
+      createdAt: Date.now(),
       resolve: (content: string) => {
         resolve({
           content,
@@ -528,8 +535,9 @@ export async function callHuggingFace(
         });
       },
       reject: (err: Error) => {
+        // On rejection, return error message (don't actually reject - always resolve)
         resolve({
-          content: `عذرًا، حدث خطأ: ${err.message.slice(0, 80)}. حاول مرة أخرى.`,
+          content: `عذرًا، حدث خطأ في الاتصال بمحرك Qwen: ${err.message.slice(0, 80)}. يرجى المحاولة مرة أخرى.`,
           provider: 'HuggingFace',
           tokensUsed: 0,
           loadBalanced: false,
@@ -540,16 +548,32 @@ export async function callHuggingFace(
 
     batchQueue.push(batchItem);
 
-    // Schedule batch flush
+    // Schedule batch flush based on queue size
     if (!batchFlushScheduled) {
       batchFlushScheduled = true;
-      const waitTime = batchQueue.length >= BATCH_MIN_SIZE ? 50 : BATCH_MAX_WAIT;
-      setTimeout(flushBatch, waitTime);
+
+      if (batchQueue.length >= BATCH_MAX_SIZE) {
+        // Queue full - flush immediately
+        setTimeout(flushBatch, 10);
+      } else if (batchQueue.length >= BATCH_MIN_SIZE) {
+        // Min batch reached - flush soon
+        setTimeout(flushBatch, 200);
+      } else {
+        // Below min - wait for more items up to max wait time
+        setTimeout(flushBatch, BATCH_MAX_WAIT_MS);
+      }
+    } else {
+      // Flush already scheduled - check if queue is now full
+      if (batchQueue.length >= BATCH_MAX_SIZE) {
+        // Force immediate flush by cancelling scheduled and flushing now
+        clearTimeout(undefined); // Can't clear named timeout, but flushBatch will handle it
+        // The scheduled flush will pick up items when it runs
+      }
     }
   });
 }
 
-// ========== FALLBACK: Gemini/Groq (from existing aiProvider) ==========
+// ========== FALLBACK: Gemini/Groq from aiProvider ==========
 async function executeFallback(
   systemPrompt: string,
   userMessage: string,
@@ -568,13 +592,13 @@ async function executeFallback(
   );
 
   if (!result.content || result.provider === 'None') {
-    throw new Error('لا توجد مفاتيح API نشطة');
+    throw new Error('لا توجد مفاتيح API بديلة نشطة');
   }
 
   return result.content;
 }
 
-// ========== Get HF Key Stats (for Admin Dashboard) ==========
+// ========== HF Key Stats (Admin Dashboard) ==========
 export async function getHFKeyStats(): Promise<{
   total: number;
   active: number;
@@ -616,15 +640,15 @@ export async function getHFKeyStats(): Promise<{
 
     return {
       total: keys.length,
-      active: keys.filter(k => k.status === 'active').length,
-      cooldown: keys.filter(k => k.status === 'cooldown').length,
-      exhausted: keys.filter(k => k.status === 'exhausted').length,
-      disabled: keys.filter(k => k.status === 'disabled').length,
+      active: keys.filter((k) => k.status === 'active').length,
+      cooldown: keys.filter((k) => k.status === 'cooldown').length,
+      exhausted: keys.filter((k) => k.status === 'exhausted').length,
+      disabled: keys.filter((k) => k.status === 'disabled').length,
       totalTokens: aggTokens._sum.tokensUsed || 0,
       totalRequests: aggRequests._sum.requestCount || 0,
       totalSuccess: aggSuccess._sum.successCount || 0,
       totalFail: aggFail._sum.failCount || 0,
-      keys: keys.map(k => ({
+      keys: keys.map((k) => ({
         id: k.id,
         fingerprint: k.fingerprint,
         label: k.tokenLabel,
@@ -645,29 +669,52 @@ export async function getHFKeyStats(): Promise<{
   } catch (err) {
     console.error('[HF] Failed to get stats:', err);
     return {
-      total: 0, active: 0, cooldown: 0, exhausted: 0, disabled: 0,
-      totalTokens: 0, totalRequests: 0, totalSuccess: 0, totalFail: 0,
+      total: 0,
+      active: 0,
+      cooldown: 0,
+      exhausted: 0,
+      disabled: 0,
+      totalTokens: 0,
+      totalRequests: 0,
+      totalSuccess: 0,
+      totalFail: 0,
       keys: [],
     };
   }
 }
 
 // ========== HF Key Management (CRUD) ==========
-export async function addHFKey(token: string, label?: string, model?: string): Promise<HFKeyInfo | null> {
+export async function addHFKey(
+  token: string,
+  label?: string,
+  model?: string
+): Promise<HFKeyInfo | null> {
   try {
-    const fp = makeFP(token);
+    // Validate token format
+    if (!token || token.trim().length < 10) {
+      console.error('[HF] Token too short');
+      return null;
+    }
+
+    const trimmedToken = token.trim();
+    const fp = makeFP(trimmedToken);
+    const selectedModel = model || DEFAULT_MODEL;
+
     const key = await db.huggingFaceKey.create({
       data: {
-        accessToken: encrypt(token),
+        accessToken: encrypt(trimmedToken),
         fingerprint: fp,
         tokenLabel: label || null,
-        model: model || 'Qwen/Qwen2.5-72B-Instruct',
+        model: selectedModel,
         status: 'active',
       },
     });
+
+    console.log(`[HF] Added key: ${fp} model=${selectedModel}`);
+
     return {
       id: key.id,
-      token,
+      token: trimmedToken,
       fingerprint: key.fingerprint,
       label: key.tokenLabel,
       model: key.model,
@@ -688,16 +735,25 @@ export async function addHFKey(token: string, label?: string, model?: string): P
   }
 }
 
-export async function bulkAddHFKeys(tokens: string[], model?: string): Promise<{ added: number; errors: number }> {
+export async function bulkAddHFKeys(
+  tokens: string[],
+  model?: string
+): Promise<{ added: number; errors: number }> {
   let added = 0;
   let errors = 0;
 
   for (const token of tokens) {
-    const result = await addHFKey(token.trim(), undefined, model);
+    const trimmed = token.trim();
+    if (trimmed.length < 10) {
+      errors++;
+      continue;
+    }
+    const result = await addHFKey(trimmed, undefined, model);
     if (result) added++;
     else errors++;
   }
 
+  console.log(`[HF] Bulk add: ${added} added, ${errors} errors`);
   return { added, errors };
 }
 
@@ -730,15 +786,15 @@ export async function reactivateAllHFKeys(): Promise<number> {
   try {
     const result = await db.huggingFaceKey.updateMany({
       where: { status: { in: ['cooldown', 'exhausted'] } },
-      data: { status: 'active', cooldownUntil: null, lastError: null },
+      data: { status: 'active', cooldownUntil: null, lastError: null, lastErrorAt: null },
     });
+    console.log(`[HF] Reactivated ${result.count} keys`);
     return result.count;
   } catch {
     return 0;
   }
 }
 
-// ========== Has Active HF Keys? ==========
 export async function hasActiveHFKeys(): Promise<boolean> {
   try {
     const count = await db.huggingFaceKey.count({ where: { status: 'active' } });
