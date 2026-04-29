@@ -1,11 +1,9 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore, type View, type UserProfile } from '@/store/appStore';
-import SplashScreen from '@/components/SplashScreen';
-import GeometricBackground from '@/components/GeometricBackground';
-import IslamicPatternBg from '@/components/IslamicPatternBg';
 import Header from '@/components/Header';
 import ChatView from '@/components/ChatView';
 import QuizView from '@/components/QuizView';
@@ -16,6 +14,11 @@ import SideDrawer from '@/components/SideDrawer';
 import Footer from '@/components/Footer';
 import { BookOpen, Swords, GraduationCap, Brain, User, Search } from 'lucide-react';
 import { useTranslation } from '@/i18n/useTranslation';
+
+// Load visual components with SSR disabled to prevent hydration mismatch
+const SplashScreen = dynamic(() => import('@/components/SplashScreen'), { ssr: false });
+const GeometricBackground = dynamic(() => import('@/components/GeometricBackground'), { ssr: false });
+const IslamicPatternBg = dynamic(() => import('@/components/IslamicPatternBg'), { ssr: false });
 
 const ADMIN_CODE = 'qalamadmin2024';
 

@@ -18,10 +18,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     document.body.setAttribute('dir', dir);
   }, [lang, isReady]);
 
-  // Prevent flash of wrong direction
-  if (!isReady) {
-    return <div style={{ visibility: 'hidden' }}>{children}</div>;
-  }
-
+  // Always render children - don't hide the app while translations load
   return <>{children}</>;
 }
