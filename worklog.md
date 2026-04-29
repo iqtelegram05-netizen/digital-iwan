@@ -518,3 +518,33 @@ Stage Summary:
 - Vercel auto-deploy triggered from GitHub push
 - Key files modified: ChatView.tsx, QuizView.tsx, chat/route.ts, quiz/route.ts, ar.json
 - instrumentation.ts deleted
+---
+Task ID: 1
+Agent: Main Agent
+Task: Rebuild HuggingFace Provider Engine v2 for Digital Iwan
+
+Work Log:
+- Analyzed existing project structure and identified root cause of HF token failures
+- Root cause: System was trying Groq/Together/OpenRouter endpoints with hf_xxx tokens (which only work with HF)
+- Also: Default model was Qwen2.5-72B (may not be on free tier) and endpoint format was wrong
+- Rewrote src/lib/huggingface.ts completely (v2):
+  - Primary: HF Serverless Inference API at router.huggingface.co/hf-inference/models/{model}
+  - Correct format: POST with {inputs, parameters: {max_new_tokens, temperature, return_full_text: false}}
+  - Response: [{ generated_text: "..." }]
+  - Changed default model to Qwen/Qwen2.5-7B-Instruct (free tier compatible)
+  - Batching: Collects 10-20 items, flushes at min=10 or max=1500ms wait
+  - Smart Round-Robin with priority-based key selection
+  - 10-min auto cooldown on 429 rate limits
+  - Auto retry with 2s delay on 503 (model cold starts)
+  - Auth errors (401/403) mark keys as exhausted permanently
+  - Fallback to Gemini/Groq via aiProvider.ts when all HF keys fail
+- Updated prisma/schema.prisma default model from 72B to 7B
+- Tested endpoint: router.huggingface.co/hf-inference/models/Qwen/Qwen2.5-7B-Instruct returns 401 without auth (correct)
+- Committed and pushed to GitHub
+- Deployed to Vercel production successfully
+
+Stage Summary:
+- New HF engine uses correct Serverless Inference API format
+- Free hf_xxx tokens should now work with Qwen/Qwen2.5-7B-Instruct
+- System deployed to https://digital-iwan.vercel.app
+- User needs to add valid hf_xxx tokens via admin panel for system to work
