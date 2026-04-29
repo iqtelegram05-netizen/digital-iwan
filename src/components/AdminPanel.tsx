@@ -895,6 +895,22 @@ export default function AdminPanel() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
+                {/* Source indicator: DB vs ENV */}
+                {lbStats?.source === 'env' && (
+                  <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 text-[11px] space-y-1">
+                    <p className="font-medium flex items-center gap-1"><Server className="w-3.5 h-3.5" /> وضع متغيرات البيئة (Vercel)</p>
+                    <p>المفاتيح تُقرأ من متغيرات البيئة. لإضافة/تعديل المفاتيح:</p>
+                    <ul className="list-disc list-inside text-[10px] space-y-0.5 opacity-90">
+                      <li><code className="bg-black/10 px-1 rounded">GROQ_API_KEY</code> - مفتاح Groq</li>
+                      <li><code className="bg-black/10 px-1 rounded">DEEPSEEK_API_KEY</code> - مفتاح DeepSeek</li>
+                      <li><code className="bg-black/10 px-1 rounded">GEMINI_API_KEY</code> - مفتاح Gemini</li>
+                      <li><code className="bg-black/10 px-1 rounded">OPENAI_API_KEY</code> - مفتاح OpenAI</li>
+                      <li><code className="bg-black/10 px-1 rounded">AI_KEYS</code> - عدة مفاتيح: <code>groq:gsk_xxx,deepseek:sk_xxx</code></li>
+                    </ul>
+                    <p className="text-[10px] opacity-80 mt-1">لإضافة مفاتيح، اذهب إلى إعدادات المشروع في Vercel → Environment Variables</p>
+                  </div>
+                )}
+
                 {/* Error / Success messages */}
                 {lbError && (
                   <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-600 text-[11px]">{lbError}</div>
