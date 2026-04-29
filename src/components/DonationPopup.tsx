@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, HandHeart } from 'lucide-react';
 import { useAppStore } from '@/store/appStore';
@@ -12,16 +12,19 @@ interface DonationPopupProps {
 export default function DonationPopup({ onDismiss }: DonationPopupProps) {
   const [visible, setVisible] = useState(false);
   const splashComplete = useAppStore((s) => s.splashComplete);
+  const scheduledRef = useRef(false);
 
   useEffect(() => {
-    // Check if popup was already dismissed in this session
+    // Skip if already scheduled or dismissed this session
+    if (scheduledRef.current) return;
     const dismissed = sessionStorage.getItem('donation_popup_dismissed');
-    if (!dismissed) {
-      // Only show AFTER splash screen finishes
-      if (splashComplete) {
-        const timer = setTimeout(() => setVisible(true), 800);
-        return () => clearTimeout(timer);
-      }
+    if (dismissed) return;
+
+    // Show popup after splash completes (or immediately if splash already done)
+    if (splashComplete) {
+      scheduledRef.current = true;
+      const timer = setTimeout(() => setVisible(true), 1000);
+      return () => clearTimeout(timer);
     }
   }, [splashComplete]);
 
