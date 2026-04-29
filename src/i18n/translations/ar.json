@@ -1,0 +1,185 @@
+{
+  "app": {
+    "title": "الإيوان الرقمي",
+    "subtitle": "أول ذكاء اصطناعي عراقي",
+    "description": "الإيوان الرقمي - المساعد الذكي للعلوم الإسلامية"
+  },
+  "header": {
+    "selectScholar": "اختر عالماً"
+  },
+  "menu": {
+    "mainMenu": "القائمة الرئيسية",
+    "browseContent": "تصفح الأدعية والخطب والمناسبات"
+  },
+  "tabs": {
+    "prayers": "الأدعية",
+    "qibla": "القبلة",
+    "sermons": "الخطب",
+    "events": "المناسبات"
+  },
+  "prayers": {
+    "title": "الأدعية",
+    "loading": "جارٍ التحميل...",
+    "empty": "لا توجد أدعية مضافة بعد. يمكن للمالك إضافتها من لوحة التحكم.",
+    "noText": "لم يتم تحديد نص",
+    "back": "العودة",
+    "visits": "الزيارات",
+    "visitsEmpty": "لا توجد زيارات مضافة بعد.",
+    "sermonsTitle": "الخطب",
+    "sermonsEmpty": "لا توجد خطب مضافة بعد. يمكن للمالك إضافتها من لوحة التحكم."
+  },
+  "events": {
+    "title": "مناسبات التاريخ الهجري",
+    "countdown": "العد التنازلي للمناسبة القادمة سيظهر هنا"
+  },
+  "chat": {
+    "scientificIwan": "الأيوان العلمي",
+    "digitalDebater": "المحاور الرقمي",
+    "digitalTeacher": "الأستاذ الرقمي",
+    "askQuestion": "اسأل سؤالك في العلوم الإسلامية...",
+    "presentArgument": "قدّم حجتك للنقاش...",
+    "askAnyTopic": "اسأل أي موضوع تريد فهمه ببساطة...",
+    "clearChat": "مسح المحادثة",
+    "errorProcessing": "عذراً، حدث خطأ في المعالجة.",
+    "errorConnection": "عذراً، حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.",
+    "sources": "المصادر:"
+  },
+  "quiz": {
+    "testYourself": "اختبر نفسك",
+    "selectCategory": "اختر تصنيفاً لبدء الاختبار",
+    "generatingQuestions": "جارٍ إنشاء الأسئلة...",
+    "noQuestions": "لم يتم إنشاء الأسئلة. يرجى المحاولة مرة أخرى.",
+    "connectionError": "حدث خطأ في الاتصال",
+    "submitError": "حدث خطأ في تسجيل الإجابات",
+    "questionOf": "السؤال {current} من {total}",
+    "previous": "السابق",
+    "next": "التالي",
+    "finishQuiz": "إنهاء الاختبار",
+    "grading": "جارٍ التصحيح...",
+    "result": "نتيجة الاختبار",
+    "outOf": "من 100",
+    "retry": "إعادة",
+    "anotherCategory": "تصنيف آخر",
+    "correctAnswer": "الإجابة الصحيحة:",
+    "grades": {
+      "excellent": "ممتاز",
+      "veryGood": "جيد جداً",
+      "good": "جيد",
+      "pass": "مقبول",
+      "needsImprovement": "يحتاج تحسين"
+    },
+    "categories": {
+      "beliefs": "عقائد",
+      "logic": "منطق",
+      "kalam": "علم الكلام",
+      "grammar": "نحو",
+      "fiqh": "فقه"
+    }
+  },
+  "profile": {
+    "title": "الملف الشخصي",
+    "loginDescription": "سجّل دخولك عبر حسابك في Google لحفظ تفضيلاتك ومتابعة تقدّمك في العلوم الإسلامية",
+    "loginWithGoogle": "تسجيل الدخول بـ Google",
+    "loginInProgress": "جارٍ تسجيل الدخول...",
+    "loginSuccess": "تم تسجيل الدخول بنجاح!",
+    "googleLoadFailed": "فشل تحميل خدمة Google",
+    "googleNotAvailable": "خدمة Google غير متوفرة",
+    "decodeFailed": "فشل فك تشفير بيانات Google",
+    "loginError": "حدث خطأ أثناء تسجيل الدخول",
+    "lastLogin": "آخر دخول",
+    "accountStatus": "حالة الحساب",
+    "active": "نشط",
+    "notSet": "غير محدد",
+    "editProfile": "تعديل الملف الشخصي",
+    "name": "الاسم",
+    "namePlaceholder": "أدخل اسمك",
+    "bio": "نبذة عنك",
+    "bioPlaceholder": "أخبرنا عن اهتماماتك العلمية...",
+    "interests": "الاهتمامات",
+    "selectUpTo": "(اختر حتى 5)",
+    "updateProfile": "تحديث الملف الشخصي",
+    "saved": "تم الحفظ بنجاح!",
+    "controlPanel": "لوحة التحكم",
+    "logout": "تسجيل الخروج",
+    "user": "مستخدم",
+    "features": {
+      "title": "مميزات تسجيل الدخول:",
+      "saveChats": "حفظ محادثاتك واختباراتك",
+      "trackProgress": "متابعة تقدّمك في العلوم الإسلامية",
+      "customize": "تخصيص تجربتك حسب اهتماماتك"
+    },
+    "interestsList": [
+      "عقائد", "فقه", "تفسير", "حديث", "تاريخ الإسلام",
+      "فلسفة إسلامية", "منطق", "نحو", "بلاغة", "أصول الفقه"
+    ]
+  },
+  "reader": {
+    "font": "الخط",
+    "color": "اللون",
+    "size": "الحجم",
+    "currentFont": "الخط الحالي:",
+    "searchFont": "ابحث عن خط...",
+    "all": "الكل",
+    "showMore": "عرض المزيد",
+    "additionalFonts": "خط إضافي",
+    "showLess": "عرض أقل",
+    "textColor": "لون النص",
+    "fontSize": "حجم الخط",
+    "colors": {
+      "default": "افتراضي",
+      "warm": "دافئ",
+      "gold": "ذهبي",
+      "sky": "سماوي",
+      "emerald": "زمردي",
+      "rose": "وردي",
+      "purple": "بنفسجي",
+      "white": "أبيض",
+      "orange": "برتقالي",
+      "cyan": "سماوي فاتح"
+    },
+    "sizes": {
+      "xs": "صغير جداً",
+      "sm": "صغير",
+      "md": "متوسط",
+      "lg": "كبير",
+      "xl": "كبير جداً",
+      "2xl": "ضخم",
+      "3xl": "عملاق"
+    }
+  },
+  "login": {
+    "title": "الإيوان الرقمي",
+    "subtitle": "سجّل دخولك عبر حسابك في Google",
+    "noEmail": "لم يتم العثور على بريد إلكتروني",
+    "error": "حدث خطأ:",
+    "noClientId": "Google Client ID غير مضبوط"
+  },
+  "admin": {
+    "title": "لوحة التحكم",
+    "addPrayer": "إضافة دعاء",
+    "addSermon": "إضافة خطبة",
+    "addVisit": "إضافة زيارة",
+    "titleField": "العنوان",
+    "subtitleField": "وصف مختصر",
+    "categoryField": "التصنيف",
+    "textField": "النص الكامل",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "savedSuccess": "تم الحفظ بنجاح!",
+    "deleteConfirm": "هل أنت متأكد من الحذف؟"
+  },
+  "common": {
+    "loading": "جارٍ التحميل...",
+    "error": "خطأ",
+    "success": "تم بنجاح",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "search": "بحث",
+    "noData": "لا توجد بيانات"
+  }
+}
