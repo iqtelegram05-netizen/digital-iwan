@@ -45,6 +45,8 @@ import {
   Cpu,
   TrendingUp,
   Database,
+  CircleDot,
+  ChevronDown,
 } from 'lucide-react';
 
 // ========== Types ==========
@@ -180,7 +182,7 @@ interface DailyUsageInfo {
   totalTokens: number;
 }
 
-type AdminTab = 'keys' | 'users' | 'prayers' | 'loadbalancer' | 'ads' | 'huggingface';
+type AdminTab = 'keys' | 'users' | 'prayers' | 'loadbalancer' | 'ads' | 'huggingface' | 'tasbeeh';
 
 export default function AdminPanel() {
   const { setCurrentView } = useAppStore();
@@ -250,16 +252,26 @@ export default function AdminPanel() {
   const [hfModelError, setHfModelError] = useState<string | null>(null);
   const [hfModelSuccess, setHfModelSuccess] = useState<string | null>(null);
 
+  // Tasbeeh state
+  const [tasbeehGroups, setTasbeehGroups] = useState<{ id: string; name: string; description?: string; iconUrl?: string; isActive: boolean; items: { id: string; text: string; description?: string; count: number; isActive: boolean }[] }[]>([]);
+  const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupDesc, setNewGroupDesc] = useState('');
+  const [newItemText, setNewItemText] = useState('');
+  const [newItemCount, setNewItemCount] = useState('33');
+  const [newItemDesc, setNewItemDesc] = useState('');
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [adminRes, usersRes, prayersRes, keysRes, adsRes, hfRes] = await Promise.all([
+      const [adminRes, usersRes, prayersRes, keysRes, adsRes, hfRes, tasbeehRes] = await Promise.all([
         fetch('/api/admin'),
         fetch('/api/admin/users'),
         fetch('/api/prayers?all=true'),
         fetch('/api/keys'),
         fetch('/api/admin/ads'),
         fetch('/api/hf-keys'),
+        fetch('/api/tasbeeh'),
       ]);
       if (adminRes.ok) setData(await adminRes.json());
       if (usersRes.ok) {
@@ -281,6 +293,10 @@ export default function AdminPanel() {
         const hfData = await hfRes.json();
         if (hfData.hf) setHfStats(hfData.hf);
         if (hfData.dailyUsage) setDailyUsage(hfData.dailyUsage);
+      }
+      if (tasbeehRes.ok) {
+        const tData = await tasbeehRes.json();
+        setTasbeehGroups(tData.groups || []);
       }
     } catch {
       // silent
@@ -408,11 +424,17 @@ export default function AdminPanel() {
         setPrayerTitle('');
         setPrayerSubtitle('');
         setPrayerText('');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || `خطأ: ${res.status}`);
       }
-    } catch { /* silent */ } finally { setSaving(false); }
+    } catch (err) {
+      alert('خطأ في الاتصال بالخادم');
+    } finally { setSaving(false); }
   };
 
   const deletePrayer = async (id: string) => {
+    if (!confirm('هل تريد حذف هذا العنصر؟')) return;
     setSaving(true);
     try {
       const res = await fetch('/api/prayers', {
@@ -422,8 +444,13 @@ export default function AdminPanel() {
       });
       if (res.ok) {
         setPrayers((prev) => prev.filter((p) => p.id !== id));
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'فشل في الحذف');
       }
-    } catch { /* silent */ } finally { setSaving(false); }
+    } catch (err) {
+      alert('خطأ في الاتصال بالخادم');
+    } finally { setSaving(false); }
   };
 
   const togglePublish = async (prayer: PrayerItem) => {
@@ -436,8 +463,94 @@ export default function AdminPanel() {
       });
       if (res.ok) {
         setPrayers((prev) => prev.map((p) => p.id === prayer.id ? { ...p, isPublished: !p.isPublished } : p));
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'فشل في التحديث');
       }
-    } catch { /* silent */ } finally { setSaving(false); }
+    } catch (err) {
+      alert('خطأ في الاتصال بالخادم');
+    } finally { setSaving(false); }
+  };
+
+  // ========== Tasbeeh Management ==========
+  const addTasbeehGroup = async () => {
+    if (!newGroupName.trim()) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/tasbeeh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'addGroup', name: newGroupName.trim(), description: newGroupDesc.trim() || undefined }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setTasbeehGroups((prev) => [...prev, json.group]);
+        setNewGroupName('');
+        setNewGroupDesc('');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'فشل في إضافة المجموعة');
+      }
+    } catch { alert('خطأ في الاتصال بالخادم'); } finally { setSaving(false); }
+  };
+
+  const deleteTasbeehGroup = async (id: string) => {
+    if (!confirm('هل تريد حذف هذه المجموعة وجميع تسبيحاتها؟')) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/tasbeeh', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deleteGroup', id }),
+      });
+      if (res.ok) {
+        setTasbeehGroups((prev) => prev.filter((g) => g.id !== id));
+        if (expandedGroupId === id) setExpandedGroupId(null);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'فشل في الحذف');
+      }
+    } catch { alert('خطأ في الاتصال بالخادم'); } finally { setSaving(false); }
+  };
+
+  const addTasbeehItem = async (groupId: string) => {
+    if (!newItemText.trim()) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/tasbeeh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'addItem', groupId, text: newItemText.trim(), count: parseInt(newItemCount) || 33, description: newItemDesc.trim() || undefined }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setTasbeehGroups((prev) => prev.map((g) => g.id === groupId ? { ...g, items: [...g.items, json.item] } : g));
+        setNewItemText('');
+        setNewItemCount('33');
+        setNewItemDesc('');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'فشل في إضافة التسبيحة');
+      }
+    } catch { alert('خطأ في الاتصال بالخادم'); } finally { setSaving(false); }
+  };
+
+  const deleteTasbeehItem = async (groupId: string, itemId: string) => {
+    if (!confirm('هل تريد حذف هذه التسبيحة؟')) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/tasbeeh', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deleteItem', id: itemId }),
+      });
+      if (res.ok) {
+        setTasbeehGroups((prev) => prev.map((g) => g.id === groupId ? { ...g, items: g.items.filter((i) => i.id !== itemId) } : g));
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'فشل في الحذف');
+      }
+    } catch { alert('خطأ في الاتصال بالخادم'); } finally { setSaving(false); }
   };
 
   // ========== Clear All Data ==========
@@ -619,6 +732,7 @@ export default function AdminPanel() {
             { id: 'prayers', label: t('admin.tabs.prayers'), icon: BookOpen },
             { id: 'ads', label: 'إعلانات', icon: Tv },
             { id: 'huggingface', label: 'HuggingFace', icon: Cpu },
+            { id: 'tasbeeh', label: 'تسبيحات', icon: CircleDot },
           ] as { id: AdminTab; label: string; icon: typeof Key }[]).map((tab) => (
             <CrystalButton
               key={tab.id}
@@ -1486,6 +1600,128 @@ export default function AdminPanel() {
                     })}
                   </div>
                 </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+        {/* ========== TAB: Tasbeeh (تسبيحات) ========== */}
+        {activeTab === 'tasbeeh' && (
+          <div className="space-y-6">
+            {/* Add Group Form */}
+            <Card className="glass-card border-primary/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <CircleDot className="w-4 h-4 text-emerald-500" />
+                  إضافة مجموعة تسبيح جديدة
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex gap-2">
+                  <Input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="اسم المجموعة (مثال: تسبيحات الزهراء)" className="text-xs border-primary/20 bg-card/50 flex-1" />
+                  <Input value={newGroupDesc} onChange={(e) => setNewGroupDesc(e.target.value)} placeholder="وصف اختياري" className="text-xs border-primary/20 bg-card/50 flex-1" />
+                </div>
+                <CrystalButton
+                  className="w-full bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg"
+                  onClick={addTasbeehGroup}
+                  disabled={saving || !newGroupName.trim()}
+                >
+                  <Plus className="w-4 h-4 ml-2" />
+                  إضافة المجموعة
+                </CrystalButton>
+              </CardContent>
+            </Card>
+
+            {/* Groups List */}
+            <Card className="glass-card border-primary/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-emerald-500" />
+                  المجموعات المضافة
+                  <Badge variant="secondary" className="text-[10px] mr-auto">{tasbeehGroups.length} مجموعة</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loading ? spinner : (
+                  <ScrollArea className="max-h-[500px]">
+                    <div className="space-y-3">
+                      {tasbeehGroups.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">لا توجد مجموعات تسبيح بعد</p>}
+                      {tasbeehGroups.map((group) => (
+                        <motion.div
+                          key={group.id}
+                          className="rounded-xl bg-card/50 border border-border/30 overflow-hidden"
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                        >
+                          {/* Group Header */}
+                          <div className="flex items-center gap-3 p-3 cursor-pointer hover:bg-card/80 transition-colors" onClick={() => setExpandedGroupId(expandedGroupId === group.id ? null : group.id)}>
+                            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+                              <CircleDot className="w-5 h-5 text-emerald-500" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium truncate">{group.name}</p>
+                              <p className="text-[10px] text-muted-foreground">{group.items.length} تسبيحة</p>
+                            </div>
+                            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expandedGroupId === group.id ? 'rotate-180' : ''}`} />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive/70 hover:text-destructive shrink-0"
+                              onClick={(e) => { e.stopPropagation(); deleteTasbeehGroup(group.id); }}
+                              disabled={saving}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+
+                          {/* Expanded Items */}
+                          {expandedGroupId === group.id && (
+                            <div className="border-t border-border/20 bg-card/30 p-3 space-y-3">
+                              {/* Add Item Form */}
+                              <div className="space-y-2">
+                                <Input value={newItemText} onChange={(e) => setNewItemText(e.target.value)} placeholder="نص التسبيحة (مثال: سبحان الله)" className="text-xs border-primary/20 bg-card/50" />
+                                <div className="flex gap-2">
+                                  <Input value={newItemCount} onChange={(e) => setNewItemCount(e.target.value)} placeholder="العدد" className="text-xs border-primary/20 bg-card/50 w-20" dir="ltr" />
+                                  <Input value={newItemDesc} onChange={(e) => setNewItemDesc(e.target.value)} placeholder="وصف اختياري" className="text-xs border-primary/20 bg-card/50 flex-1" />
+                                </div>
+                                <CrystalButton
+                                  className="w-full bg-emerald-600/80 text-white hover:bg-emerald-700 rounded-lg text-xs h-8"
+                                  onClick={() => addTasbeehItem(group.id)}
+                                  disabled={saving || !newItemText.trim()}
+                                >
+                                  <Plus className="w-3.5 h-3.5 ml-1" />
+                                  إضافة تسبيحة
+                                </CrystalButton>
+                              </div>
+
+                              {/* Items List */}
+                              <div className="space-y-1.5">
+                                {group.items.length === 0 && <p className="text-[10px] text-muted-foreground text-center py-3">لا توجد تسبيحات في هذه المجموعة</p>}
+                                {group.items.map((item) => (
+                                  <div key={item.id} className="flex items-center gap-2 p-2 rounded-lg bg-card/50 border border-border/20">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-xs font-medium truncate">{item.text}</p>
+                                      <p className="text-[10px] text-muted-foreground">{item.count} مرة</p>
+                                    </div>
+                                    <Badge variant="secondary" className="text-[9px] shrink-0">{item.count}</Badge>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-6 w-6 text-destructive/70 hover:text-destructive shrink-0"
+                                      onClick={() => deleteTasbeehItem(group.id, item.id)}
+                                      disabled={saving}
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
               </CardContent>
             </Card>
           </div>

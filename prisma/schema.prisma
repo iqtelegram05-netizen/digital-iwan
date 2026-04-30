@@ -213,3 +213,35 @@ model ApiKey {
 
   provider ApiProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 }
+
+// ========== Tasbeeh Groups & Items (تسبيحات) ==========
+model TasbeehGroup {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  iconUrl      String?
+  displayOrder Int           @default(0)
+  isActive     Boolean       @default(true)
+  items        TasbeehItem[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([displayOrder])
+  @@index([isActive])
+}
+
+model TasbeehItem {
+  id           String       @id @default(cuid())
+  groupId      String
+  text         String
+  description  String?
+  count        Int          @default(33)
+  displayOrder Int          @default(0)
+  isActive     Boolean      @default(true)
+  group        TasbeehGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([groupId])
+  @@index([displayOrder])
+}
