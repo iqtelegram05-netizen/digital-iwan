@@ -7,12 +7,13 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import { BookOpen, Compass, Mic, Calendar, Clock } from 'lucide-react';
+import { BookOpen, Compass, Mic, Calendar, Clock, CircleDot } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 // QiblaCompass moved to standalone page at /qibla
 import { type ReaderItem } from '@/store/appStore';
 import { useTranslation } from '@/i18n/useTranslation';
 import { isRTL } from '@/i18n/languages';
+import TasbeehView from './TasbeehView';
 
 // ========== EVENTS DATA (month/day only - titles come from translations) ==========
 const HIJRI_EVENTS = [
@@ -150,9 +151,10 @@ export default function SideDrawer() {
             window.location.href = '/hijri';
           }
         }}>
-          <TabsList className="w-full grid grid-cols-4 p-1 m-3 rounded-xl bg-muted/50 h-auto">
+          <TabsList className="w-full grid grid-cols-5 p-1 m-3 rounded-xl bg-muted/50 h-auto">
             {[
               { value: 'prayers', label: t('tabs.prayers'), icon: BookOpen },
+              { value: 'tasbeeh', label: 'مسبحة', icon: CircleDot },
               { value: 'qibla', label: t('tabs.qibla'), icon: Compass, isExternal: true, href: '/qibla' },
               { value: 'sermons', label: t('tabs.sermons'), icon: Mic },
               { value: 'events', label: t('tabs.events'), icon: Calendar },
@@ -198,6 +200,11 @@ export default function SideDrawer() {
               ) : (
                 <p className="text-xs text-muted-foreground text-center py-4">{t('prayers.visitsEmpty')}</p>
               )}
+            </TabsContent>
+
+            {/* Tasbeeh Tab */}
+            <TabsContent value="tasbeeh" className="mt-0">
+              <TasbeehView />
             </TabsContent>
 
             {/* Qibla - opens dedicated page */}
