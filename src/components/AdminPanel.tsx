@@ -1613,7 +1613,10 @@ export default function AdminPanel() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="اسم التسبيحة (مثال: تسبيح الزهراء عليها السلام)" className="text-xs border-primary/20 bg-card/50" />
+                <div>
+                  <label className="text-[10px] font-medium text-foreground/70 mb-1 block">اسم التسبيحة</label>
+                  <Input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="مثال: تسبيح الزهراء عليها السلام" className="text-xs border-primary/20 bg-card/50" />
+                </div>
                 <CrystalButton
                   className="w-full bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg"
                   onClick={addTasbeehGroup}
@@ -1672,23 +1675,29 @@ export default function AdminPanel() {
                             <div className="border-t border-border/20 bg-card/30 p-3 space-y-3">
                               {/* إضافة تسبيحة فرعية: التسبيحة + عدد التسبيح */}
                               <div className="space-y-2">
-                                <p className="text-[10px] font-medium text-emerald-500">إضافة تسبيحة فرعية</p>
-                                <div className="flex gap-2">
-                                  <Input
-                                    value={newItemText}
-                                    onChange={(e) => setNewItemText(e.target.value)}
-                                    placeholder="التسبيحة (مثال: الله اكبر)"
-                                    className="text-xs border-emerald-500/20 bg-card/50 flex-1"
-                                  />
-                                  <Input
-                                    value={newItemCount}
-                                    onChange={(e) => setNewItemCount(e.target.value)}
-                                    placeholder="العدد"
-                                    className="text-xs border-emerald-500/20 bg-card/50 w-20 text-center"
-                                    dir="ltr"
-                                    type="number"
-                                    min="1"
-                                  />
+                                <p className="text-[11px] font-semibold text-emerald-500">إضافة تسبيحة فرعية</p>
+                                <div className="space-y-2">
+                                  <div>
+                                    <label className="text-[10px] font-medium text-foreground/70 mb-1 block">التسبيح</label>
+                                    <Input
+                                      value={newItemText}
+                                      onChange={(e) => setNewItemText(e.target.value)}
+                                      placeholder="مثال: الله اكبر"
+                                      className="text-xs border-emerald-500/20 bg-card/50 w-full"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-[10px] font-medium text-foreground/70 mb-1 block">عدد التسبيح</label>
+                                    <Input
+                                      value={newItemCount}
+                                      onChange={(e) => setNewItemCount(e.target.value)}
+                                      placeholder="مثال: 15"
+                                      className="text-xs border-emerald-500/20 bg-card/50 w-24 text-center"
+                                      dir="ltr"
+                                      type="number"
+                                      min="1"
+                                    />
+                                  </div>
                                 </div>
                                 <CrystalButton
                                   className="w-full bg-emerald-600/80 text-white hover:bg-emerald-700 rounded-lg text-xs h-8"
