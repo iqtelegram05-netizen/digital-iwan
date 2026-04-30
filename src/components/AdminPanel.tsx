@@ -256,10 +256,8 @@ export default function AdminPanel() {
   const [tasbeehGroups, setTasbeehGroups] = useState<{ id: string; name: string; description?: string; iconUrl?: string; isActive: boolean; items: { id: string; text: string; description?: string; count: number; isActive: boolean }[] }[]>([]);
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
   const [newGroupName, setNewGroupName] = useState('');
-  const [newGroupDesc, setNewGroupDesc] = useState('');
   const [newItemText, setNewItemText] = useState('');
   const [newItemCount, setNewItemCount] = useState('33');
-  const [newItemDesc, setNewItemDesc] = useState('');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -480,22 +478,22 @@ export default function AdminPanel() {
       const res = await fetch('/api/tasbeeh', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'addGroup', name: newGroupName.trim(), description: newGroupDesc.trim() || undefined }),
+        body: JSON.stringify({ action: 'addGroup', name: newGroupName.trim() }),
       });
       if (res.ok) {
         const json = await res.json();
         setTasbeehGroups((prev) => [...prev, json.group]);
+        setExpandedGroupId(json.group.id);
         setNewGroupName('');
-        setNewGroupDesc('');
       } else {
         const err = await res.json().catch(() => ({}));
-        alert(err.error || 'فشل في إضافة المجموعة');
+        alert(err.error || 'فشل في إضافة التسبيحة');
       }
     } catch { alert('خطأ في الاتصال بالخادم'); } finally { setSaving(false); }
   };
 
   const deleteTasbeehGroup = async (id: string) => {
-    if (!confirm('هل تريد حذف هذه المجموعة وجميع تسبيحاتها؟')) return;
+    if (!confirm('هل تريد حذف هذه التسبيحة وجميع التسبيحات الفرعية؟')) return;
     setSaving(true);
     try {
       const res = await fetch('/api/tasbeeh', {
@@ -520,14 +518,13 @@ export default function AdminPanel() {
       const res = await fetch('/api/tasbeeh', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'addItem', groupId, text: newItemText.trim(), count: parseInt(newItemCount) || 33, description: newItemDesc.trim() || undefined }),
+        body: JSON.stringify({ action: 'addItem', groupId, text: newItemText.trim(), count: parseInt(newItemCount) || 33 }),
       });
       if (res.ok) {
         const json = await res.json();
         setTasbeehGroups((prev) => prev.map((g) => g.id === groupId ? { ...g, items: [...g.items, json.item] } : g));
         setNewItemText('');
         setNewItemCount('33');
-        setNewItemDesc('');
       } else {
         const err = await res.json().catch(() => ({}));
         alert(err.error || 'فشل في إضافة التسبيحة');
@@ -1607,44 +1604,41 @@ export default function AdminPanel() {
         {/* ========== TAB: Tasbeeh (تسبيحات) ========== */}
         {activeTab === 'tasbeeh' && (
           <div className="space-y-6">
-            {/* Add Group Form */}
+            {/* إضافة تسبيحة جديدة */}
             <Card className="glass-card border-primary/10">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <CircleDot className="w-4 h-4 text-emerald-500" />
-                  إضافة مجموعة تسبيح جديدة
+                  إضافة تسبيحة جديدة
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex gap-2">
-                  <Input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="اسم المجموعة (مثال: تسبيحات الزهراء)" className="text-xs border-primary/20 bg-card/50 flex-1" />
-                  <Input value={newGroupDesc} onChange={(e) => setNewGroupDesc(e.target.value)} placeholder="وصف اختياري" className="text-xs border-primary/20 bg-card/50 flex-1" />
-                </div>
+                <Input value={newGroupName} onChange={(e) => setNewGroupName(e.target.value)} placeholder="اسم التسبيحة (مثال: تسبيح الزهراء عليها السلام)" className="text-xs border-primary/20 bg-card/50" />
                 <CrystalButton
                   className="w-full bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg"
                   onClick={addTasbeehGroup}
                   disabled={saving || !newGroupName.trim()}
                 >
                   <Plus className="w-4 h-4 ml-2" />
-                  إضافة المجموعة
+                  إضافة التسبيحة
                 </CrystalButton>
               </CardContent>
             </Card>
 
-            {/* Groups List */}
+            {/* التسبيحات المضافة */}
             <Card className="glass-card border-primary/10">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Eye className="w-4 h-4 text-emerald-500" />
-                  المجموعات المضافة
-                  <Badge variant="secondary" className="text-[10px] mr-auto">{tasbeehGroups.length} مجموعة</Badge>
+                  التسبيحات المضافة
+                  <Badge variant="secondary" className="text-[10px] mr-auto">{tasbeehGroups.length} تسبيحة</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {loading ? spinner : (
                   <ScrollArea className="max-h-[500px]">
                     <div className="space-y-3">
-                      {tasbeehGroups.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">لا توجد مجموعات تسبيح بعد</p>}
+                      {tasbeehGroups.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">لا توجد تسبيحات بعد</p>}
                       {tasbeehGroups.map((group) => (
                         <motion.div
                           key={group.id}
@@ -1652,16 +1646,16 @@ export default function AdminPanel() {
                           initial={{ opacity: 0, x: 20 }}
                           animate={{ opacity: 1, x: 0 }}
                         >
-                          {/* Group Header */}
+                          {/* رأس التسبيحة */}
                           <div className="flex items-center gap-3 p-3 cursor-pointer hover:bg-card/80 transition-colors" onClick={() => setExpandedGroupId(expandedGroupId === group.id ? null : group.id)}>
                             <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
                               <CircleDot className="w-5 h-5 text-emerald-500" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium truncate">{group.name}</p>
-                              <p className="text-[10px] text-muted-foreground">{group.items.length} تسبيحة</p>
+                              <p className="text-xs font-semibold truncate">{group.name}</p>
+                              <p className="text-[10px] text-muted-foreground">{group.items.length} تسبيحة فرعية</p>
                             </div>
-                            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expandedGroupId === group.id ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${expandedGroupId === group.id ? 'rotate-180' : ''}`} />
                             <Button
                               variant="ghost"
                               size="icon"
@@ -1673,15 +1667,28 @@ export default function AdminPanel() {
                             </Button>
                           </div>
 
-                          {/* Expanded Items */}
+                          {/* التسبيحات الفرعية الموسعة */}
                           {expandedGroupId === group.id && (
                             <div className="border-t border-border/20 bg-card/30 p-3 space-y-3">
-                              {/* Add Item Form */}
+                              {/* إضافة تسبيحة فرعية: التسبيحة + عدد التسبيح */}
                               <div className="space-y-2">
-                                <Input value={newItemText} onChange={(e) => setNewItemText(e.target.value)} placeholder="نص التسبيحة (مثال: سبحان الله)" className="text-xs border-primary/20 bg-card/50" />
+                                <p className="text-[10px] font-medium text-emerald-500">إضافة تسبيحة فرعية</p>
                                 <div className="flex gap-2">
-                                  <Input value={newItemCount} onChange={(e) => setNewItemCount(e.target.value)} placeholder="العدد" className="text-xs border-primary/20 bg-card/50 w-20" dir="ltr" />
-                                  <Input value={newItemDesc} onChange={(e) => setNewItemDesc(e.target.value)} placeholder="وصف اختياري" className="text-xs border-primary/20 bg-card/50 flex-1" />
+                                  <Input
+                                    value={newItemText}
+                                    onChange={(e) => setNewItemText(e.target.value)}
+                                    placeholder="التسبيحة (مثال: الله اكبر)"
+                                    className="text-xs border-emerald-500/20 bg-card/50 flex-1"
+                                  />
+                                  <Input
+                                    value={newItemCount}
+                                    onChange={(e) => setNewItemCount(e.target.value)}
+                                    placeholder="العدد"
+                                    className="text-xs border-emerald-500/20 bg-card/50 w-20 text-center"
+                                    dir="ltr"
+                                    type="number"
+                                    min="1"
+                                  />
                                 </div>
                                 <CrystalButton
                                   className="w-full bg-emerald-600/80 text-white hover:bg-emerald-700 rounded-lg text-xs h-8"
@@ -1689,20 +1696,22 @@ export default function AdminPanel() {
                                   disabled={saving || !newItemText.trim()}
                                 >
                                   <Plus className="w-3.5 h-3.5 ml-1" />
-                                  إضافة تسبيحة
+                                  إضافة التسبيحة الفرعية
                                 </CrystalButton>
                               </div>
 
-                              {/* Items List */}
-                              <div className="space-y-1.5">
-                                {group.items.length === 0 && <p className="text-[10px] text-muted-foreground text-center py-3">لا توجد تسبيحات في هذه المجموعة</p>}
-                                {group.items.map((item) => (
-                                  <div key={item.id} className="flex items-center gap-2 p-2 rounded-lg bg-card/50 border border-border/20">
+                              {/* قائمة التسبيحات الفرعية */}
+                              <div className="space-y-2">
+                                {group.items.length === 0 && (
+                                  <p className="text-[10px] text-muted-foreground text-center py-3">لا توجد تسبيحات فرعية</p>
+                                )}
+                                {group.items.map((item, idx) => (
+                                  <div key={item.id} className="flex items-center gap-2 p-2.5 rounded-lg bg-card/60 border border-emerald-500/10">
+                                    <div className="w-7 h-7 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-emerald-600">{idx + 1}</div>
                                     <div className="flex-1 min-w-0">
                                       <p className="text-xs font-medium truncate">{item.text}</p>
-                                      <p className="text-[10px] text-muted-foreground">{item.count} مرة</p>
                                     </div>
-                                    <Badge variant="secondary" className="text-[9px] shrink-0">{item.count}</Badge>
+                                    <Badge variant="secondary" className="text-[10px] shrink-0 bg-emerald-500/15 text-emerald-600 border-emerald-500/20">{item.count} مرة</Badge>
                                     <Button
                                       variant="ghost"
                                       size="icon"
