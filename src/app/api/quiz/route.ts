@@ -130,9 +130,9 @@ export async function POST(request: NextRequest) {
     const aiResult = await callAI(
       [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `أنشئ 10 أسئلة اختبار صعبة جداً ومتنوعة ونادرة في مجال: ${category}. المحاور المطلوب التركيز عليها: ${randomSubtopics}. اكتب أسئلة عميقة نادرة لم يسبق طرحها من قبل. كل مرة تُطلب منك أسئلة يجب أن تكون مختلفة تماماً عن المرات السابقة. أجب بصيغة JSON فقط.` },
+        { role: 'user', content: `أنشئ 10 أسئلة اختبار في مجال: ${category}. المحاور: ${randomSubtopics}.\n\nأجب بصيغة JSON فقط بدون أي نص إضافي أو شرح أو مقدمات:\n{"questions":[{"question":"نص السؤال","options":["خيار أ","خيار ب","خيار ج","خيار د"],"correctAnswer":0}]}` },
       ],
-      { temperature: 1.4, maxTokens: 4000 }
+      { temperature: 0.7, maxTokens: 6000 }
     );
 
     const responseText = aiResult.content;
@@ -146,21 +146,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse JSON from response
+    // Parse JSON from response - multiple extraction strategies
     let quizData: { questions: Array<{ question: string; options: string[]; correctAnswer: number }> };
 
-    // Try to parse JSON from response
     try {
       const cleanedText = responseText
         .replace(/```json\n?/g, '')
         .replace(/```\n?/g, '')
         .trim();
-      const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        quizData = JSON.parse(jsonMatch[0]);
-      } else {
+      
+      // Strategy 1: Direct JSON parse
+      try {
         quizData = JSON.parse(cleanedText);
+      } catch {
+        // Strategy 2: Find JSON object in text
+        const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          quizData = JSON.parse(jsonMatch[0]);
+        } else {
+          // Strategy 3: Find JSON array (questions only)
+          const arrMatch = cleanedText.match(/\[[\s\S]*\]/);
+          if (arrMatch) {
+            quizData = { questions: JSON.parse(arrMatch[0]) };
+          } else {
+            throw new Error('No JSON found in response');
+          }
+        }
       }
+      
       if (!quizData.questions || !Array.isArray(quizData.questions)) {
         throw new Error('No questions array in response');
       }
@@ -173,21 +186,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate, filter, and format questions
-    const questions: QuizQuestion[] = quizData.questions.map((q, index) => ({
+    // Validate and format questions - filter out invalid ones
+    const validQuestions = quizData.questions.filter(q => 
+      q.question && q.question.trim().length > 5 &&
+      q.options && Array.isArray(q.options) && q.options.length >= 2 &&
+      typeof q.correctAnswer === 'number' && q.correctAnswer >= 0 && q.correctAnswer < q.options.length
+    );
+
+    const questions: QuizQuestion[] = validQuestions.slice(0, 10).map((q, index) => ({
       id: `q_${Date.now()}_${index}`,
       question: filterArabicText(q.question),
       options: q.options.slice(0, 4).map((opt: string) => filterArabicText(opt)),
-      correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
+      correctAnswer: q.correctAnswer,
     }));
 
-    while (questions.length < 10) {
-      questions.push({
-        id: `q_${Date.now()}_${questions.length}`,
-        question: 'سؤال احتياطي - لم يتم توليد كافة الأسئلة',
-        options: ['خيار أ', 'خيار ب', 'خيار ج', 'خيار د'],
-        correctAnswer: 0,
-      });
+    if (questions.length === 0) {
+      return NextResponse.json(
+        { error: 'لم يتم توليد أسئلة صالحة. يرجى المحاولة مرة أخرى.' },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({

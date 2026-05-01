@@ -44,6 +44,8 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
+const ALL_ARABIC_FONTS_URL = 'https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;700&family=IBM+Plex+Serif+Arabic:wght@400;700&family=Katibeh&family=Lalezar&family=Lateef&family=Markazi+Text:wght@400;700&family=Mirza:wght@400;700&family=Noto+Kufi+Arabic:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Serif+Arabic:wght@400;700&family=Reem+Kufi:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -51,6 +53,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href={ALL_ARABIC_FONTS_URL} rel="stylesheet" />
+      </head>
       <body
         className={`${geistSans.variable} ${amiri.variable} ${cairo.variable} ${tajawal.variable} antialiased bg-background text-foreground font-[family-name:var(--font-geist-sans)]`}
       >
