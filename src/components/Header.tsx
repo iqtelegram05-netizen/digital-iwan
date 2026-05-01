@@ -212,6 +212,19 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </SelectContent>
         </Select>
 
+        {/* اغاثة Button */}
+        <motion.button
+          className="shrink-0 flex items-center gap-1 h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 transition-all"
+          onClick={() => {
+            window.location.href = '/donate';
+          }}
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.03 }}
+        >
+          <HandHeart className="w-4 h-4 sm:w-4 sm:h-4" />
+          <span className="text-[10px] sm:text-[11px] font-bold">اغاثة</span>
+        </motion.button>
+
         {/* Theme Toggle */}
         <Button
           variant="ghost"
