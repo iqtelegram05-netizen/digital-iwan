@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const keys = await db.huggingFaceKey.findMany({
       orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
-      select: { accessToken: true, fingerprint: true, label: true, model: true, status: true },
+      select: { accessToken: true, fingerprint: true, tokenLabel: true, model: true, status: true },
     });
 
     const decrypted = keys.map((k) => ({
