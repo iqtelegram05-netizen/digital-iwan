@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAppStore } from '@/store/appStore';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Moon, Sun, GraduationCap, Languages, Plus, X, Check, Tv, Gift, HandHeart, Info } from 'lucide-react';
+import { Menu, Moon, Sun, GraduationCap, Languages, Plus, X, Check, Tv, Gift, HandHeart, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -32,7 +32,7 @@ interface HeaderProps {
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
-  const { selectedScholar, setSelectedScholar, currentView, user, usageInfo, setCurrentView } = useAppStore();
+  const { selectedScholar, setSelectedScholar, currentView, user, usageInfo, setCurrentView, setAdminInitialTab } = useAppStore();
   const { theme, setTheme } = useTheme();
   const { t, lang, setLanguage } = useTranslation();
 
@@ -40,10 +40,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const [customScholar, setCustomScholar] = useState('');
   const [showAdModal, setShowAdModal] = useState(false);
 
-  // Find current language info
   const currentLang = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
 
-  // Hide scholar selector in debate and research modes
   const hideScholarSelector = currentView === 'debate' || currentView === 'research';
 
   const handleAddCustomScholar = () => {
@@ -72,6 +70,20 @@ export default function Header({ onMenuClick }: HeaderProps) {
           <Menu className="w-5 h-5" />
         </Button>
 
+        {/* مواقعنا Button - Our Sites */}
+        <motion.button
+          className="shrink-0 flex items-center gap-1 h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
+          onClick={() => {
+            setAdminInitialTab('sites');
+            setCurrentView('admin');
+          }}
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.03 }}
+        >
+          <Globe className="w-4 h-4 sm:w-4 sm:h-4" />
+          <span className="text-[10px] sm:text-[11px] font-bold">مواقعنا</span>
+        </motion.button>
+
         {/* Scholar Selector - hidden in debate/research modes */}
         {!hideScholarSelector && (
           <div className="flex-1 mx-1 max-w-[160px] sm:max-w-[220px] min-w-0">
@@ -88,7 +100,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
                     {scholar}
                   </SelectItem>
                 ))}
-                {/* Custom scholar option */}
                 <div className="border-t border-border/30 my-1">
                   <div
                     className="flex items-center gap-2 px-2 py-1.5 text-xs text-primary cursor-pointer hover:bg-primary/5 rounded-sm"
@@ -163,7 +174,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
           )}
         </AnimatePresence>
 
-        {/* Watch Ad Button - for non-premium logged-in users */}
+        {/* Watch Ad Button */}
         {user && user.role !== 'owner' && user.role !== 'supervisor' && usageInfo && !usageInfo.isPremium && (
           <motion.button
             className="shrink-0 flex items-center gap-1 h-7 sm:h-8 px-2 sm:px-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
@@ -195,56 +206,4 @@ export default function Header({ onMenuClick }: HeaderProps) {
               <SelectItem key={language.code} value={language.code} className="text-xs sm:text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-base">{language.flag}</span>
-                  <span>{language.nativeName}</span>
-                  <span className="text-muted-foreground text-[10px]">({language.name})</span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Donation Button - Permanent */}
-        <motion.button
-          className="shrink-0 flex items-center gap-1 h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg transition-all"
-          style={{
-            background: 'linear-gradient(135deg, rgba(220,38,38,0.15), rgba(220,38,38,0.08))',
-            border: '1px solid rgba(220,38,38,0.25)',
-          }}
-          onClick={() => window.location.href = '/donate'}
-          whileTap={{ scale: 0.92 }}
-          whileHover={{ scale: 1.03 }}
-        >
-          <HandHeart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500" />
-          <span className="text-[9px] sm:text-[10px] font-bold text-red-500 hidden sm:inline">اغاثة</span>
-        </motion.button>
-
-        {/* About Us Button */}
-        <motion.button
-          className="shrink-0 flex items-center gap-1 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
-          onClick={() => setCurrentView('about')}
-          whileTap={{ scale: 0.92 }}
-        >
-          <Info className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          <span className="text-[9px] sm:text-[10px] font-medium hidden sm:inline">من نحن</span>
-        </motion.button>
-
-        {/* Theme toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-foreground/70 hover:text-primary hover:bg-primary/10 shrink-0"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        >
-          <motion.div
-            key={theme}
-            initial={{ rotate: -90, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </motion.div>
-        </Button>
-      </div>
-    </motion.header>
-  );
-}
+                  <span>{language.nativeName}</
