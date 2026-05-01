@@ -13,7 +13,7 @@ import {
   ArrowRight, Plus, Trash2, FileText, Upload, Printer,
   Type, AlignRight, AlignLeft, AlignCenter, AlignJustify,
   Bold, Italic, Underline, Strikethrough, List, ListOrdered,
-  Quote, RotateCcw, Moon, Sun, Palette,
+  Quote, RotateCcw, RotateCw, Moon, Sun, Palette,
   Sparkles, BookMarked, ChevronDown, X, Check, Copy,
   Save, FileJson, Eye, Hash, ZoomIn, ZoomOut, ImagePlus,
   Paintbrush
@@ -252,16 +252,43 @@ export default function EditorView() {
     }
   };
 
+  // ========== Save/Restore selection to prevent loss on toolbar click ==========
+  const savedSelection = useRef<Range | null>(null);
+
+  const saveCurrentSelection = useCallback(() => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && editorRef.current?.contains(sel.anchorNode)) {
+      savedSelection.current = sel.getRangeAt(0).cloneRange();
+    }
+  }, []);
+
+  const restoreSelection = useCallback(() => {
+    if (savedSelection.current) {
+      const sel = window.getSelection();
+      if (sel) {
+        sel.removeAllRanges();
+        sel.addRange(savedSelection.current);
+      }
+    }
+  }, []);
+
   // ========== Editor Commands ==========
   const execCmd = useCallback((command: string, value?: string) => {
     editorRef.current?.focus();
     document.execCommand(command, false, value);
   }, []);
 
+  const execCmdPreserve = useCallback((command: string, value?: string) => {
+    restoreSelection();
+    editorRef.current?.focus();
+    document.execCommand(command, false, value);
+  }, [restoreSelection]);
+
   const insertHTML = useCallback((html: string) => {
+    restoreSelection();
     editorRef.current?.focus();
     document.execCommand('insertHTML', false, html);
-  }, []);
+  }, [restoreSelection]);
 
   // ========== Dropdown position calculators ==========
   const calcFontDropdownPos = () => {
@@ -563,8 +590,12 @@ export default function EditorView() {
           </button>
 
           {/* Undo */}
-          <button onClick={() => execCmd('undo')} className={btnDark} title="تراجع">
+          <button onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }} onClick={() => execCmd('undo')} className={btnDark} title="تراجع">
             <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+          {/* Redo */}
+          <button onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }} onClick={() => execCmd('redo')} className={btnDark} title="إعادة">
+            <RotateCw className="w-3.5 h-3.5" />
           </button>
 
           <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }} />
@@ -614,10 +645,10 @@ export default function EditorView() {
           <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }} />
 
           {/* Formatting */}
-          <button onClick={() => execCmd('bold')} className={btnDark} title="عريض"><Bold className="w-3.5 h-3.5" /></button>
-          <button onClick={() => execCmd('italic')} className={btnDark} title="مائل"><Italic className="w-3.5 h-3.5" /></button>
-          <button onClick={() => execCmd('underline')} className={btnDark} title="تسطير"><Underline className="w-3.5 h-3.5" /></button>
-          <button onClick={() => execCmd('strikeThrough')} className={btnDark} title="يتوسطه خط"><Strikethrough className="w-3.5 h-3.5" /></button>
+          <button onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }} onClick={() => execCmdPreserve('bold')} className={btnDark} title="عريض"><Bold className="w-3.5 h-3.5" /></button>
+          <button onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }} onClick={() => execCmdPreserve('italic')} className={btnDark} title="مائل"><Italic className="w-3.5 h-3.5" /></button>
+          <button onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }} onClick={() => execCmdPreserve('underline')} className={btnDark} title="تسطير"><Underline className="w-3.5 h-3.5" /></button>
+          <button onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }} onClick={() => execCmdPreserve('strikeThrough')} className={btnDark} title="يتوسطه خط"><Strikethrough className="w-3.5 h-3.5" /></button>
 
           <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }} />
 
@@ -632,9 +663,9 @@ export default function EditorView() {
           <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }} />
 
           {/* Lists */}
-          <button onClick={() => execCmd('insertUnorderedList')} className={btnDark} title="قائمة نقطية"><List className="w-3.5 h-3.5" /></button>
-          <button onClick={() => execCmd('insertOrderedList')} className={btnDark} title="قائمة مرقمة"><ListOrdered className="w-3.5 h-3.5" /></button>
-          <button onClick={() => execCmd('formatBlock', 'blockquote')} className={btnDark} title="اقتباس"><Quote className="w-3.5 h-3.5" /></button>
+          <button onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }} onClick={() => execCmdPreserve('insertUnorderedList')} className={btnDark} title="قائمة نقطية"><List className="w-3.5 h-3.5" /></button>
+          <button onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }} onClick={() => execCmdPreserve('insertOrderedList')} className={btnDark} title="قائمة مرقمة"><ListOrdered className="w-3.5 h-3.5" /></button>
+          <button onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }} onClick={() => execCmdPreserve('formatBlock', 'blockquote')} className={btnDark} title="اقتباس"><Quote className="w-3.5 h-3.5" /></button>
 
           {/* Letter Spacing */}
           <select
@@ -875,15 +906,16 @@ export default function EditorView() {
               borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
             }}
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
-            <button onClick={() => execCmd('bold')} className={btnDark} title="عريض"><Bold className="w-3.5 h-3.5" /></button>
-            <button onClick={() => execCmd('italic')} className={btnDark} title="مائل"><Italic className="w-3.5 h-3.5" /></button>
-            <button onClick={() => execCmd('underline')} className={btnDark} title="تسطير"><Underline className="w-3.5 h-3.5" /></button>
-            <button onClick={() => execCmd('strikeThrough')} className={btnDark} title="يتوسطه خط"><Strikethrough className="w-3.5 h-3.5" /></button>
+            <button onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }} onClick={() => execCmdPreserve('bold')} className={btnDark} title="عريض"><Bold className="w-3.5 h-3.5" /></button>
+            <button onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }} onClick={() => execCmdPreserve('italic')} className={btnDark} title="مائل"><Italic className="w-3.5 h-3.5" /></button>
+            <button onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }} onClick={() => execCmdPreserve('underline')} className={btnDark} title="تسطير"><Underline className="w-3.5 h-3.5" /></button>
+            <button onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }} onClick={() => execCmdPreserve('strikeThrough')} className={btnDark} title="يتوسطه خط"><Strikethrough className="w-3.5 h-3.5" /></button>
             <div className="w-px h-4 mx-0.5" style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }} />
 
             {/* Text Color Picker */}
             <div className="relative" data-text-color-picker>
               <button
+                onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }}
                 onClick={() => { setShowTextColorPicker(!showTextColorPicker); setShowBgColorPicker(false); }}
                 className={btnDark} title="لون النص">
                 <Type className="w-3.5 h-3.5" />
@@ -896,7 +928,7 @@ export default function EditorView() {
                     <p className="text-[9px] mb-1.5 font-bold" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>لون النص</p>
                     <div className="grid grid-cols-5 gap-1">
                       {TEXT_COLORS.map(c => (
-                        <button key={c} onClick={() => { execCmd('foreColor', c); setShowTextColorPicker(false); }}
+                        <button key={c} onMouseDown={(e) => { e.preventDefault(); }} onClick={() => { execCmdPreserve('foreColor', c); setShowTextColorPicker(false); }}
                           className="w-5 h-5 rounded border cursor-pointer hover:scale-110 transition-transform"
                           style={{ background: c, borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }} />
                       ))}
@@ -909,6 +941,7 @@ export default function EditorView() {
             {/* Background Color Picker */}
             <div className="relative" data-bg-color-picker>
               <button
+                onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }}
                 onClick={() => { setShowBgColorPicker(!showBgColorPicker); setShowTextColorPicker(false); }}
                 className={btnDark} title="لون الخلفية">
                 <Paintbrush className="w-3.5 h-3.5" />
@@ -921,7 +954,7 @@ export default function EditorView() {
                     <p className="text-[9px] mb-1.5 font-bold" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>خلفية النص</p>
                     <div className="grid grid-cols-5 gap-1">
                       {BG_COLORS.map(c => (
-                        <button key={c} onClick={() => { execCmd('hiliteColor', c); setShowBgColorPicker(false); }}
+                        <button key={c} onMouseDown={(e) => { e.preventDefault(); }} onClick={() => { execCmdPreserve('hiliteColor', c); setShowBgColorPicker(false); }}
                           className="w-5 h-5 rounded border cursor-pointer hover:scale-110 transition-transform"
                           style={{ background: c, borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }} />
                       ))}
@@ -932,7 +965,7 @@ export default function EditorView() {
             </div>
 
             <div className="w-px h-4 mx-0.5" style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }} />
-            <button onClick={addFootnote} className={btnDark} title="حاشية"><Hash className="w-3.5 h-3.5" /></button>
+            <button onMouseDown={(e) => { e.preventDefault(); saveCurrentSelection(); }} onClick={addFootnote} className={btnDark} title="حاشية"><Hash className="w-3.5 h-3.5" /></button>
           </motion.div>
         )}
       </AnimatePresence>
