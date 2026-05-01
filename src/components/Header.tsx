@@ -59,46 +59,47 @@ export default function Header({ onMenuClick }: HeaderProps) {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.2 }}
     >
-      <div className="flex items-center justify-between max-w-4xl mx-auto gap-1">
+      {/* Row 1: Logo + Scholar Selector + Action icons */}
+      <div className="flex items-center max-w-4xl mx-auto gap-1 sm:gap-1.5">
         {/* Menu button */}
         <Button
           variant="ghost"
           size="icon"
-          className="text-foreground/70 hover:text-primary hover:bg-primary/10 shrink-0"
+          className="text-foreground/70 hover:text-primary hover:bg-primary/10 shrink-0 h-8 w-8 sm:h-9 sm:w-9"
           onClick={onMenuClick}
         >
           <Menu className="w-5 h-5" />
         </Button>
 
-        {/* مواقعنا Button - Our Sites */}
+        {/* مواقعنا Button - hidden on mobile, shown on sm+ */}
         <motion.button
-          className="shrink-0 flex items-center gap-1 h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
+          className="hidden sm:flex shrink-0 items-center gap-1 h-9 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
           onClick={() => {
             window.location.href = '/sites';
           }}
           whileTap={{ scale: 0.95 }}
           whileHover={{ scale: 1.03 }}
         >
-          <Globe className="w-4 h-4 sm:w-4 sm:h-4" />
-          <span className="text-[10px] sm:text-[11px] font-bold">مواقعنا</span>
+          <Globe className="w-4 h-4" />
+          <span className="text-[11px] font-bold">مواقعنا</span>
         </motion.button>
 
-        {/* من نحن Button - About Us */}
+        {/* من نحن Button - hidden on mobile, shown on sm+ */}
         <motion.button
-          className="shrink-0 flex items-center gap-1 h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
+          className="hidden sm:flex shrink-0 items-center gap-1 h-9 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
           onClick={() => {
             window.location.href = '/about-team';
           }}
           whileTap={{ scale: 0.95 }}
           whileHover={{ scale: 1.03 }}
         >
-          <Users className="w-4 h-4 sm:w-4 sm:h-4" />
-          <span className="text-[10px] sm:text-[11px] font-bold">من نحن</span>
+          <Users className="w-4 h-4" />
+          <span className="text-[11px] font-bold">من نحن</span>
         </motion.button>
 
         {/* Scholar Selector - hidden in debate/research modes */}
         {!hideScholarSelector && (
-          <div className="flex-1 mx-1 max-w-[160px] sm:max-w-[220px] min-w-0">
+          <div className="flex-1 min-w-0">
             <Select value={selectedScholar || ''} onValueChange={setSelectedScholar}>
               <SelectTrigger className="h-8 sm:h-9 text-[10px] sm:text-xs border-primary/20 bg-primary/5 focus:ring-primary/30">
                 <div className="flex items-center gap-1.5 min-w-0">
@@ -129,83 +130,24 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </div>
         )}
 
-        {/* Custom Scholar Input Overlay */}
-        <AnimatePresence>
-          {showCustomInput && (
-            <motion.div
-              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowCustomInput(false)}
-            >
-              <motion.div
-                className="bg-card border border-border/50 rounded-2xl p-5 max-w-sm w-full shadow-2xl"
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-bold text-primary flex items-center gap-2">
-                    <GraduationCap className="w-4 h-4" />
-                    بحث عن عالم
-                  </h3>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                    onClick={() => setShowCustomInput(false)}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground mb-3">
-                  أدخل اسم العالم أو المرجع الذي تريد البحث عن آرائه. سيتم حفظه مؤقتاً لهذه الجلسة فقط.
-                </p>
-                <div className="flex gap-2">
-                  <Input
-                    value={customScholar}
-                    onChange={(e) => setCustomScholar(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddCustomScholar()}
-                    placeholder="مثال: الشيخ محمد الحسين آل كاشف الغطاء"
-                    className="text-xs border-primary/20 bg-card/50"
-                    autoFocus
-                  />
-                  <Button
-                    size="icon"
-                    className="shrink-0 h-9 w-9 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
-                    onClick={handleAddCustomScholar}
-                    disabled={!customScholar.trim()}
-                  >
-                    <Check className="w-4 h-4" />
-                  </Button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Watch Ad Button */}
         {user && user.role !== 'owner' && user.role !== 'supervisor' && usageInfo && !usageInfo.isPremium && (
           <motion.button
-            className="shrink-0 flex items-center gap-1 h-7 sm:h-8 px-2 sm:px-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
+            className="shrink-0 flex items-center justify-center h-8 w-8 sm:h-9 sm:w-auto sm:px-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
             onClick={() => setShowAdModal(true)}
             whileTap={{ scale: 0.95 }}
           >
-            <Tv className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-            <span className="text-[9px] sm:text-[10px] font-medium hidden sm:inline">إعلان</span>
+            <Tv className="w-3.5 h-3.5 sm:w-3.5 sm:h-3.5" />
+            <span className="text-[9px] sm:text-[10px] font-medium hidden sm:inline sm:mr-1">إعلان</span>
             {usageInfo.adsUntilBonus < 10 && (
               <span className="text-[8px] text-green-500 hidden sm:inline">{usageInfo.adsUntilBonus}←{usageInfo.BONUS_MESSAGES}</span>
             )}
           </motion.button>
         )}
 
-        <AdWatchModal open={showAdModal} onClose={() => setShowAdModal(false)} />
-
         {/* Language Selector */}
         <Select value={lang} onValueChange={setLanguage}>
-          <SelectTrigger className="w-auto min-w-[42px] max-w-[56px] h-8 sm:h-9 px-1.5 border-primary/20 bg-primary/5 focus:ring-primary/30 gap-0.5">
+          <SelectTrigger className="w-8 sm:w-auto sm:min-w-[42px] sm:max-w-[56px] h-8 sm:h-9 px-1 sm:px-1.5 border-primary/20 bg-primary/5 focus:ring-primary/30 gap-0 shrink-0">
             <div className="flex items-center justify-center">
               <span className="text-sm">{currentLang.flag}</span>
               <span className="text-[9px] sm:text-[10px] font-medium text-muted-foreground hidden sm:inline">
@@ -225,29 +167,115 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </SelectContent>
         </Select>
 
-        {/* اغاثة Button */}
+        {/* اغاثة Button - icon only on mobile */}
         <motion.button
-          className="shrink-0 flex items-center gap-1 h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 transition-all"
+          className="shrink-0 flex items-center justify-center h-8 w-8 sm:h-9 sm:w-auto sm:gap-1 sm:px-2.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 transition-all"
           onClick={() => {
             window.location.href = '/donate';
           }}
           whileTap={{ scale: 0.95 }}
           whileHover={{ scale: 1.03 }}
         >
-          <HandHeart className="w-4 h-4 sm:w-4 sm:h-4" />
-          <span className="text-[10px] sm:text-[11px] font-bold">اغاثة</span>
+          <HandHeart className="w-4 h-4" />
+          <span className="text-[10px] sm:text-[11px] font-bold hidden sm:inline">اغاثة</span>
         </motion.button>
 
         {/* Theme Toggle */}
         <Button
           variant="ghost"
           size="icon"
-          className="text-foreground/70 hover:text-primary hover:bg-primary/10 shrink-0"
+          className="text-foreground/70 hover:text-primary hover:bg-primary/10 shrink-0 h-8 w-8 sm:h-9 sm:w-9"
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         >
           {theme === 'dark' ? <Sun className="w-4 h-4 sm:w-5 sm:h-5" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
         </Button>
       </div>
+
+      {/* Row 2: Navigation buttons (مواقعنا + من نحن) - only on mobile */}
+      <div className="flex sm:hidden items-center gap-2 mt-1.5 max-w-4xl mx-auto">
+        {/* مواقعنا Button - icon + text on mobile */}
+        <motion.button
+          className="flex-1 flex items-center justify-center gap-1.5 h-8 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
+          onClick={() => {
+            window.location.href = '/sites';
+          }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Globe className="w-3.5 h-3.5" />
+          <span className="text-[10px] font-bold">مواقعنا</span>
+        </motion.button>
+
+        {/* من نحن Button - icon + text on mobile */}
+        <motion.button
+          className="flex-1 flex items-center justify-center gap-1.5 h-8 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
+          onClick={() => {
+            window.location.href = '/about-team';
+          }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Users className="w-3.5 h-3.5" />
+          <span className="text-[10px] font-bold">من نحن</span>
+        </motion.button>
+      </div>
+
+      {/* Custom Scholar Input Overlay */}
+      <AnimatePresence>
+        {showCustomInput && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowCustomInput(false)}
+          >
+            <motion.div
+              className="bg-card border border-border/50 rounded-2xl p-5 max-w-sm w-full shadow-2xl"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-primary flex items-center gap-2">
+                  <GraduationCap className="w-4 h-4" />
+                  بحث عن عالم
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowCustomInput(false)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                أدخل اسم العالم أو المرجع الذي تريد البحث عن آرائه. سيتم حفظه مؤقتاً لهذه الجلسة فقط.
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  value={customScholar}
+                  onChange={(e) => setCustomScholar(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddCustomScholar()}
+                  placeholder="مثال: الشيخ محمد الحسين آل كاشف الغطاء"
+                  className="text-xs border-primary/20 bg-card/50"
+                  autoFocus
+                />
+                <Button
+                  size="icon"
+                  className="shrink-0 h-9 w-9 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg"
+                  onClick={handleAddCustomScholar}
+                  disabled={!customScholar.trim()}
+                >
+                  <Check className="w-4 h-4" />
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AdWatchModal open={showAdModal} onClose={() => setShowAdModal(false)} />
     </motion.header>
   );
 }
