@@ -86,6 +86,7 @@ function Bead({
       {/* The bead itself */}
       <motion.button
         type="button"
+        data-bead-index={index}
         onClick={onClick}
         whileTap={state === 'active' ? { scale: 0.85 } : undefined}
         className="relative rounded-full cursor-pointer select-none focus:outline-none"
@@ -251,15 +252,27 @@ export default function TasbeehPage() {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [selectedItemIndex, setSelectedItemIndex] = useState(0);
   const [counter, setCounter] = useState(0);
+  const [prevCounter, setPrevCounter] = useState(0);
   const [totalSessionCount, setTotalSessionCount] = useState(0);
   const [showGroups, setShowGroups] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const activeBeadRef = useRef<HTMLButtonElement>(null);
 
-  const vibrate = useCallback(() => {
-    if (typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(30);
+  // Vibration: short tap, first dhikr, completion
+  const vibrate = useCallback((type: 'tap' | 'first' | 'complete' = 'tap') => {
+    if (typeof navigator === 'undefined' || !navigator.vibrate) return;
+    switch (type) {
+      case 'tap':
+        navigator.vibrate(25);
+        break;
+      case 'first':
+        // Double pulse to indicate start of dhikr
+        navigator.vibrate([40, 50, 80]);
+        break;
+      case 'complete':
+        // Triple pulse: long vibration pattern for completion
+        navigator.vibrate([100, 50, 100, 50, 200]);
+        break;
     }
   }, []);
 
@@ -293,24 +306,64 @@ export default function TasbeehPage() {
   const progressPercent = maxCount > 0 ? Math.min(100, Math.round((counter / maxCount) * 100)) : 0;
   const groupItems = currentGroup?.items || [];
 
+  // Auto-scroll the active bead into view
+  useEffect(() => {
+    if (counter === prevCounter) return;
+    // Small delay to let React render the new state
+    const timer = setTimeout(() => {
+      const container = scrollContainerRef.current;
+      if (!container) return;
+
+      const activeBead = container.querySelector(`[data-bead-index="${counter}"]`) as HTMLElement;
+      if (!activeBead) return;
+
+      const containerRect = container.getBoundingClientRect();
+      const beadRect = activeBead.getBoundingClientRect();
+
+      // Calculate how much to scroll so the active bead is centered vertically
+      const offset = beadRect.top - containerRect.top - containerRect.height / 2 + beadRect.height / 2;
+      container.scrollBy({ top: offset, behavior: 'smooth' });
+    }, 80);
+
+    return () => clearTimeout(timer);
+  }, [counter, prevCounter]);
+
+  // Vibrate on completion
+  useEffect(() => {
+    if (isComplete) {
+      vibrate('complete');
+    }
+  }, [isComplete, vibrate]);
+
   const handleTap = () => {
     if (!currentItem || isComplete) return;
-    vibrate();
+
+    // Determine vibration type
+    if (counter === 0) {
+      vibrate('first'); // First dhikr of this item
+    } else {
+      vibrate('tap');
+    }
+
     const next = counter + 1;
+    setPrevCounter(counter);
     setCounter(next);
     setTotalSessionCount((prev) => prev + 1);
   };
 
   const handleBeadTap = (beadIndex: number) => {
-    // Allow tapping on pending or active beads
     if (beadIndex === counter) {
       handleTap();
     }
   };
 
-  const handleReset = () => setCounter(0);
+  const handleReset = () => {
+    setPrevCounter(counter);
+    setCounter(0);
+  };
 
   const handleResetAll = () => {
+    setPrevCounter(counter);
     setCounter(0);
     setTotalSessionCount(0);
     setSelectedItemIndex(0);
@@ -322,6 +375,7 @@ export default function TasbeehPage() {
     if (nextIdx < currentGroup.items.length) {
       setSelectedItemIndex(nextIdx);
       setCounter(0);
+      setPrevCounter(0);
     }
   };
 
@@ -329,6 +383,7 @@ export default function TasbeehPage() {
     if (selectedItemIndex > 0) {
       setSelectedItemIndex(selectedItemIndex - 1);
       setCounter(0);
+      setPrevCounter(0);
     }
   };
 
@@ -336,20 +391,9 @@ export default function TasbeehPage() {
     setSelectedGroupId(groupId);
     setSelectedItemIndex(0);
     setCounter(0);
+    setPrevCounter(0);
     setShowGroups(false);
   };
-
-  // Auto-scroll active bead into view
-  useEffect(() => {
-    if (activeBeadRef.current && scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const bead = activeBeadRef.current;
-      const containerRect = container.getBoundingClientRect();
-      const beadRect = bead.getBoundingClientRect();
-      const offset = beadRect.top - containerRect.top - containerRect.height / 2 + beadRect.height / 2;
-      container.scrollBy({ top: offset, behavior: 'smooth' });
-    }
-  }, [counter]);
 
   // Auto-advance on completion
   useEffect(() => {
@@ -359,6 +403,7 @@ export default function TasbeehPage() {
         if (nextIdx < currentGroup.items.length) {
           setSelectedItemIndex(nextIdx);
           setCounter(0);
+          setPrevCounter(0);
         }
       }, 1500);
       return () => clearTimeout(timer);
@@ -366,7 +411,6 @@ export default function TasbeehPage() {
   }, [isComplete, currentItem, currentGroup, selectedItemIndex]);
 
   // Determine bead segments (groups of beads separated by imam beads)
-  // A standard misbaha: 33 beads = 3 groups of 11, or sometimes 3×33 with imam beads
   const totalBeads = maxCount;
   const segments: number[] = [];
   let remaining = totalBeads;
@@ -379,6 +423,13 @@ export default function TasbeehPage() {
       remaining = 0;
     }
   }
+
+  // Pre-compute segment offsets for imam bead state calculation
+  const segmentOffsets: number[] = [];
+  segments.reduce((acc, seg, idx) => {
+    segmentOffsets[idx] = acc;
+    return acc + seg;
+  }, 0);
 
   return (
     <div className="h-[100dvh] bg-gradient-to-b from-[#0a1a14] via-[#0f2a1f] to-[#071510] flex flex-col overflow-hidden relative">
@@ -520,7 +571,7 @@ export default function TasbeehPage() {
                   {groupItems.map((_, idx) => (
                     <button
                       key={idx}
-                      onClick={() => { setSelectedItemIndex(idx); setCounter(0); }}
+                      onClick={() => { setSelectedItemIndex(idx); setCounter(0); setPrevCounter(0); }}
                       className={`rounded-full transition-all ${
                         idx === selectedItemIndex
                           ? 'bg-emerald-400 w-6 h-2'
@@ -581,13 +632,13 @@ export default function TasbeehPage() {
                     <div key={segIdx} className="flex flex-col items-center relative">
                       {segIdx > 0 && (
                         <ImamBead
-                          active={counter === segments.slice(0, segIdx).reduce((a, b) => a + b, 0)}
-                          done={counter > segments.slice(0, segIdx).reduce((a, b) => a + b, 0)}
+                          active={counter === segmentOffsets[segIdx]}
+                          done={counter > segmentOffsets[segIdx]}
                         />
                       )}
 
                       {Array.from({ length: segCount }).map((_, beadLocalIdx) => {
-                        const beadGlobalIdx = segments.slice(0, segIdx).reduce((a, b) => a + b, 0) + beadLocalIdx;
+                        const beadGlobalIdx = segmentOffsets[segIdx] + beadLocalIdx;
                         const state = beadGlobalIdx < counter
                           ? 'done' as const
                           : beadGlobalIdx === counter
