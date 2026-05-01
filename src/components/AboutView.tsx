@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/store/appStore';
-import { ArrowLeft, Heart, BookOpen, Cpu, Globe, Code, Users, Sparkles } from 'lucide-react';
+import { ArrowLeft, Code, BookOpen, Search, Mail, Users, Sparkles, Pen } from 'lucide-react';
 
 export default function AboutView() {
   const { setCurrentView } = useAppStore();
@@ -21,7 +21,7 @@ export default function AboutView() {
       </motion.button>
 
       <div className="max-w-lg mx-auto w-full space-y-5 sm:space-y-6">
-        {/* Header */}
+        {/* Header - Team Logo */}
         <motion.div
           className="text-center space-y-3"
           initial={{ opacity: 0, y: 20 }}
@@ -38,15 +38,19 @@ export default function AboutView() {
               <circle cx="32" cy="32" r="3" fill="currentColor" opacity="0.7" />
             </svg>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-primary">الإيوان الرقمي</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">Digital Iwan</p>
-          <p className="text-xs text-muted-foreground/70 italic">
-            &ldquo;إِنَّمَا الْعِلْمُ ثَلَاثَةٌ: آيَةٌ مُحْكَمَةٌ، وَسُنَّةٌ قَائِمَةٌ، وَفَرِيضَةٌ عَادِلَةٌ&rdquo;
+          <h1 className="text-xl sm:text-2xl font-bold text-primary">فريق &quot;قلم كود&quot;</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Qalam Code</p>
+          <div className="flex items-center justify-center gap-2">
+            <div className="h-px w-8 bg-primary/30" />
+            <Sparkles className="w-3 h-3 text-primary/50" />
+            <div className="h-px w-8 bg-primary/30" />
+          </div>
+          <p className="text-sm font-medium text-primary/80 italic">
+            حيث يلتقي الاجتهاد الفكري بالابتكار الرقمي
           </p>
-          <p className="text-[10px] text-muted-foreground/50">رسول الله (صلى الله عليه وآله)</p>
         </motion.div>
 
-        {/* About text */}
+        {/* About the team */}
         <motion.div
           className="bg-card/50 border border-primary/10 rounded-2xl p-4 sm:p-5 space-y-3"
           initial={{ opacity: 0, y: 20 }}
@@ -54,39 +58,48 @@ export default function AboutView() {
           transition={{ delay: 0.2 }}
         >
           <div className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-primary" />
-            <h2 className="text-sm sm:text-base font-bold text-foreground">عن التطبيق</h2>
+            <Users className="w-4 h-4 text-primary" />
+            <h2 className="text-sm sm:text-base font-bold text-foreground">من نحن</h2>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            الإيوان الرقمي هو تطبيق ذكاء اصطناعي متخصص في العلوم الإسلامية الشيعية الإمامية الاثني عشرية. يهدف إلى توفير بيئة تعليمية وحوارية شاملة تجمع بين التراث الإسلامي الأصيل والتقنية الحديثة، ليكون مرجعاً رقمياً للباحثين والطلاب والمهتمين بالعلوم الدينية.
-          </p>
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            يقدم التطبيق أربعة أقسام رئيسية: المحاور الرقمي للحوار العلمي والمنطقي، والأستاذ الرقمي للشرح التفصيلي، والبحث الخارج للتحليل الأكاديمي المتعمق، واختبار نفسك للتقييم والتحدي. بالإضافة إلى أدوات إسلامية كالمسبحة الإلكترونية وبوصلة القبلة والتقويم الهجري.
+            نحن فريق من المبرمجين الباحثين؛ اجتمعنا على هدف واحد وهو نصرة دين آل محمد (عليهم السلام) عبر تسخير الفكر الرصين وأدوات التكنولوجيا الحديثة. ما يميزنا هو أن كوادرنا تجمع بين التخصص في العلوم الدينية والاحتراف في عالم البرمجة، لنقدم حلولاً تقنية برؤية إيمانية.
           </p>
         </motion.div>
 
-        {/* Features Grid */}
+        {/* Identity cards */}
         <motion.div
-          className="grid grid-cols-2 gap-2 sm:gap-3"
+          className="space-y-3"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          {[
-            { icon: <Cpu className="w-4 h-4" />, title: 'ذكاء اصطناعي', desc: 'مزدوج الهوية دينياً وعلمياً' },
-            { icon: <BookOpen className="w-4 h-4" />, title: 'أقسام متعددة', desc: 'محاور وأستاذ وبحث واختبار' },
-            { icon: <Globe className="w-4 h-4" />, title: 'متعدد اللغات', desc: 'يدعم أكثر من 20 لغة' },
-            { icon: <Sparkles className="w-4 h-4" />, title: 'أدوات إسلامية', desc: 'مسبحة وقبلة وتقويم هجري' },
-          ].map((feature, i) => (
-            <div key={i} className="bg-card/30 border border-primary/10 rounded-xl p-3 sm:p-4 space-y-1.5">
-              <div className="text-primary">{feature.icon}</div>
-              <p className="text-[11px] sm:text-xs font-bold text-foreground">{feature.title}</p>
-              <p className="text-[10px] text-muted-foreground">{feature.desc}</p>
+          <div className="flex items-center gap-2 mb-2">
+            <BookOpen className="w-4 h-4 text-primary" />
+            <h2 className="text-sm sm:text-base font-bold text-foreground">هويتنا</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <div className="bg-card/40 border border-primary/10 rounded-xl p-3 sm:p-4 space-y-2 hover:bg-primary/5 transition-colors">
+              <div className="w-10 h-10 rounded-lg bg-sky-500/10 flex items-center justify-center">
+                <Search className="w-5 h-5 text-sky-500" />
+              </div>
+              <p className="text-[11px] sm:text-xs font-bold text-foreground">باحثون</p>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                نغوص في أعماق العلوم الدينية لنستخرج المعرفة الأصيلة.
+              </p>
             </div>
-          ))}
+            <div className="bg-card/40 border border-primary/10 rounded-xl p-3 sm:p-4 space-y-2 hover:bg-primary/5 transition-colors">
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <Code className="w-5 h-5 text-emerald-500" />
+              </div>
+              <p className="text-[11px] sm:text-xs font-bold text-foreground">مبرمجون</p>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                نصيغ هذه المعرفة بلغة العصر عبر الذكاء الاصطناعي والبرمجيات المتقدمة.
+              </p>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Methodology */}
+        {/* Supervisor */}
         <motion.div
           className="bg-card/50 border border-primary/10 rounded-2xl p-4 sm:p-5 space-y-3"
           initial={{ opacity: 0, y: 20 }}
@@ -94,29 +107,63 @@ export default function AboutView() {
           transition={{ delay: 0.4 }}
         >
           <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-primary" />
-            <h2 className="text-sm sm:text-base font-bold text-foreground">المنهجية</h2>
+            <Pen className="w-4 h-4 text-primary" />
+            <h2 className="text-sm sm:text-base font-bold text-foreground">بإشراف</h2>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            يعتمد التطبيق في محتواه على المنهج الشيعي الإمامي الاثني عشري، مستنداً إلى القرآن الكريم والسنة النبوية المطهرة وكلام أئمة أهل البيت (عليهم السلام) وأقوال العلماء والمفكرين من الفرقاء والمجتهدين. يهدف إلى تقديم المعلومات بدقة علمية مع ذكر المصادر والأدلة.
-          </p>
+          <div className="flex flex-col items-center text-center space-y-2 pt-2">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center sky-glow">
+              <svg width="32" height="32" viewBox="0 0 64 64" fill="none" className="text-primary">
+                <polygon points="32,4 38,24 58,24 42,36 48,56 32,44 16,56 22,36 6,24 26,24" fill="currentColor" opacity="0.3" />
+                <circle cx="32" cy="32" r="6" fill="currentColor" opacity="0.5" />
+              </svg>
+            </div>
+            <h3 className="text-sm sm:text-base font-bold text-primary">سماحة الشيخ سجاد علي العبيدي</h3>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
+              أستاذ العلوم الدينية ومبرمج الذكاء الاصطناعي
+            </p>
+          </div>
         </motion.div>
 
-        {/* Developer */}
+        {/* Contact */}
         <motion.div
-          className="text-center space-y-2"
+          className="bg-card/50 border border-primary/10 rounded-2xl p-4 sm:p-5 space-y-3"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <div className="flex items-center justify-center gap-2">
-            <Code className="w-4 h-4 text-primary/50" />
-            <span className="text-xs text-muted-foreground">التطوير والتصميم</span>
+          <div className="flex items-center gap-2">
+            <Mail className="w-4 h-4 text-primary" />
+            <h2 className="text-sm sm:text-base font-bold text-foreground">للتواصل والتعاون</h2>
           </div>
-          <p className="text-sm font-bold text-primary">سجاد علي العبيدي</p>
-          <p className="text-[10px] text-muted-foreground/60 flex items-center justify-center gap-1">
-            <Heart className="w-3 h-3 text-red-400" />
-            بصمة عراقية شيعية
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            نتشرف باستلام رسائلكم عبر البريد الإلكتروني الرسمي:
+          </p>
+          <a
+            href="mailto:qalamcodeorg@gmail.com"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/20 text-primary text-xs sm:text-sm font-medium transition-all"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <path d="M22 7L13.03 12.7a1.94 1.94 0 01-2.06 0L2 7" />
+            </svg>
+            qalamcodeorg@gmail.com
+          </a>
+        </motion.div>
+
+        {/* Footer branding */}
+        <motion.div
+          className="text-center space-y-2 pb-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <div className="flex items-center justify-center gap-2">
+            <div className="h-px w-12 bg-primary/20" />
+            <Code className="w-4 h-4 text-primary/40" />
+            <div className="h-px w-12 bg-primary/20" />
+          </div>
+          <p className="text-[10px] text-muted-foreground/60">
+            قلم كود &copy; {new Date().getFullYear()} — جميع الحقوق محفوظة
           </p>
         </motion.div>
       </div>

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
 import { callAI } from '@/lib/aiProvider';
 import { filterArabicText } from '@/lib/arabicFilter';
 
@@ -30,42 +29,58 @@ interface QuizQuestion {
   correctAnswer: number;
 }
 
-// ===== QUIZ DB CACHE: same category quiz = 1 AI call =====
-const QUIZ_CACHE_KEY = 'quiz_cache';
+// ===== Random topic sub-areas for infinite variety =====
+const RANDOM_TOPICS: Record<string, string[]> = {
+  'عقائد': [
+    'التوحيد والصفات الإلهية', 'النبوة والمعجزات', 'الإمامة والعصمة', 'المعاد والبرزخ', 'العدل الإلهي والقضاء والقدر',
+    'البداء الإلهي', 'الشفاعة والتوسل', 'الرؤية الأخروية', 'خلق القرآن', 'منزلة العقل والحسن والقبح',
+    'الناسخ والمنسوخ في العقائد', 'مسألة الرجعة', 'مسألة التقييم والتفويض', 'الولادة والشهادة', 'الفضائل والمناقب'
+  ],
+  'منطق': [
+    'القضايا الحملية والشرطية', 'القياس الاقتراني والاستثنائي', 'البرهان والاستقراء والتمثيل', 'المباشر وغير المباشر',
+    'مباحث اللفظ والمفاهيم', 'الحدود والرسوم', 'القواعد المنطقية', 'الخوارزميات المنطقية', 'المنطق الرمزي', 'المنطق عند السيد الشهيد الصدر'
+  ],
+  'علم الكلام': [
+    'الإلهيات العليا', 'النبوات والمعجزات', 'الإمامة والنص', 'المعاد الجسماني', 'دلائل الصانع',
+    'مسألة التثليث والتنزيه', 'دلائل النبوة العامة والخاصة', 'دلائل الإمامة من العقل والنقل', 'مسألة التشبيه والتنزيه', 'القضاء والقدر'
+  ],
+  'نحو': [
+    'إعراب الآيات القرآنية', 'إعراب الأحاديث النبوية', 'المسائل الخلافية بصري كوفي', 'النواسخ في اللغة العربية',
+    'أسماء الأفعال والمشتقات', 'الجمل التي لها محل من الإعراب', 'الحال والتمييز', 'الإضافة وأنواعها', 'التوابع والتوابيع', 'الأساليب النحوية المتقدمة'
+  ],
+  'فقه': [
+    'الصلاة اليومية وأحكامها', 'الصيام وأحكامه', 'الخمس والزكاة', 'الحج والعمرة', 'المعاملات والعقود',
+    'القواعد الفقهية الأربع', 'التعادل والتراحي', 'الأمر بين الأمرين', 'حلية المشكوك', 'فقه الصلاة المعطلة'
+  ],
+  'أهل البيت': [
+    'حياة النبي محمد (ص)', 'حياة أمير المؤمنين (ع)', 'حياة فاطمة الزهراء (س)', 'حياة الحسن والحسين (ع)', 'حياة الإمام الصادق (ع)',
+    'حياة الإمام الرضا (ع)', 'واقعة كربلاء', 'واقعة الغدير', 'مظلومية أهل البيت', 'روايات وأحاديث الأئمة'
+  ],
+  'الإمامة': [
+    'دلائل الإمامة من القرآن', 'دلائل الإمامة من السنة', 'دلائل الإمامة من العقل', 'شرائط الإمام وعصمته',
+    'النص على الأئمة الاثني عشر', 'الغيبة الصغرى والسفراء', 'الغيبة الكبرى والنيابة', 'الإمام المهدي (عج) في الروايات', 'مسألة الانتظار', 'فلسفة الإمامة'
+  ],
+  'التاريخ الشيعي': [
+    'عصر النبي (ص) والخلافات الأولى', 'أحداث السقيفة', 'عهود الخلفاء', 'عصر الإمام أمير المؤمنين (ع)',
+    'مأساة كربلاء وأبعادها', 'تاريخ الحوزات العلمية', 'تاريخ المراجع والعلماء', 'المذابح التاريخية', 'تاريخ الشيعة في العصر الحديث', 'الشيعة في الأندلس والمغرب'
+  ],
+  'التفسير': [
+    'التفسير بالمأثور', 'التفسير العقلي والفلسفي', 'التفسير الموضوعي', 'تفسير آيات الأحكام',
+    'آيات الإمامة في القرآن', 'آيات التوحيد', 'المنسوخ والناسخ في التفسير', 'المحكم والمتشابه', 'تفسير سورة البقرة', 'تفسير سورة آل عمران'
+  ],
+  'الرجال': [
+    'الجرح والتعديل عند الشيعة', 'طبقات الرواة', 'الفهرست للشيخ الطوسي', 'الرجال للنجاشي', 'معجم رجال الحديث للخوئي',
+    'الرواة عن النبي (ص)', 'رواة آل البيت (ع)', 'الكتب الرجالية المتقدمة', 'الوثاقة والضعف في الرجال', 'مشاهير رواة الشيعة'
+  ],
+};
 
-async function getDBCachedQuiz(category: string): Promise<string | null> {
-  const cached = await db.responseCache.findFirst({
-    where: { questionHash: `quiz:${category}`, mode: 'quiz' },
-  });
-  if (cached) {
-    await db.responseCache.update({
-      where: { id: cached.id },
-      data: { hitCount: { increment: 1 }, updatedAt: new Date() },
-    });
-    console.log(`[QUIZ CACHE HIT] category=${category}, hitCount=${cached.hitCount + 1}`);
-    return cached.answer;
-  }
-  return null;
-}
-
-async function setDBCachedQuiz(category: string, quizJson: string): Promise<void> {
-  try {
-    await db.responseCache.upsert({
-      where: { id: `quiz_${category}` },
-      update: { answer: quizJson, updatedAt: new Date() },
-      create: {
-        id: `quiz_${category}`,
-        questionHash: `quiz:${category}`,
-        mode: 'quiz',
-        question: category,
-        answer: quizJson,
-        hitCount: 0,
-      },
-    });
-    console.log(`[QUIZ CACHE] Stored quiz for category=${category}`);
-  } catch (err) {
-    console.error('[QUIZ CACHE] Store error:', err);
-  }
+function getRandomSubtopics(category: string): string {
+  const topics = RANDOM_TOPICS[category];
+  if (!topics) return category;
+  // Pick 3-5 random subtopics each time for variety
+  const shuffled = [...topics].sort(() => Math.random() - 0.5);
+  const selected = shuffled.slice(0, 3 + Math.floor(Math.random() * 3));
+  return selected.join('، ');
 }
 
 export async function POST(request: NextRequest) {
@@ -87,25 +102,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ===== ALWAYS GENERATE FRESH QUESTIONS (no cache) =====
-    // Removed caching to ensure unique questions every time
-
     const categoryPrompt = CATEGORY_PROMPTS[category] || (isCustom ? `مجال: ${category}` : '');
+    const randomSubtopics = getRandomSubtopics(category);
+    const uniqueSeed = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
 
-    // System prompt for quiz generation - VERY HARD, Shia-specific
+    // System prompt for quiz generation - VERY HARD, Shia-specific, INFINITELY VARIABLE
     const systemPrompt = `أنت خبير عميق في العلوم الإسلامية الشيعية الإمامية الاثني عشرية على مستوى البحث الخارج في الحوزات العلمية.
 
-مجال الأسئلة: ${categoryPrompt}
+مجال الأسئلة العام: ${categoryPrompt}
+المحاور المطلوب التركيز عليها في هذه المرة: ${randomSubtopics}
 
-قواعد توليد الأسئلة:
+⚠️ تعليمات حرجة لضمان التنوع اللانهائي:
 1. الأسئلة يجب أن تكون صعبة جداً على مستوى البحث الخارج والحوزة العلمية
 2. تختص بالمنهج الشيعي الإمامي الاثني عشري حصراً
-3. تغطي تفاصيل دقيقة ومسائل متقدمة ونادرة لا يعرفها إلا المتخصصون
-4. كل سؤال يجب أن يكون فريداً ومختلفاً عن الأسئلة السابقة
-5. الخيارات الأربعة يجب أن تكون مقنعة ومتشابهة الصعوبة بحيث لا يمكن التخمين
-6. الإجابة الصحيحة يجب أن تحتاج لمعرفة عميقة بالموضوع
-7. لا تكرر أسئلة شائعة أو معروفة، اكتب أسئلة نادرة ومعمقة
+3. يجب أن تغطي المحاور المذكورة أعلاه (${randomSubtopics}) بشكل متعمق
+4. لا تكرر أبداً الأسئلة الشائعة أو المعروفة أو المعتادة - ابحث عن مسائل نادرة ودقيقة
+5. كل سؤال يجب أن يكون فريداً تماماً - استخدم مسائل من كتب مرجعية متخصصة ومخطوطات
+6. الخيارات الأربعة يجب أن تكون مقنعة ومتشابهة الصعوبة بحيث لا يمكن التخمين
+7. الإجابة الصحيحة يجب أن تحتاج لمعرفة عميقة بالموضوع
 8. اكتب الأسئلة بلغة عربية فصيحة أكاديمية
+9. تنوّع بين أسئلة نصية وتحليلية واستدلالية وتراثية
+10. رمز التوليد الفريد: ${uniqueSeed} - تجاهله ولكن اذكره لضمان أن كل طلب ينتج أسئلة مختلفة تماماً
 
 أجب بصيغة JSON فقط بدون أي نص إضافي:
 {"questions":[{"question":"نص السؤال","options":["خيار أ","خيار ب","خيار ج","خيار د"],"correctAnswer":0}]}`;
@@ -113,9 +130,9 @@ export async function POST(request: NextRequest) {
     const aiResult = await callAI(
       [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `أنشئ 10 أسئلة اختبار صعبة جداً ومتنوعة ونادرة في: ${category}. الأسئلة يجب أن تكون على أعلى مستوى من الصعوبة وتختص بالفكر الشيعي الإمامي. لا تكرر الأسئلة الشائعة. أجب بصيغة JSON فقط.` },
+        { role: 'user', content: `أنشئ 10 أسئلة اختبار صعبة جداً ومتنوعة ونادرة في مجال: ${category}. المحاور المطلوب التركيز عليها: ${randomSubtopics}. اكتب أسئلة عميقة نادرة لم يسبق طرحها من قبل. كل مرة تُطلب منك أسئلة يجب أن تكون مختلفة تماماً عن المرات السابقة. أجب بصيغة JSON فقط.` },
       ],
-      { temperature: 1.0, maxTokens: 2048 }
+      { temperature: 1.8, maxTokens: 3000 }
     );
 
     const responseText = aiResult.content;
@@ -142,8 +159,6 @@ export async function POST(request: NextRequest) {
         throw new Error('Failed to parse quiz response');
       }
     }
-
-    // No caching - always generate fresh unique questions
 
     // Validate, filter, and format questions
     const questions: QuizQuestion[] = quizData.questions.map((q, index) => ({
