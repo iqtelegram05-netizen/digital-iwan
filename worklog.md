@@ -79,3 +79,24 @@ Stage Summary:
 - Standalone page at /tasbeeh with full functionality
 - SideDrawer tasbeeh tab already configured to redirect to standalone page
 - Deployed: https://digital-iwan.vercel.app/tasbeeh
+---
+Task ID: 1
+Agent: Main
+Task: Upgrade 4 AI sections: Quiz, Teacher, Research, Debater
+
+Work Log:
+- Analyzed full project structure and existing implementation
+- Updated store (appStore.ts) with debatePhase and debateTopic state
+- Rewrote all 4 system prompts in chat API (route.ts) for much stronger AI behavior
+- Updated quiz API (quiz/route.ts) with Shia-specific hard question generation + 5 new categories
+- Increased maxTokens for teacher/research modes (512 → 2048) and chat/debate (512 → 1024)
+- Rewrote ChatView.tsx with debate flow: topic → prove/deny buttons → structured dialogue
+- Updated QuizView.tsx with 10 Shia-specific categories (was 5)
+- Built and deployed successfully to Vercel
+
+Stage Summary:
+- Quiz: 10 categories (عقائد, أهل البيت, الإمامة, علم الكلام, فقه, منطق, التفسير, نحو, تاريخ الشيعة, علم الرجال)
+- Teacher: Comprehensive academic cawzai-style explanations with sources
+- Research: Deep hawza-style research methodology
+- Debater: Strict formal debater with prove/deny button flow
+- Deployed: https://digital-iwan.vercel.app

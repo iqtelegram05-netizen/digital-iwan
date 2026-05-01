@@ -26,11 +26,16 @@ export default function QuizView() {
   const { t } = useTranslation();
 
   const CATEGORIES = [
-    { id: 'عقائد', label: t('quiz.categories.beliefs'), icon: <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" /> },
-    { id: 'منطق', label: t('quiz.categories.logic'), icon: <Lightbulb className="w-5 h-5 sm:w-6 sm:h-6" /> },
-    { id: 'علم', label: t('quiz.categories.kalam'), icon: <Scroll className="w-5 h-5 sm:w-6 sm:h-6" /> },
-    { id: 'نحو', label: t('quiz.categories.grammar'), icon: <PenTool className="w-5 h-5 sm:w-6 sm:h-6" /> },
-    { id: 'فقه', label: t('quiz.categories.fiqh'), icon: <Scale className="w-5 h-5 sm:w-6 sm:h-6" /> },
+    { id: 'عقائد', label: 'العقائد', icon: <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" /> },
+    { id: 'أهل البيت', label: 'أهل البيت', icon: <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" /> },
+    { id: 'الإمامة', label: 'الإمامة', icon: <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" /> },
+    { id: 'علم الكلام', label: 'علم الكلام', icon: <Scroll className="w-5 h-5 sm:w-6 sm:h-6" /> },
+    { id: 'فقه', label: 'الفقه', icon: <Scale className="w-5 h-5 sm:w-6 sm:h-6" /> },
+    { id: 'منطق', label: 'المنطق', icon: <Lightbulb className="w-5 h-5 sm:w-6 sm:h-6" /> },
+    { id: 'التفسير', label: 'التفسير', icon: <Scroll className="w-5 h-5 sm:w-6 sm:h-6" /> },
+    { id: 'نحو', label: 'النحو', icon: <PenTool className="w-5 h-5 sm:w-6 sm:h-6" /> },
+    { id: 'التاريخ الشيعي', label: 'تاريخ الشيعة', icon: <Scroll className="w-5 h-5 sm:w-6 sm:h-6" /> },
+    { id: 'الرجال', label: 'علم الرجال', icon: <Scale className="w-5 h-5 sm:w-6 sm:h-6" /> },
   ];
 
   const [showCustomCategory, setShowCustomCategory] = useState(false);

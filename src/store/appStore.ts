@@ -94,6 +94,12 @@ interface AppState {
   lastAdRewardMsg: string;
   setLastAdRewardMsg: (msg: string) => void;
 
+  // Debate
+  debatePhase: 'idle' | 'awaiting_stance' | 'active';
+  setDebatePhase: (phase: 'idle' | 'awaiting_stance' | 'active') => void;
+  debateTopic: string | null;
+  setDebateTopic: (topic: string | null) => void;
+
   // Reader
   readerItem: ReaderItem | null;
   setReaderItem: (item: ReaderItem | null) => void;
@@ -192,6 +198,12 @@ export const useAppStore = create<AppState>((set) => ({
   setShowAdReward: (show) => set({ showAdReward: show }),
   lastAdRewardMsg: '',
   setLastAdRewardMsg: (msg) => set({ lastAdRewardMsg: msg }),
+
+  // Debate
+  debatePhase: 'idle',
+  setDebatePhase: (phase) => set({ debatePhase: phase }),
+  debateTopic: null,
+  setDebateTopic: (topic) => set({ debateTopic: topic }),
 
   readerItem: null,
   setReaderItem: (item) => set({ readerItem: item }),
