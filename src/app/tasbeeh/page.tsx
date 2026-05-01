@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, CircleDot, RotateCcw, Sparkles,
-  ChevronDown, ChevronRight, CheckCircle2
+  ChevronDown, ChevronLeft, ChevronRight, CheckCircle2
 } from 'lucide-react';
 
 interface TasbeehItem {
@@ -45,8 +45,8 @@ export default function TasbeehPage() {
         const data = await res.json();
         const g = data.groups || [];
         setGroups(g);
-        if (g.length > 0 && !selectedGroupId) {
-          setSelectedGroupId(g[0].id);
+        if (g.length > 0) {
+          setSelectedGroupId((prev) => prev || g[0].id);
         }
       }
     } catch {
@@ -54,7 +54,7 @@ export default function TasbeehPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedGroupId]);
+  }, []);
 
   useEffect(() => {
     fetchTasbeeh();
@@ -66,12 +66,7 @@ export default function TasbeehPage() {
   const isComplete = counter >= maxCount;
   const progressPercent = maxCount > 0 ? Math.min(100, Math.round((counter / maxCount) * 100)) : 0;
 
-  // Total group progress
   const groupItems = currentGroup?.items || [];
-  const completedItemsCount = groupItems.filter((_, idx) => {
-    if (idx === selectedItemIndex) return isComplete;
-    return false; // Only track current session
-  }).length;
 
   const handleTap = () => {
     if (!currentItem || isComplete) return;
@@ -287,16 +282,15 @@ export default function TasbeehPage() {
                   strokeWidth="6"
                 />
                 {/* Progress circle */}
-                <motion.circle
+                <circle
                   cx="130" cy="130" r="120"
                   fill="none"
                   stroke={isComplete ? '#10b981' : '#059669'}
                   strokeWidth="6"
                   strokeLinecap="round"
                   strokeDasharray={2 * Math.PI * 120}
-                  initial={false}
-                  animate={{ strokeDashoffset: 2 * Math.PI * 120 * (1 - progressPercent / 100) }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                  strokeDashoffset={2 * Math.PI * 120 * (1 - progressPercent / 100)}
+                  style={{ transition: 'stroke-dashoffset 0.3s ease-out' }}
                 />
               </svg>
 
