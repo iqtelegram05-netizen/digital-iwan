@@ -87,30 +87,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ===== CHECK DB CACHE FIRST =====
-    const cachedQuiz = await getDBCachedQuiz(category);
-    if (cachedQuiz) {
-      try {
-        const quizData = JSON.parse(cachedQuiz);
-        const questions: QuizQuestion[] = quizData.questions.map((q: { question: string; options: string[]; correctAnswer: number }, index: number) => ({
-          id: `q_${Date.now()}_${index}`,
-          question: filterArabicText(q.question),
-          options: q.options.slice(0, 4).map((opt: string) => filterArabicText(opt)),
-          correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
-        }));
-        if (questions.length >= 10) {
-          return NextResponse.json({
-            questions: questions.slice(0, 10),
-            category,
-            isCustom,
-            total: 10,
-            provider: 'cache',
-          });
-        }
-      } catch {
-        // Cache parse failed, generate new
-      }
-    }
+    // ===== ALWAYS GENERATE FRESH QUESTIONS (no cache) =====
+    // Removed caching to ensure unique questions every time
 
     const categoryPrompt = CATEGORY_PROMPTS[category] || (isCustom ? `مجال: ${category}` : '');
 
@@ -137,7 +115,7 @@ export async function POST(request: NextRequest) {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `أنشئ 10 أسئلة اختبار صعبة جداً ومتنوعة ونادرة في: ${category}. الأسئلة يجب أن تكون على أعلى مستوى من الصعوبة وتختص بالفكر الشيعي الإمامي. لا تكرر الأسئلة الشائعة. أجب بصيغة JSON فقط.` },
       ],
-      { temperature: 0.8, maxTokens: 2048 }
+      { temperature: 1.0, maxTokens: 2048 }
     );
 
     const responseText = aiResult.content;
@@ -165,10 +143,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Store in DB cache for future requests
-    if (quizData.questions && quizData.questions.length >= 10) {
-      await setDBCachedQuiz(category, JSON.stringify(quizData));
-    }
+    // No caching - always generate fresh unique questions
 
     // Validate, filter, and format questions
     const questions: QuizQuestion[] = quizData.questions.map((q, index) => ({

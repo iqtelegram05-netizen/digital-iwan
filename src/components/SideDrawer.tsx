@@ -36,6 +36,13 @@ interface PrayerItem {
   text: string;
 }
 
+interface TasbeehGroup {
+  id: string;
+  name: string;
+  description?: string;
+  items: { id: string; text: string; count: number }[];
+}
+
 // ========== Reusable Prayer List Item ==========
 function PrayerListItem({
   prayer,
@@ -87,8 +94,9 @@ function PrayerListItem({
 }
 
 export default function SideDrawer() {
-  const { sheetOpen, setSheetOpen, openReader } = useAppStore();
+  const { sheetOpen, setSheetOpen, openReader, setCurrentView } = useAppStore();
   const [prayers, setPrayers] = useState<PrayerItem[]>([]);
+  const [tasbeehGroups, setTasbeehGroups] = useState<TasbeehGroup[]>([]);
   const [prayersLoading, setPrayersLoading] = useState(true);
   const { t, tSection, lang } = useTranslation();
   const dir = isRTL(lang) ? 'rtl' : 'ltr';
@@ -98,10 +106,17 @@ export default function SideDrawer() {
   const fetchPrayers = useCallback(async () => {
     try {
       setPrayersLoading(true);
-      const res = await fetch('/api/prayers');
-      if (res.ok) {
-        const data = await res.json();
+      const [prayersRes, tasbeehRes] = await Promise.all([
+        fetch('/api/prayers'),
+        fetch('/api/tasbeeh'),
+      ]);
+      if (prayersRes.ok) {
+        const data = await prayersRes.json();
         setPrayers(data.prayers || []);
+      }
+      if (tasbeehRes.ok) {
+        const data = await tasbeehRes.json();
+        setTasbeehGroups(data.groups || []);
       }
     } catch {
       // silent
@@ -144,9 +159,7 @@ export default function SideDrawer() {
         </SheetHeader>
 
         <Tabs defaultValue="prayers" className="flex-1 min-h-0 flex flex-col" dir="rtl" onValueChange={(val) => {
-          if (val === 'tasbeeh') {
-            window.location.href = '/tasbeeh';
-          } else if (val === 'qibla') {
+          if (val === 'qibla') {
             window.location.href = '/qibla';
           } else if (val === 'events') {
             window.location.href = '/hijri';
@@ -203,12 +216,60 @@ export default function SideDrawer() {
               )}
             </TabsContent>
 
-            {/* Tasbeeh - opens dedicated page */}
-            <TabsContent value="tasbeeh" className="mt-0">
-              <div className="flex flex-col items-center justify-center py-8 gap-3">
-                <CircleDot className="w-10 h-10 text-emerald-500 animate-pulse" />
-                <p className="text-sm text-muted-foreground">جارٍ فتح المسبحة...</p>
-              </div>
+            {/* Tasbeeh - show groups as list */}
+            <TabsContent value="tasbeeh" className="mt-0 space-y-4">
+              <h3 className="text-sm font-bold text-foreground/80 mb-3 mt-2">مجموعات التسبيح</h3>
+              {prayersLoading ? (
+                <div className="flex items-center justify-center py-6 text-muted-foreground text-xs">
+                  <motion.div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin-slow ml-2" />
+                  جارٍ التحميل...
+                </div>
+              ) : tasbeehGroups.length > 0 ? (
+                <div className="space-y-2">
+                  {tasbeehGroups.map((group) => (
+                    <button
+                      key={group.id}
+                      type="button"
+                      onClick={() => {
+                        setSheetOpen(false);
+                        window.location.href = '/tasbeeh';
+                      }}
+                      className="w-full p-3 rounded-xl bg-card/40 border border-primary/10 hover:bg-primary/10 hover:border-primary/30 transition-all text-right group"
+                      style={{ display: 'grid', gridTemplateColumns: '40px 1fr 20px', gap: '10px', alignItems: 'center' }}
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
+                        <CircleDot className="w-4 h-4 text-emerald-500" />
+                      </div>
+                      <div style={{ minWidth: 0, overflow: 'hidden' }}>
+                        <p
+                          className="text-sm font-medium text-foreground group-hover:text-primary transition-colors"
+                          style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        >
+                          {group.name}
+                        </p>
+                        {group.description && (
+                          <p
+                            className="text-[10px] text-muted-foreground"
+                            style={{ marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                          >
+                            {group.description}
+                          </p>
+                        )}
+                        <p className="text-[10px] text-emerald-500/70 mt-0.5">
+                          {group.items.length} تسبيحة
+                        </p>
+                      </div>
+                      <div className="text-primary/40 group-hover:text-primary transition-colors">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground text-center py-4">لا توجد مجموعات تسبيح متاحة</p>
+              )}
             </TabsContent>
 
             {/* Qibla - opens dedicated page */}

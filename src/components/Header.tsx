@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAppStore } from '@/store/appStore';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Moon, Sun, GraduationCap, Languages, Plus, X, Check, Tv, Gift, HandHeart } from 'lucide-react';
+import { Menu, Moon, Sun, GraduationCap, Languages, Plus, X, Check, Tv, Gift, HandHeart, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -32,7 +32,7 @@ interface HeaderProps {
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
-  const { selectedScholar, setSelectedScholar, currentView, user, usageInfo } = useAppStore();
+  const { selectedScholar, setSelectedScholar, currentView, user, usageInfo, setCurrentView } = useAppStore();
   const { theme, setTheme } = useTheme();
   const { t, lang, setLanguage } = useTranslation();
 
@@ -216,6 +216,16 @@ export default function Header({ onMenuClick }: HeaderProps) {
         >
           <HandHeart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500" />
           <span className="text-[9px] sm:text-[10px] font-bold text-red-500 hidden sm:inline">اغاثة</span>
+        </motion.button>
+
+        {/* About Us Button */}
+        <motion.button
+          className="shrink-0 flex items-center gap-1 h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
+          onClick={() => setCurrentView('about')}
+          whileTap={{ scale: 0.92 }}
+        >
+          <Info className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span className="text-[9px] sm:text-[10px] font-medium hidden sm:inline">من نحن</span>
         </motion.button>
 
         {/* Theme toggle */}

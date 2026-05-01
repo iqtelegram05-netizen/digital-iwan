@@ -13,6 +13,7 @@ import ReaderView from '@/components/ReaderView';
 import SideDrawer from '@/components/SideDrawer';
 import Footer from '@/components/Footer';
 import DonationPopup from '@/components/DonationPopup';
+import AboutView from '@/components/AboutView';
 import { BookOpen, Swords, GraduationCap, Brain, User, Search } from 'lucide-react';
 import { useTranslation } from '@/i18n/useTranslation';
 
@@ -35,7 +36,7 @@ export default function Home() {
 
   const { t } = useTranslation();
 
-  const isReaderView = currentView === 'reader';
+  const isReaderView = currentView === 'reader' || currentView === 'about';
 
   const TABS = useMemo(() => [
     { view: 'chat' as View, label: t('tabs.iwan'), icon: <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" /> },
@@ -178,6 +179,7 @@ export default function Home() {
                   {currentView === 'profile' && <ProfileView />}
                   {currentView === 'admin' && <AdminPanel />}
                   {currentView === 'reader' && <ReaderView />}
+                  {currentView === 'about' && <AboutView />}
                 </motion.div>
               </AnimatePresence>
             </main>
