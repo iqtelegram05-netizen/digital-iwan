@@ -13,7 +13,6 @@ import { Separator } from '@/components/ui/separator';
 import { type ReaderItem } from '@/store/appStore';
 import { useTranslation } from '@/i18n/useTranslation';
 import { isRTL } from '@/i18n/languages';
-import TasbeehView from './TasbeehView';
 
 // ========== EVENTS DATA (month/day only - titles come from translations) ==========
 const HIJRI_EVENTS = [
@@ -145,7 +144,9 @@ export default function SideDrawer() {
         </SheetHeader>
 
         <Tabs defaultValue="prayers" className="flex-1 min-h-0 flex flex-col" dir="rtl" onValueChange={(val) => {
-          if (val === 'qibla') {
+          if (val === 'tasbeeh') {
+            window.location.href = '/tasbeeh';
+          } else if (val === 'qibla') {
             window.location.href = '/qibla';
           } else if (val === 'events') {
             window.location.href = '/hijri';
@@ -202,9 +203,12 @@ export default function SideDrawer() {
               )}
             </TabsContent>
 
-            {/* Tasbeeh Tab */}
+            {/* Tasbeeh - opens dedicated page */}
             <TabsContent value="tasbeeh" className="mt-0">
-              <TasbeehView />
+              <div className="flex flex-col items-center justify-center py-8 gap-3">
+                <CircleDot className="w-10 h-10 text-emerald-500 animate-pulse" />
+                <p className="text-sm text-muted-foreground">جارٍ فتح المسبحة...</p>
+              </div>
             </TabsContent>
 
             {/* Qibla - opens dedicated page */}
