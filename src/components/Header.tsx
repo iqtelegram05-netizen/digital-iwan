@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAppStore } from '@/store/appStore';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Moon, Sun, GraduationCap, Languages, Plus, X, Check, Tv, Gift, HandHeart, Globe } from 'lucide-react';
+import { Menu, Moon, Sun, GraduationCap, Languages, Plus, X, Check, Tv, Gift, HandHeart, Globe, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -81,6 +81,19 @@ export default function Header({ onMenuClick }: HeaderProps) {
         >
           <Globe className="w-4 h-4 sm:w-4 sm:h-4" />
           <span className="text-[10px] sm:text-[11px] font-bold">مواقعنا</span>
+        </motion.button>
+
+        {/* من نحن Button - About Us */}
+        <motion.button
+          className="shrink-0 flex items-center gap-1 h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
+          onClick={() => {
+            window.location.href = '/about-team';
+          }}
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.03 }}
+        >
+          <Users className="w-4 h-4 sm:w-4 sm:h-4" />
+          <span className="text-[10px] sm:text-[11px] font-bold">من نحن</span>
         </motion.button>
 
         {/* Scholar Selector - hidden in debate/research modes */}
