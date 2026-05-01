@@ -14,7 +14,8 @@ import SideDrawer from '@/components/SideDrawer';
 import Footer from '@/components/Footer';
 import DonationPopup from '@/components/DonationPopup';
 import AboutView from '@/components/AboutView';
-import { BookOpen, Swords, GraduationCap, Brain, User, Search } from 'lucide-react';
+import EditorView from '@/components/EditorView';
+import { BookOpen, Swords, GraduationCap, Brain, User, Search, FilePenLine } from 'lucide-react';
 import { useTranslation } from '@/i18n/useTranslation';
 
 // Load visual components with SSR disabled to prevent hydration mismatch
@@ -44,6 +45,7 @@ export default function Home() {
     { view: 'research' as View, label: 'بحث خارج', icon: <Search className="w-4 h-4 sm:w-5 sm:h-5" /> },
     { view: 'teacher' as View, label: t('tabs.teacher'), icon: <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" /> },
     { view: 'quiz' as View, label: t('tabs.quiz'), icon: <Brain className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    { view: 'editor' as View, label: 'المحرر', icon: <FilePenLine className="w-4 h-4 sm:w-5 sm:h-5" /> },
     { view: 'profile' as View, label: t('tabs.profile'), icon: <User className="w-4 h-4 sm:w-5 sm:h-5" /> },
   ], [t]);
 
@@ -176,6 +178,7 @@ export default function Home() {
                   {currentView === 'research' && <ChatView />}
                   {currentView === 'teacher' && <ChatView />}
                   {currentView === 'quiz' && <QuizView />}
+                  {currentView === 'editor' && <EditorView />}
                   {currentView === 'profile' && <ProfileView />}
                   {currentView === 'admin' && <AdminPanel />}
                   {currentView === 'reader' && <ReaderView />}
@@ -221,7 +224,7 @@ export default function Home() {
             </nav>
             )}
 
-            <Footer />
+            {!isReaderView && <Footer />}
           </motion.div>
         )}
       </AnimatePresence>
