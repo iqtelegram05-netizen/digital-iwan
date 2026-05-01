@@ -912,3 +912,16 @@
 .geo-shimmer {
   animation: geo-shimmer 4s ease-in-out infinite;
 }
+
+/* ========================================
+   Hide Scrollbar Utility
+   ======================================== */
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
