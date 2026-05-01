@@ -15,7 +15,8 @@ import {
   Bold, Italic, Underline, Strikethrough, List, ListOrdered,
   Quote, RotateCcw, Moon, Sun, Palette,
   Sparkles, BookMarked, ChevronDown, X, Check, Copy,
-  Save, FileJson, Eye, Hash
+  Save, FileJson, Eye, Hash, ZoomIn, ZoomOut, ImagePlus,
+  Paintbrush
 } from 'lucide-react';
 
 // ========== Arabic Fonts Map ==========
@@ -49,6 +50,19 @@ const DECORATIONS = [
   { id: 'ayah', label: 'آية كريمة', html: '<div style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-right:4px solid #0ea5e9;padding:12px 16px;margin:16px 0;border-radius:0 8px 8px 0;"><p style="font-family:Amiri,serif;font-size:18px;color:#0c4a6e;line-height:2.2;">﴿ وَقُل رَّبِّ زِدْنِي عِلْمًا ﴾</p><p style="font-size:12px;color:#6b7280;margin-top:4px;">سورة طه - الآية ١١٤</p></div>' },
 ];
 
+// ========== Color Palettes ==========
+const TEXT_COLORS = [
+  '#1a1a2e', '#1a5276', '#0c4a6e', '#14532d', '#6c3483',
+  '#92400e', '#991b1b', '#1e40af', '#dc2626', '#e97a1f',
+  '#059669', '#7c3aed', '#db2777', '#0891b2', '#000000',
+];
+const BG_COLORS = [
+  '#fef3c7', '#fce7f3', '#dbeafe', '#d1fae5', '#ede9fe',
+  '#fed7aa', '#fecdd3', '#e0e7ff', '#ccfbf1', '#f3e8ff',
+  '#fef08a', '#d9f99d', '#bfdbfe', '#a5f3fc', '#fbcfe8',
+  '#f5f5f4', '#e7e5e4', '#d6d3d1', '#fecaca', '#fde68a',
+];
+
 const DEFAULT_SETTINGS: EditorSettings = {
   fontFamily: 'Noto Naskh Arabic',
   fontSize: 16,
@@ -77,6 +91,9 @@ export default function EditorView() {
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [showSaveIndicator, setShowSaveIndicator] = useState(false);
 
+  // Zoom level
+  const [zoomLevel, setZoomLevel] = useState(100);
+
   // UI state
   const [showFontDropdown, setShowFontDropdown] = useState(false);
   const [showDecorDropdown, setShowDecorDropdown] = useState(false);
@@ -88,11 +105,14 @@ export default function EditorView() {
   const [showFootnotes, setShowFootnotes] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Floating toolbar state
   const [floatingToolbar, setFloatingToolbar] = useState<{
     visible: boolean; x: number; y: number;
   }>({ visible: false, x: 0, y: 0 });
+  const [showTextColorPicker, setShowTextColorPicker] = useState(false);
+  const [showBgColorPicker, setShowBgColorPicker] = useState(false);
 
   // Dropdown position refs (for fixed positioning)
   const fontBtnRef = useRef<HTMLButtonElement>(null);
@@ -103,14 +123,28 @@ export default function EditorView() {
   // Track last loaded paper ID to avoid content reset
   const lastLoadedPaperId = useRef<string | null>(null);
 
+  // ========== Apply editor styles directly to DOM ==========
+  const applyEditorStyles = useCallback(() => {
+    if (!editorRef.current) return;
+    const currentFontCSS = ARABIC_FONTS.find(f => f.name === settings.fontFamily)?.css || "'Noto Naskh Arabic', serif";
+    editorRef.current.style.fontFamily = currentFontCSS;
+    editorRef.current.style.fontSize = `${settings.fontSize}px`;
+    editorRef.current.style.lineHeight = String(settings.lineHeight);
+    editorRef.current.style.letterSpacing = `${settings.letterSpacing}px`;
+    editorRef.current.style.textAlign = settings.textAlign;
+    editorRef.current.style.color = settings.darkMode ? '#e2e8f0' : '#1e293b';
+  }, [settings]);
+
   // ========== Load content into editor ONLY on paper change ==========
   useEffect(() => {
     if (currentPaper && editorRef.current && currentPaper.id !== lastLoadedPaperId.current) {
       editorRef.current.innerHTML = currentPaper.htmlContent || '';
       lastLoadedPaperId.current = currentPaper.id;
       setWordCount(currentPaper.wordCount || 0);
+      // Apply styles after content loads
+      setTimeout(() => applyEditorStyles(), 0);
     }
-  }, [currentPaper]);
+  }, [currentPaper, applyEditorStyles]);
 
   // ========== Close dropdowns on outside click ==========
   useEffect(() => {
@@ -118,10 +152,12 @@ export default function EditorView() {
       const target = e.target as HTMLElement;
       if (showFontDropdown && !target.closest('[data-font-dropdown]')) setShowFontDropdown(false);
       if (showDecorDropdown && !target.closest('[data-decor-dropdown]')) setShowDecorDropdown(false);
+      if (showTextColorPicker && !target.closest('[data-text-color-picker]')) setShowTextColorPicker(false);
+      if (showBgColorPicker && !target.closest('[data-bg-color-picker]')) setShowBgColorPicker(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showFontDropdown, showDecorDropdown]);
+  }, [showFontDropdown, showDecorDropdown, showTextColorPicker, showBgColorPicker]);
 
   // ========== Load Papers ==========
   useEffect(() => { loadPapers(); }, []);
@@ -187,6 +223,7 @@ export default function EditorView() {
     setFootnoteCounter(1);
     setWordCount(0);
     setShowList(false);
+    setZoomLevel(100);
     setLastSaved(new Date().toLocaleTimeString('ar'));
     await loadPapers();
   };
@@ -199,6 +236,7 @@ export default function EditorView() {
     setFootnotes(paper.footnotes || []);
     setFootnoteCounter((paper.footnotes || []).length + 1);
     setWordCount(paper.wordCount || 0);
+    setZoomLevel(100);
     setShowList(false);
   };
 
@@ -249,11 +287,13 @@ export default function EditorView() {
         const rect = range.getBoundingClientRect();
         setFloatingToolbar({
           visible: true,
-          x: rect.left + rect.width / 2 - 150,
-          y: rect.top - 50,
+          x: rect.left + rect.width / 2 - 160,
+          y: rect.top - 56,
         });
       } else {
         setFloatingToolbar(prev => ({ ...prev, visible: false }));
+        setShowTextColorPicker(false);
+        setShowBgColorPicker(false);
       }
     };
     document.addEventListener('selectionchange', handleSelectionChange);
@@ -286,6 +326,22 @@ export default function EditorView() {
     }
 
     setShowFootnotes(true);
+  };
+
+  // ========== Insert Image ==========
+  const handleImageInsert = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editorRef.current) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      editorRef.current?.focus();
+      const imgHtml = `<img src="${base64}" style="max-width:100%;height:auto;display:block;margin:12px auto;border-radius:4px;" alt="صورة" />`;
+      document.execCommand('insertHTML', false, imgHtml);
+    };
+    reader.readAsDataURL(file);
+    if (imageInputRef.current) imageInputRef.current.value = '';
   };
 
   // ========== Clipboard ==========
@@ -321,6 +377,7 @@ export default function EditorView() {
         .watermark{position:fixed;bottom:10px;left:10px;opacity:0.15;font-size:11px;color:#999;}
         @media print{.watermark{display:none;}.no-print{display:none;}}
         sup{color:#0ea5e9;cursor:pointer;}
+        img{max-width:100%;height:auto;}
       </style></head><body>
       <h1>${title || 'بدون عنوان'}</h1>
       <div>${content}</div>
@@ -363,17 +420,30 @@ export default function EditorView() {
 
   const toggleDarkMode = () => setSettings(s => ({ ...s, darkMode: !s.darkMode }));
 
-  // ========== Styles ==========
-  const btnClass = "p-1.5 rounded-lg hover:bg-primary/10 transition-colors text-foreground/70 hover:text-primary cursor-pointer";
-  const activeBtnClass = "p-1.5 rounded-lg bg-primary/15 text-primary transition-colors";
+  // ========== Dynamic button styles for dark mode ==========
+  const isDark = settings.darkMode;
+  const btnBase = isDark
+    ? "p-1.5 rounded-lg transition-colors cursor-pointer"
+    : "p-1.5 rounded-lg hover:bg-primary/10 transition-colors text-foreground/70 hover:text-primary cursor-pointer";
+  const btnDark = isDark
+    ? `${btnBase} hover:bg-white/10 text-gray-300 hover:text-white`
+    : btnBase;
+  const activeBtnDark = isDark
+    ? "p-1.5 rounded-lg bg-white/15 text-white transition-colors"
+    : "p-1.5 rounded-lg bg-primary/15 text-primary transition-colors";
+
+  const selectStyleDark = isDark
+    ? { background: '#334155', borderColor: 'rgba(255,255,255,0.15)', color: '#e2e8f0' }
+    : { background: '#f8fafc', borderColor: 'rgba(0,0,0,0.1)', color: '#1e293b' };
+  const optionStyle = isDark ? { background: '#1e293b', color: '#e2e8f0' } : { background: '#ffffff', color: '#1e293b' };
 
   // ========== RENDER: Papers List ==========
   if (showList && !currentPaper) {
     return (
-      <div className="flex-1 flex flex-col overflow-hidden" style={{ background: settings.darkMode ? '#0f172a' : '#f8fafc' }}>
+      <div className="flex-1 flex flex-col overflow-hidden" style={{ background: isDark ? '#0f172a' : '#f8fafc' }}>
         <div className="shrink-0 border-b px-4 py-3" style={{
-          background: settings.darkMode ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)',
-          borderColor: settings.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+          background: isDark ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)',
+          borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
         }}>
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -381,15 +451,15 @@ export default function EditorView() {
                 <BookMarked className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-base font-bold" style={{ color: settings.darkMode ? '#e2e8f0' : '#0f172a' }}>محرر البحوث</h1>
-                <p className="text-[10px]" style={{ color: settings.darkMode ? '#94a3b8' : '#64748b' }}>فريق قلم كود — معالجة محلية بالكامل</p>
+                <h1 className="text-base font-bold" style={{ color: isDark ? '#e2e8f0' : '#0f172a' }}>محرر البحوث</h1>
+                <p className="text-[10px]" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>فريق قلم كود — معالجة محلية بالكامل</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={toggleDarkMode} className={btnClass}>
-                {settings.darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <button onClick={toggleDarkMode} className={btnDark}>
+                {isDark ? <Sun className="w-4 h-4 text-yellow-300" /> : <Moon className="w-4 h-4" />}
               </button>
-              <button onClick={() => setShowImportDialog(true)} className={btnClass} title="استيراد">
+              <button onClick={() => setShowImportDialog(true)} className={btnDark} title="استيراد">
                 <Upload className="w-4 h-4" />
               </button>
               <motion.button whileTap={{ scale: 0.95 }} onClick={createNewPaper}
@@ -404,10 +474,10 @@ export default function EditorView() {
           <div className="max-w-4xl mx-auto px-4 py-4">
             {papers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 gap-4">
-                <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: settings.darkMode ? 'rgba(14,165,233,0.1)' : 'rgba(14,165,233,0.08)' }}>
+                <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: isDark ? 'rgba(14,165,233,0.1)' : 'rgba(14,165,233,0.08)' }}>
                   <FileText className="w-8 h-8 text-primary/50" />
                 </div>
-                <p className="text-sm" style={{ color: settings.darkMode ? '#94a3b8' : '#64748b' }}>لا توجد بحوث محفوظة بعد</p>
+                <p className="text-sm" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>لا توجد بحوث محفوظة بعد</p>
                 <motion.button whileTap={{ scale: 0.95 }} onClick={createNewPaper}
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-bold">
                   <Plus className="w-4 h-4" /> أنشئ بحثك الأول
@@ -420,16 +490,16 @@ export default function EditorView() {
                     onClick={() => openPaper(paper)}
                     className="p-4 rounded-xl cursor-pointer transition-all border"
                     style={{
-                      background: settings.darkMode ? 'rgba(30,41,59,0.8)' : 'rgba(255,255,255,0.9)',
-                      borderColor: settings.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                      background: isDark ? 'rgba(30,41,59,0.8)' : 'rgba(255,255,255,0.9)',
+                      borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
                     }}>
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-bold truncate" style={{ color: settings.darkMode ? '#e2e8f0' : '#0f172a' }}>{paper.title}</h3>
-                        <p className="text-[11px] mt-1" style={{ color: settings.darkMode ? '#64748b' : '#94a3b8' }}>
+                        <h3 className="text-sm font-bold truncate" style={{ color: isDark ? '#e2e8f0' : '#0f172a' }}>{paper.title}</h3>
+                        <p className="text-[11px] mt-1" style={{ color: isDark ? '#64748b' : '#94a3b8' }}>
                           {paper.wordCount || 0} كلمة — {estimatePages(paper.wordCount || 0)} صفحة
                         </p>
-                        <p className="text-[10px] mt-0.5" style={{ color: settings.darkMode ? '#475569' : '#cbd5e1' }}>
+                        <p className="text-[10px] mt-0.5" style={{ color: isDark ? '#475569' : '#cbd5e1' }}>
                           {new Date(paper.updatedAt).toLocaleDateString('ar', { year: 'numeric', month: 'long', day: 'numeric' })}
                         </p>
                       </div>
@@ -451,13 +521,13 @@ export default function EditorView() {
             <motion.div className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowImportDialog(false)}>
               <motion.div className="p-6 rounded-2xl max-w-sm w-full"
-                style={{ background: settings.darkMode ? '#1e293b' : '#fff', border: `1px solid ${settings.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}` }}
+                style={{ background: isDark ? '#1e293b' : '#fff', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}` }}
                 initial={{ scale: 0.9 }} animate={{ scale: 1 }} exit={{ scale: 0.9 }} onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-bold" style={{ color: settings.darkMode ? '#e2e8f0' : '#0f172a' }}>استيراد بحث</h3>
-                  <button onClick={() => setShowImportDialog(false)} className={btnClass}><X className="w-4 h-4" /></button>
+                  <h3 className="text-sm font-bold" style={{ color: isDark ? '#e2e8f0' : '#0f172a' }}>استيراد بحث</h3>
+                  <button onClick={() => setShowImportDialog(false)} className={btnDark}><X className="w-4 h-4" /></button>
                 </div>
-                <p className="text-xs mb-3" style={{ color: settings.darkMode ? '#94a3b8' : '#64748b' }}>اختر ملف JSON محفوظ سابقاً</p>
+                <p className="text-xs mb-3" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>اختر ملف JSON محفوظ سابقاً</p>
                 <input ref={fileInputRef} type="file" accept=".json" onChange={importJSON}
                   className="w-full text-xs file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white file:text-xs file:font-bold file:cursor-pointer" />
               </motion.div>
@@ -469,130 +539,153 @@ export default function EditorView() {
   }
 
   // ========== RENDER: Editor View ==========
-  const bgColor = settings.darkMode ? '#0f172a' : '#f1f5f9';
-  const paperBg = settings.darkMode ? '#1a2332' : '#ffffff';
-  const textColor = settings.darkMode ? '#e2e8f0' : '#1e293b';
+  const bgColor = isDark ? '#0f172a' : '#f1f5f9';
+  const paperBg = isDark ? '#1a2332' : '#ffffff';
+  const textColor = isDark ? '#e2e8f0' : '#1e293b';
   const currentFontCSS = ARABIC_FONTS.find(f => f.name === settings.fontFamily)?.css || "'Noto Naskh Arabic', serif";
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden" style={{ background: bgColor }}>
-      {/* ===== TOP TOOLBAR (no overflow on this div!) ===== */}
+      {/* Hidden image input */}
+      <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageInsert} className="hidden" />
+
+      {/* ===== TOP TOOLBAR ===== */}
       <div className="shrink-0 border-b relative" style={{
-        background: settings.darkMode ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)',
-        borderColor: settings.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+        background: isDark ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)',
+        borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
       }}>
         {/* Scrollable button row */}
         <div className="flex items-center gap-0.5 px-1.5 py-1.5 overflow-x-auto scrollbar-hide">
 
           {/* Back */}
-          <button onClick={() => { setCurrentPaper(null); setShowList(true); lastLoadedPaperId.current = null; }} className={btnClass} title="العودة">
+          <button onClick={() => { setCurrentPaper(null); setShowList(true); lastLoadedPaperId.current = null; }} className={btnDark} title="العودة">
             <ArrowRight className="w-4 h-4" />
           </button>
 
           {/* Undo */}
-          <button onClick={() => { execCmd('undo'); }} className={btnClass} title="تراجع">
+          <button onClick={() => execCmd('undo')} className={btnDark} title="تراجع">
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
 
-          <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: settings.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
+          <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }} />
 
           {/* Font Selector Button */}
           <button ref={fontBtnRef}
             onClick={() => { calcFontDropdownPos(); setShowFontDropdown(!showFontDropdown); setShowDecorDropdown(false); }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium cursor-pointer transition-colors ${showFontDropdown ? 'bg-primary/15 text-primary' : 'hover:bg-primary/10 text-foreground/70 hover:text-primary'}`}
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium cursor-pointer transition-colors ${showFontDropdown ? (isDark ? 'bg-white/15 text-white' : 'bg-primary/15 text-primary') : (isDark ? 'hover:bg-white/10 text-gray-300' : 'hover:bg-primary/10 text-foreground/70 hover:text-primary')}`}
             data-font-dropdown>
             <Type className="w-3 h-3" />
             <span className="max-w-[60px] truncate">{ARABIC_FONTS.find(f => f.name === settings.fontFamily)?.label || 'خط'}</span>
             <ChevronDown className="w-2.5 h-2.5" />
           </button>
 
-          {/* Font Size */}
-          <select value={settings.fontSize} onChange={(e) => setSettings(s => ({ ...s, fontSize: Number(e.target.value) }))}
+          {/* Font Size - FIX: use String comparison for select */}
+          <select
+            value={String(settings.fontSize)}
+            onChange={(e) => {
+              const newSize = Number(e.target.value);
+              setSettings(s => ({ ...s, fontSize: newSize }));
+              // Apply immediately to DOM
+              if (editorRef.current) editorRef.current.style.fontSize = `${newSize}px`;
+            }}
             className="h-6 w-14 text-[10px] rounded-lg border px-1 shrink-0 cursor-pointer"
-            style={{ background: settings.darkMode ? 'rgba(30,41,59,0.8)' : '#f8fafc', borderColor: settings.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', color: textColor }}>
-            {[12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 28, 32].map(s => <option key={s} value={s}>{s}px</option>)}
+            style={selectStyleDark}>
+            {[12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 28, 32].map(s => (
+              <option key={s} value={String(s)} style={optionStyle}>{s}px</option>
+            ))}
           </select>
 
-          <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: settings.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
+          {/* Line Height - FIX: use String comparison */}
+          <select
+            value={String(settings.lineHeight)}
+            onChange={(e) => {
+              const newLH = Number(e.target.value);
+              setSettings(s => ({ ...s, lineHeight: newLH }));
+              // Apply immediately to DOM
+              if (editorRef.current) editorRef.current.style.lineHeight = String(newLH);
+            }}
+            className="h-6 w-[70px] text-[10px] rounded-lg border px-1 shrink-0 cursor-pointer"
+            style={selectStyleDark}>
+            {[1.5, 1.8, 2, 2.2, 2.5, 3].map(s => (
+              <option key={s} value={String(s)} style={optionStyle}>ارتفاع {s}</option>
+            ))}
+          </select>
+
+          <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }} />
 
           {/* Formatting */}
-          <button onClick={() => execCmd('bold')} className={btnClass} title="عريض"><Bold className="w-3.5 h-3.5" /></button>
-          <button onClick={() => execCmd('italic')} className={btnClass} title="مائل"><Italic className="w-3.5 h-3.5" /></button>
-          <button onClick={() => execCmd('underline')} className={btnClass} title="تسطير"><Underline className="w-3.5 h-3.5" /></button>
-          <button onClick={() => execCmd('strikeThrough')} className={btnClass} title="يتوسطه خط"><Strikethrough className="w-3.5 h-3.5" /></button>
+          <button onClick={() => execCmd('bold')} className={btnDark} title="عريض"><Bold className="w-3.5 h-3.5" /></button>
+          <button onClick={() => execCmd('italic')} className={btnDark} title="مائل"><Italic className="w-3.5 h-3.5" /></button>
+          <button onClick={() => execCmd('underline')} className={btnDark} title="تسطير"><Underline className="w-3.5 h-3.5" /></button>
+          <button onClick={() => execCmd('strikeThrough')} className={btnDark} title="يتوسطه خط"><Strikethrough className="w-3.5 h-3.5" /></button>
 
-          <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: settings.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
+          <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }} />
 
           {/* Alignment */}
           {[['justify', AlignJustify], ['right', AlignRight], ['center', AlignCenter], ['left', AlignLeft]].map(([align, Icon]) => (
             <button key={align} onClick={() => { editorRef.current?.focus(); setSettings(s => ({ ...s, textAlign: align as string })); }}
-              className={`${settings.textAlign === align ? activeBtnClass : btnClass}`}>
+              className={`${settings.textAlign === align ? activeBtnDark : btnDark}`}>
               <Icon className="w-3.5 h-3.5" />
             </button>
           ))}
 
-          <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: settings.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
+          <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }} />
 
           {/* Lists */}
-          <button onClick={() => execCmd('insertUnorderedList')} className={btnClass} title="قائمة نقطية"><List className="w-3.5 h-3.5" /></button>
-          <button onClick={() => execCmd('insertOrderedList')} className={btnClass} title="قائمة مرقمة"><ListOrdered className="w-3.5 h-3.5" /></button>
-          <button onClick={() => execCmd('formatBlock', 'blockquote')} className={btnClass} title="اقتباس"><Quote className="w-3.5 h-3.5" /></button>
-
-          <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: settings.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
-
-          {/* Line Height */}
-          <select value={settings.lineHeight} onChange={(e) => setSettings(s => ({ ...s, lineHeight: Number(e.target.value) }))}
-            className="h-6 w-16 text-[10px] rounded-lg border px-1 shrink-0 cursor-pointer"
-            style={{ background: settings.darkMode ? 'rgba(30,41,59,0.8)' : '#f8fafc', borderColor: settings.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', color: textColor }}>
-            <option value={1.5}>ارتفاع 1.5</option>
-            <option value={1.8}>ارتفاع 1.8</option>
-            <option value={2}>ارتفاع 2.0</option>
-            <option value={2.2}>ارتفاع 2.2</option>
-            <option value={2.5}>ارتفاع 2.5</option>
-            <option value={3}>ارتفاع 3.0</option>
-          </select>
+          <button onClick={() => execCmd('insertUnorderedList')} className={btnDark} title="قائمة نقطية"><List className="w-3.5 h-3.5" /></button>
+          <button onClick={() => execCmd('insertOrderedList')} className={btnDark} title="قائمة مرقمة"><ListOrdered className="w-3.5 h-3.5" /></button>
+          <button onClick={() => execCmd('formatBlock', 'blockquote')} className={btnDark} title="اقتباس"><Quote className="w-3.5 h-3.5" /></button>
 
           {/* Letter Spacing */}
-          <select value={settings.letterSpacing} onChange={(e) => setSettings(s => ({ ...s, letterSpacing: Number(e.target.value) }))}
-            className="h-6 w-16 text-[10px] rounded-lg border px-1 shrink-0 cursor-pointer"
-            style={{ background: settings.darkMode ? 'rgba(30,41,59,0.8)' : '#f8fafc', borderColor: settings.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', color: textColor }}>
-            <option value={0}>تباعد 0</option>
-            <option value={0.5}>تباعد 0.5</option>
-            <option value={1}>تباعد 1</option>
-            <option value={1.5}>تباعد 1.5</option>
-            <option value={2}>تباعد 2</option>
+          <select
+            value={String(settings.letterSpacing)}
+            onChange={(e) => {
+              const newLS = Number(e.target.value);
+              setSettings(s => ({ ...s, letterSpacing: newLS }));
+              if (editorRef.current) editorRef.current.style.letterSpacing = `${newLS}px`;
+            }}
+            className="h-6 w-[70px] text-[10px] rounded-lg border px-1 shrink-0 cursor-pointer"
+            style={selectStyleDark}>
+            {[0, 0.5, 1, 1.5, 2].map(s => (
+              <option key={s} value={String(s)} style={optionStyle}>تباعد {s}</option>
+            ))}
           </select>
 
           <div className="flex-1" />
 
+          {/* Image Insert */}
+          <button onClick={() => imageInputRef.current?.click()} className={btnDark} title="إدراج صورة">
+            <ImagePlus className="w-3.5 h-3.5" />
+          </button>
+
           {/* Footnote */}
-          <button onClick={addFootnote} className={btnClass} title="حاشية سفلية"><Hash className="w-3.5 h-3.5" /></button>
-          <button onClick={() => setShowFootnotes(!showFootnotes)} className={`${showFootnotes ? activeBtnClass : btnClass}`} title="الهوامش">
+          <button onClick={addFootnote} className={btnDark} title="حاشية سفلية"><Hash className="w-3.5 h-3.5" /></button>
+          <button onClick={() => setShowFootnotes(!showFootnotes)} className={`${showFootnotes ? activeBtnDark : btnDark}`} title="الهوامش">
             <Eye className="w-3.5 h-3.5" />
           </button>
 
           {/* Decorations Button */}
           <button ref={decorBtnRef}
             onClick={() => { calcDecorDropdownPos(); setShowDecorDropdown(!showDecorDropdown); setShowFontDropdown(false); }}
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] cursor-pointer transition-colors shrink-0 ${showDecorDropdown ? 'bg-primary/15 text-primary' : 'hover:bg-primary/10 text-foreground/70 hover:text-primary'}`}
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] cursor-pointer transition-colors shrink-0 ${showDecorDropdown ? (isDark ? 'bg-white/15 text-white' : 'bg-primary/15 text-primary') : (isDark ? 'hover:bg-white/10 text-gray-300' : 'hover:bg-primary/10 text-foreground/70 hover:text-primary')}`}
             data-decor-dropdown>
             <Sparkles className="w-3 h-3" />
             <span>زخارف</span>
           </button>
 
           {/* Clipboard */}
-          <button onClick={async () => { await loadClipboard(); setShowClipboard(!showClipboard); }} className={`${showClipboard ? activeBtnClass : btnClass}`} title="سجل الاقتباسات">
+          <button onClick={async () => { await loadClipboard(); setShowClipboard(!showClipboard); }} className={`${showClipboard ? activeBtnDark : btnDark}`} title="سجل الاقتباسات">
             <Copy className="w-3.5 h-3.5" />
           </button>
 
-          <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: settings.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
+          <div className="w-px h-5 mx-0.5 shrink-0" style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }} />
 
-          <button onClick={toggleDarkMode} className={btnClass} title="الوضع الليلي">
-            {settings.darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+          <button onClick={toggleDarkMode} className={btnDark} title="الوضع الليلي">
+            {isDark ? <Sun className="w-3.5 h-3.5 text-yellow-300" /> : <Moon className="w-3.5 h-3.5" />}
           </button>
 
-          <button onClick={exportPDF} className={btnClass} title="تصدير PDF"><Printer className="w-3.5 h-3.5" /></button>
-          <button onClick={exportJSON} className={btnClass} title="تصدير JSON"><FileJson className="w-3.5 h-3.5" /></button>
+          <button onClick={exportPDF} className={btnDark} title="تصدير PDF"><Printer className="w-3.5 h-3.5" /></button>
+          <button onClick={exportJSON} className={btnDark} title="تصدير JSON"><FileJson className="w-3.5 h-3.5" /></button>
 
           {/* Save */}
           <motion.button whileTap={{ scale: 0.9 }} onClick={handleAutoSave}
@@ -607,7 +700,7 @@ export default function EditorView() {
         </div>
       </div>
 
-      {/* ===== FONT DROPDOWN (position: fixed, outside scroll container) ===== */}
+      {/* ===== FONT DROPDOWN (position: fixed) ===== */}
       <AnimatePresence>
         {showFontDropdown && (
           <motion.div
@@ -615,8 +708,8 @@ export default function EditorView() {
             style={{
               top: fontDropdownPos.top,
               right: fontDropdownPos.right,
-              background: settings.darkMode ? '#1e293b' : '#fff',
-              borderColor: settings.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)',
+              background: isDark ? '#1e293b' : '#fff',
+              borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)',
             }}
             initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             data-font-dropdown>
@@ -624,11 +717,12 @@ export default function EditorView() {
               <button key={font.name}
                 onClick={() => {
                   setSettings(s => ({ ...s, fontFamily: font.name }));
+                  if (editorRef.current) editorRef.current.style.fontFamily = font.css;
                   setShowFontDropdown(false);
                   if (editorRef.current) editorRef.current.focus();
                 }}
                 className={`w-full text-right px-3 py-2 text-xs cursor-pointer hover:bg-primary/10 transition-colors ${settings.fontFamily === font.name ? 'bg-primary/15 text-primary' : ''}`}
-                style={{ color: settings.darkMode ? '#e2e8f0' : '#1e293b', fontFamily: font.css }}>
+                style={{ color: isDark ? '#e2e8f0' : '#1e293b', fontFamily: font.css }}>
                 {font.label}
               </button>
             ))}
@@ -644,8 +738,8 @@ export default function EditorView() {
             style={{
               top: decorDropdownPos.top,
               right: decorDropdownPos.right,
-              background: settings.darkMode ? '#1e293b' : '#fff',
-              borderColor: settings.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)',
+              background: isDark ? '#1e293b' : '#fff',
+              borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)',
             }}
             initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
             data-decor-dropdown>
@@ -653,7 +747,7 @@ export default function EditorView() {
               <button key={dec.id}
                 onClick={() => { insertHTML(dec.html); setShowDecorDropdown(false); }}
                 className="w-full text-right px-3 py-2 text-[11px] cursor-pointer hover:bg-primary/10 transition-colors"
-                style={{ color: settings.darkMode ? '#e2e8f0' : '#1e293b' }}>
+                style={{ color: isDark ? '#e2e8f0' : '#1e293b' }}>
                 {dec.label}
               </button>
             ))}
@@ -663,9 +757,9 @@ export default function EditorView() {
 
       {/* ===== STATUS BAR ===== */}
       <div className="shrink-0 flex items-center justify-between px-3 py-0.5 text-[10px] border-b" style={{
-        background: settings.darkMode ? 'rgba(15,23,42,0.9)' : 'rgba(248,250,252,0.95)',
-        borderColor: settings.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-        color: settings.darkMode ? '#64748b' : '#94a3b8',
+        background: isDark ? 'rgba(15,23,42,0.9)' : 'rgba(248,250,252,0.95)',
+        borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+        color: isDark ? '#94a3b8' : '#64748b',
       }}>
         <span>{wordCount} كلمة — {estimatePages(wordCount)} صفحة</span>
         <span>{title || 'بدون عنوان'}</span>
@@ -673,34 +767,58 @@ export default function EditorView() {
 
       {/* ===== RULER ===== */}
       {settings.showRulers && (
-        <div className="shrink-0 h-4 flex items-center justify-center overflow-hidden" style={{ background: settings.darkMode ? '#1e293b' : '#e2e8f0' }}>
+        <div className="shrink-0 h-4 flex items-center justify-center overflow-hidden" style={{ background: isDark ? '#1e293b' : '#e2e8f0' }}>
           <div className="h-full flex items-end" style={{ width: 'calc(100% - 40px)', maxWidth: '210mm', margin: '0 auto' }}>
             {Array.from({ length: 40 }).map((_, i) => (
               <div key={i} className="flex-1 flex items-end justify-center">
-                <div style={{ width: 1, height: i % 5 === 0 ? 8 : 4, background: i % 10 === 0 ? (settings.darkMode ? '#94a3b8' : '#64748b') : (settings.darkMode ? '#475569' : '#cbd5e1') }} />
+                <div style={{ width: 1, height: i % 5 === 0 ? 8 : 4, background: i % 10 === 0 ? (isDark ? '#94a3b8' : '#64748b') : (isDark ? '#475569' : '#cbd5e1') }} />
               </div>
             ))}
           </div>
         </div>
       )}
 
+      {/* ===== ZOOM CONTROLS ===== */}
+      <div className="shrink-0 flex items-center justify-center gap-2 px-3 py-1 border-b" style={{
+        background: isDark ? 'rgba(15,23,42,0.9)' : 'rgba(248,250,252,0.95)',
+        borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+      }}>
+        <button onClick={() => setZoomLevel(z => Math.max(50, z - 10))} className={btnDark} title="تصغير">
+          <ZoomOut className="w-3.5 h-3.5" />
+        </button>
+        <span className="text-[10px] font-bold min-w-[36px] text-center" style={{ color: isDark ? '#e2e8f0' : '#1e293b' }}>
+          {zoomLevel}%
+        </span>
+        <button onClick={() => setZoomLevel(z => Math.min(200, z + 10))} className={btnDark} title="تكبير">
+          <ZoomIn className="w-3.5 h-3.5" />
+        </button>
+        {zoomLevel !== 100 && (
+          <button onClick={() => setZoomLevel(100)} className="text-[9px] font-bold px-2 py-0.5 rounded cursor-pointer transition-colors"
+            style={{ color: isDark ? '#94a3b8' : '#64748b', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' }}>
+            إعادة تعيين
+          </button>
+        )}
+      </div>
+
       {/* ===== MAIN EDITOR AREA ===== */}
-      <div className="flex-1 overflow-y-auto relative">
+      <div className="flex-1 overflow-y-auto relative" id="editor-scroll-area">
         <div className="min-h-full flex justify-center py-4">
           <div className="relative shadow-2xl" style={{
             width: '210mm', maxWidth: '100%', minHeight: '297mm',
             background: paperBg, margin: '20px', padding: '30px 40px',
             borderRadius: settings.pageBorder ? '2px' : '0',
-            border: settings.pageBorder ? `1px solid ${settings.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'}` : 'none',
-            boxShadow: `0 4px 40px ${settings.darkMode ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.08)'}`,
+            border: settings.pageBorder ? `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'}` : 'none',
+            boxShadow: `0 4px 40px ${isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.08)'}`,
+            transform: `scale(${zoomLevel / 100})`,
+            transformOrigin: 'top center',
           }}>
             {/* Title */}
             <input value={title} onChange={(e) => setTitle(e.target.value)}
               className="w-full text-center text-xl font-bold border-0 outline-none mb-4 bg-transparent"
-              style={{ fontFamily: currentFontCSS, color: settings.darkMode ? '#e2e8f0' : '#1a5276' }}
+              style={{ fontFamily: currentFontCSS, color: isDark ? '#e2e8f0' : '#1a5276' }}
               placeholder="عنوان البحث..." />
 
-            {/* Editor Content - NO dangerouslySetInnerHTML, loaded via useEffect ref */}
+            {/* Editor Content */}
             <div ref={editorRef} contentEditable suppressContentEditableWarning
               className="outline-none min-h-[400px]"
               style={{
@@ -709,7 +827,7 @@ export default function EditorView() {
                 lineHeight: settings.lineHeight,
                 letterSpacing: `${settings.letterSpacing}px`,
                 textAlign: settings.textAlign as React.CSSProperties['textAlign'],
-                color: settings.darkMode ? '#e2e8f0' : '#1e293b',
+                color: isDark ? '#e2e8f0' : '#1e293b',
                 direction: 'rtl',
               }}
               onInput={() => {
@@ -722,9 +840,9 @@ export default function EditorView() {
             {/* Footnotes */}
             {showFootnotes && footnotes.length > 0 && (
               <div className="mt-8 pt-4 border-t-2 border-dashed" style={{ borderColor: 'rgba(14,165,233,0.3)' }}>
-                <h3 className="text-sm font-bold mb-3" style={{ fontFamily: 'Amiri, serif', color: settings.darkMode ? '#e2e8f0' : '#1a5276' }}>الهوامش</h3>
+                <h3 className="text-sm font-bold mb-3" style={{ fontFamily: 'Amiri, serif', color: isDark ? '#e2e8f0' : '#1a5276' }}>الهوامش</h3>
                 {footnotes.map(fn => (
-                  <div key={fn.id} className="flex gap-2 mb-2 text-[12px]" style={{ color: settings.darkMode ? '#94a3b8' : '#4a5568' }}>
+                  <div key={fn.id} className="flex gap-2 mb-2 text-[12px]" style={{ color: isDark ? '#94a3b8' : '#4a5568' }}>
                     <sup className="text-primary font-bold mt-0.5">{fn.number}</sup>
                     <div className="flex-1">
                       <p>{fn.text}</p>
@@ -753,19 +871,68 @@ export default function EditorView() {
             style={{
               top: floatingToolbar.y,
               left: Math.max(10, floatingToolbar.x),
-              background: settings.darkMode ? '#1e293b' : '#fff',
-              borderColor: settings.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+              background: isDark ? '#1e293b' : '#fff',
+              borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
             }}
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
-            <button onClick={() => execCmd('bold')} className={btnClass}><Bold className="w-3.5 h-3.5" /></button>
-            <button onClick={() => execCmd('italic')} className={btnClass}><Italic className="w-3.5 h-3.5" /></button>
-            <button onClick={() => execCmd('underline')} className={btnClass}><Underline className="w-3.5 h-3.5" /></button>
-            <button onClick={() => execCmd('strikeThrough')} className={btnClass}><Strikethrough className="w-3.5 h-3.5" /></button>
-            <div className="w-px h-4 mx-0.5" style={{ background: settings.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
-            <button onClick={() => execCmd('hiliteColor', '#fef3c7')} className={btnClass}><Palette className="w-3.5 h-3.5" /></button>
-            <button onClick={() => execCmd('foreColor', '#1a5276')} className={btnClass}><Type className="w-3.5 h-3.5" /></button>
-            <div className="w-px h-4 mx-0.5" style={{ background: settings.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
-            <button onClick={addFootnote} className={btnClass} title="حاشية"><Hash className="w-3.5 h-3.5" /></button>
+            <button onClick={() => execCmd('bold')} className={btnDark} title="عريض"><Bold className="w-3.5 h-3.5" /></button>
+            <button onClick={() => execCmd('italic')} className={btnDark} title="مائل"><Italic className="w-3.5 h-3.5" /></button>
+            <button onClick={() => execCmd('underline')} className={btnDark} title="تسطير"><Underline className="w-3.5 h-3.5" /></button>
+            <button onClick={() => execCmd('strikeThrough')} className={btnDark} title="يتوسطه خط"><Strikethrough className="w-3.5 h-3.5" /></button>
+            <div className="w-px h-4 mx-0.5" style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }} />
+
+            {/* Text Color Picker */}
+            <div className="relative" data-text-color-picker>
+              <button
+                onClick={() => { setShowTextColorPicker(!showTextColorPicker); setShowBgColorPicker(false); }}
+                className={btnDark} title="لون النص">
+                <Type className="w-3.5 h-3.5" />
+              </button>
+              <AnimatePresence>
+                {showTextColorPicker && (
+                  <motion.div className="absolute bottom-full left-0 mb-1 p-2 rounded-lg border shadow-xl"
+                    style={{ background: isDark ? '#0f172a' : '#fff', borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }}
+                    initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}>
+                    <p className="text-[9px] mb-1.5 font-bold" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>لون النص</p>
+                    <div className="grid grid-cols-5 gap-1">
+                      {TEXT_COLORS.map(c => (
+                        <button key={c} onClick={() => { execCmd('foreColor', c); setShowTextColorPicker(false); }}
+                          className="w-5 h-5 rounded border cursor-pointer hover:scale-110 transition-transform"
+                          style={{ background: c, borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }} />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Background Color Picker */}
+            <div className="relative" data-bg-color-picker>
+              <button
+                onClick={() => { setShowBgColorPicker(!showBgColorPicker); setShowTextColorPicker(false); }}
+                className={btnDark} title="لون الخلفية">
+                <Paintbrush className="w-3.5 h-3.5" />
+              </button>
+              <AnimatePresence>
+                {showBgColorPicker && (
+                  <motion.div className="absolute bottom-full left-0 mb-1 p-2 rounded-lg border shadow-xl"
+                    style={{ background: isDark ? '#0f172a' : '#fff', borderColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }}
+                    initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}>
+                    <p className="text-[9px] mb-1.5 font-bold" style={{ color: isDark ? '#94a3b8' : '#64748b' }}>خلفية النص</p>
+                    <div className="grid grid-cols-5 gap-1">
+                      {BG_COLORS.map(c => (
+                        <button key={c} onClick={() => { execCmd('hiliteColor', c); setShowBgColorPicker(false); }}
+                          className="w-5 h-5 rounded border cursor-pointer hover:scale-110 transition-transform"
+                          style={{ background: c, borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)' }} />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="w-px h-4 mx-0.5" style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' }} />
+            <button onClick={addFootnote} className={btnDark} title="حاشية"><Hash className="w-3.5 h-3.5" /></button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -777,17 +944,17 @@ export default function EditorView() {
             <motion.div className="fixed inset-0 z-[9998] bg-black/30" onClick={() => setShowClipboard(false)}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} />
             <motion.div className="fixed top-0 left-0 bottom-0 z-[9999] w-72 border-r overflow-y-auto p-4"
-              style={{ background: settings.darkMode ? '#1e293b' : '#fff', borderColor: settings.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
+              style={{ background: isDark ? '#1e293b' : '#fff', borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
               initial={{ x: -300 }} animate={{ x: 0 }} exit={{ x: -300 }}>
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-bold" style={{ color: textColor }}>سجل الاقتباسات</h3>
                 <div className="flex gap-2">
                   <button onClick={clearClipboard} className="text-[10px] text-red-400 hover:text-red-500 cursor-pointer">مسح الكل</button>
-                  <button onClick={() => setShowClipboard(false)} className={btnClass}><X className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => setShowClipboard(false)} className={btnDark}><X className="w-3.5 h-3.5" /></button>
                 </div>
               </div>
               {clipboardItems.length === 0 ? (
-                <p className="text-[11px] text-center py-8" style={{ color: settings.darkMode ? '#475569' : '#94a3b8' }}>
+                <p className="text-[11px] text-center py-8" style={{ color: isDark ? '#475569' : '#94a3b8' }}>
                   لا توجد اقتباسات بعد.<br />انسخ أي نص من المحرر ليظهر هنا.
                 </p>
               ) : (
@@ -795,12 +962,12 @@ export default function EditorView() {
                   {clipboardItems.map(item => (
                     <div key={item.id}
                       className="p-2.5 rounded-lg border cursor-pointer hover:bg-primary/5 transition-colors"
-                      style={{ background: settings.darkMode ? 'rgba(30,41,59,0.5)' : '#f8fafc', borderColor: settings.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }}
+                      style={{ background: isDark ? 'rgba(30,41,59,0.5)' : '#f8fafc', borderColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)' }}
                       onClick={() => { if (editorRef.current) { editorRef.current.focus(); document.execCommand('insertHTML', false, item.text); } setShowClipboard(false); }}>
                       <p className="text-[11px] leading-relaxed" style={{ color: textColor }} dir="rtl">
                         {item.text.length > 100 ? item.text.slice(0, 100) + '...' : item.text}
                       </p>
-                      <p className="text-[9px] mt-1" style={{ color: settings.darkMode ? '#475569' : '#cbd5e1' }}>
+                      <p className="text-[9px] mt-1" style={{ color: isDark ? '#475569' : '#cbd5e1' }}>
                         {item.source} — {new Date(item.timestamp).toLocaleTimeString('ar')}
                       </p>
                     </div>
