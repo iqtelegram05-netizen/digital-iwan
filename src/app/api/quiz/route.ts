@@ -132,22 +132,25 @@ export async function POST(request: NextRequest) {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `أنشئ 10 أسئلة اختبار صعبة جداً ومتنوعة ونادرة في مجال: ${category}. المحاور المطلوب التركيز عليها: ${randomSubtopics}. اكتب أسئلة عميقة نادرة لم يسبق طرحها من قبل. كل مرة تُطلب منك أسئلة يجب أن تكون مختلفة تماماً عن المرات السابقة. أجب بصيغة JSON فقط.` },
       ],
-      { temperature: 1.8, maxTokens: 3000 }
+      { temperature: 1.4, maxTokens: 4000 }
     );
 
     const responseText = aiResult.content;
 
+    // Check if AI returned a valid response (not an error message)
+    if (!responseText || responseText.includes('لا توجد مفاتيح') || responseText.length < 50) {
+      console.error('[QUIZ] Invalid AI response:', responseText?.substring(0, 100));
+      return NextResponse.json(
+        { error: 'خدمة الذكاء الاصطناعي غير متاحة حالياً. يرجى المحاولة لاحقاً.' },
+        { status: 503 }
+      );
+    }
+
     // Parse JSON from response
     let quizData: { questions: Array<{ question: string; options: string[]; correctAnswer: number }> };
 
+    // Try to parse JSON from response
     try {
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        quizData = JSON.parse(jsonMatch[0]);
-      } else {
-        quizData = JSON.parse(responseText);
-      }
-    } catch {
       const cleanedText = responseText
         .replace(/```json\n?/g, '')
         .replace(/```\n?/g, '')
@@ -156,8 +159,18 @@ export async function POST(request: NextRequest) {
       if (jsonMatch) {
         quizData = JSON.parse(jsonMatch[0]);
       } else {
-        throw new Error('Failed to parse quiz response');
+        quizData = JSON.parse(cleanedText);
       }
+      if (!quizData.questions || !Array.isArray(quizData.questions)) {
+        throw new Error('No questions array in response');
+      }
+    } catch (parseErr) {
+      console.error('[QUIZ] JSON parse error:', parseErr);
+      console.error('[QUIZ] Raw response (first 500 chars):', responseText?.substring(0, 500));
+      return NextResponse.json(
+        { error: 'حدث خطأ في معالجة الأسئلة. يرجى المحاولة مرة أخرى.' },
+        { status: 500 }
+      );
     }
 
     // Validate, filter, and format questions
