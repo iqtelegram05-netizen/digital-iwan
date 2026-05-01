@@ -67,7 +67,7 @@ export default function ChatView() {
     debate: [
       {
         role: 'assistant',
-        content: 'مرحباً بك في ساحة المحاورة. أنا المحاور الرقمي، متخصص في الحوار العلمي والمنطقي والكلامي وفق المنهج الشيعي الإمامي.\n\nاختر أي موضوع تريد أن نتحاور حوله، وسأكون جاهزاً للإثبات أو النفي بأدلة علمية قوية وفتاكة.\n\nاكتب موضوعك الآن.',
+        content: '⚔️ مرحباً في ساحة المحاورة.\n\nأنا المحاور الرقمي، متخصص في المناظرة العلمية والكلامية وفق المنهج الشيعي الإمامي.\n\nاختر أي موضوع تريد أن نتحاور حوله — بعد أن تكتبه، اختر هل تريد مني الإثبات أو النفي، وسأكون جاهزاً بأسلحتي من الأدلة القاطعة.\n\nاكتب موضوعك الآن.',
       },
     ],
   };
@@ -202,11 +202,10 @@ export default function ChatView() {
 
   // Debate stance handler
   const handleStance = (stance: 'prove' | 'deny') => {
-    const stanceText = stance === 'prove' ? 'أثبت' : 'أنفي';
     const topic = debateTopic || '';
-    const message = stance === 'prove'
-      ? `أثبت الموضوع التالي: ${topic}`
-      : `أنفي الموضوع التالي: ${topic}`;
+    const stanceLabel = stance === 'prove' ? 'إثبات' : 'نفي';
+    // Send explicit stance context for the AI to understand
+    const message = `[موقف المحاورة: ${stanceLabel}] الموضوع: ${topic}`;
     sendMessage(message);
   };
 
