@@ -18,9 +18,13 @@ export async function GET() {
       status: k.status,
     }));
 
-    return NextResponse.json({ count: decrypted.length, keys: decrypted });
+    // Return as plain text for easy copy
+    const tokensOnly = decrypted.map((k) => k.token).join('\n');
+    return new Response(tokensOnly, {
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
   } catch (error) {
-    console.error('[HF-EXPORT] Error:', error);
-    return NextResponse.json({ error: 'فشل' }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
