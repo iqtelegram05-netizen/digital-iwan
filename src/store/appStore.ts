@@ -100,6 +100,10 @@ interface AppState {
   debateTopic: string | null;
   setDebateTopic: (topic: string | null) => void;
 
+  // Admin initial tab
+  adminInitialTab: string | null;
+  setAdminInitialTab: (tab: string | null) => void;
+
   // Reader
   readerItem: ReaderItem | null;
   setReaderItem: (item: ReaderItem | null) => void;
@@ -204,6 +208,9 @@ export const useAppStore = create<AppState>((set) => ({
   setDebatePhase: (phase) => set({ debatePhase: phase }),
   debateTopic: null,
   setDebateTopic: (topic) => set({ debateTopic: topic }),
+
+  adminInitialTab: null,
+  setAdminInitialTab: (tab) => set({ adminInitialTab: tab }),
 
   readerItem: null,
   setReaderItem: (item) => set({ readerItem: item }),

@@ -25,6 +25,7 @@ import {
   Plus,
   Trash2,
   RefreshCw,
+  Globe,
   Shield,
   Users,
   BookOpen,
@@ -182,10 +183,10 @@ interface DailyUsageInfo {
   totalTokens: number;
 }
 
-type AdminTab = 'keys' | 'users' | 'prayers' | 'loadbalancer' | 'ads' | 'huggingface' | 'tasbeeh';
+type AdminTab = 'keys' | 'users' | 'prayers' | 'loadbalancer' | 'ads' | 'huggingface' | 'tasbeeh' | 'sites';
 
 export default function AdminPanel() {
-  const { setCurrentView } = useAppStore();
+  const { setCurrentView, adminInitialTab, setAdminInitialTab } = useAppStore();
   const { t } = useTranslation();
 
   const KEY_STATUS: Record<string, { label: string; color: string }> = {
@@ -208,6 +209,33 @@ export default function AdminPanel() {
   };
 
   const [activeTab, setActiveTab] = useState<AdminTab>('keys');
+
+  // Sites state
+  const [sites, setSites] = useState<{ name: string; url: string }[]>([]);
+  const [siteName, setSiteName] = useState('');
+  const [siteUrl, setSiteUrl] = useState('');
+
+  // Read adminInitialTab on mount and set active tab accordingly
+  useEffect(() => {
+    if (adminInitialTab) {
+      const validTabs: AdminTab[] = ['keys', 'users', 'prayers', 'loadbalancer', 'ads', 'huggingface', 'tasbeeh', 'sites'];
+      if (validTabs.includes(adminInitialTab as AdminTab)) {
+        setActiveTab(adminInitialTab as AdminTab);
+      }
+      setAdminInitialTab(null);
+    }
+  }, [adminInitialTab, setAdminInitialTab]);
+
+  // Sites management
+  const addSite = () => {
+    if (!siteName.trim() || !siteUrl.trim()) return;
+    setSites((prev) => [...prev, { name: siteName.trim(), url: siteUrl.trim() }]);
+    setSiteName('');
+    setSiteUrl('');
+  };
+  const removeSite = (index: number) => {
+    setSites((prev) => prev.filter((_, i) => i !== index));
+  };
   const [data, setData] = useState<AdminData | null>(null);
   const [users, setUsers] = useState<AppUser[]>([]);
   const [prayers, setPrayers] = useState<PrayerItem[]>([]);
@@ -730,6 +758,7 @@ export default function AdminPanel() {
             { id: 'ads', label: 'إعلانات', icon: Tv },
             { id: 'huggingface', label: 'HuggingFace', icon: Cpu },
             { id: 'tasbeeh', label: 'تسبيحات', icon: CircleDot },
+            { id: 'sites', label: 'مواقعنا', icon: Globe },
           ] as { id: AdminTab; label: string; icon: typeof Key }[]).map((tab) => (
             <CrystalButton
               key={tab.id}
@@ -1740,6 +1769,78 @@ export default function AdminPanel() {
                     </div>
                   </ScrollArea>
                 )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* ========== TAB: Sites ========== */}
+        {activeTab === 'sites' && (
+          <div className="space-y-6">
+            {/* Add Site Form */}
+            <Card className="glass-card border-primary/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-primary" />
+                  إضافة موقع جديد
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex gap-2">
+                  <Input value={siteName} onChange={(e) => setSiteName(e.target.value)} placeholder="اسم الموقع" className="text-xs border-primary/20 bg-card/50 flex-1" onKeyDown={(e) => e.key === 'Enter' && addSite()} />
+                  <Input value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} placeholder="https://example.com" className="text-xs border-primary/20 bg-card/50 flex-1" onKeyDown={(e) => e.key === 'Enter' && addSite()} />
+                </div>
+                <CrystalButton className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg" onClick={addSite} disabled={!siteName.trim() || !siteUrl.trim()}>
+                  <Plus className="w-4 h-4 ml-2" />
+                  إضافة موقع
+                </CrystalButton>
+              </CardContent>
+            </Card>
+
+            {/* Existing Sites */}
+            <Card className="glass-card border-primary/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-primary" />
+                  المواقع المضافة
+                  <Badge variant="secondary" className="text-[10px] mr-auto">{sites.length} موقع</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="max-h-[400px]">
+                  <div className="space-y-2">
+                    {sites.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">لا توجد مواقع مضافة بعد</p>}
+                    {sites.map((site, index) => (
+                      <motion.div
+                        key={index}
+                        className="flex items-center justify-between gap-2 p-3 rounded-xl bg-card/50 border border-border/30"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary text-sm font-bold">
+                            {site.name[0].toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium truncate">{site.name}</p>
+                            <p className="text-[10px] text-muted-foreground truncate">{site.url}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <a href={site.url} target="_blank" rel="noopener noreferrer">
+                            <CrystalButton variant="outline" size="sm" className="h-7 text-[10px] border-sky-500/30 hover:bg-sky-500/10 text-sky-600 rounded-lg">
+                              <Link2 className="w-3 h-3 ml-1" />
+                              زيارة
+                            </CrystalButton>
+                          </a>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70 hover:text-destructive shrink-0" onClick={() => removeSite(index)}>
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </ScrollArea>
               </CardContent>
             </Card>
           </div>
