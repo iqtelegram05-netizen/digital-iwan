@@ -206,4 +206,23 @@ export default function Header({ onMenuClick }: HeaderProps) {
               <SelectItem key={language.code} value={language.code} className="text-xs sm:text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-base">{language.flag}</span>
-                  <span>{language.nativeName}</
+                  <span>{language.nativeName}</span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Theme Toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-foreground/70 hover:text-primary hover:bg-primary/10 shrink-0"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        >
+          {theme === 'dark' ? <Sun className="w-4 h-4 sm:w-5 sm:h-5" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
+        </Button>
+      </div>
+    </motion.header>
+  );
+}
