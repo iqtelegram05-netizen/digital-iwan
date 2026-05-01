@@ -210,10 +210,11 @@ export default function AdminPanel() {
 
   const [activeTab, setActiveTab] = useState<AdminTab>('keys');
 
-  // Sites state
-  const [sites, setSites] = useState<{ name: string; url: string }[]>([]);
+  // Sites state (persisted in DB via /api/sites)
+  const [sites, setSites] = useState<{ id: string; name: string; url: string; description?: string | null; iconUrl?: string | null }[]>([]);
   const [siteName, setSiteName] = useState('');
   const [siteUrl, setSiteUrl] = useState('');
+  const [siteDesc, setSiteDesc] = useState('');
 
   // Read adminInitialTab on mount and set active tab accordingly
   useEffect(() => {
@@ -226,15 +227,47 @@ export default function AdminPanel() {
     }
   }, [adminInitialTab, setAdminInitialTab]);
 
-  // Sites management
-  const addSite = () => {
+  // Sites management (API-based)
+  const fetchSites = useCallback(async () => {
+    try {
+      const res = await fetch('/api/sites');
+      if (res.ok) {
+        const data = await res.json();
+        setSites(data.sites || []);
+      }
+    } catch { /* silent */ }
+  }, []);
+
+  const addSite = async () => {
     if (!siteName.trim() || !siteUrl.trim()) return;
-    setSites((prev) => [...prev, { name: siteName.trim(), url: siteUrl.trim() }]);
-    setSiteName('');
-    setSiteUrl('');
+    setSaving(true);
+    try {
+      const res = await fetch('/api/sites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: siteName.trim(), url: siteUrl.trim(), description: siteDesc.trim() || undefined }),
+      });
+      if (res.ok) {
+        await fetchSites();
+        setSiteName('');
+        setSiteUrl('');
+        setSiteDesc('');
+      }
+    } catch { /* silent */ } finally { setSaving(false); }
   };
-  const removeSite = (index: number) => {
-    setSites((prev) => prev.filter((_, i) => i !== index));
+  const removeSite = async (id: string) => {
+    if (!confirm('هل تريد حذف هذا الموقع؟')) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/sites', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) {
+        await fetchSites();
+      }
+    } catch { /* silent */ } finally { setSaving(false); }
   };
   const [data, setData] = useState<AdminData | null>(null);
   const [users, setUsers] = useState<AppUser[]>([]);
@@ -290,7 +323,7 @@ export default function AdminPanel() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [adminRes, usersRes, prayersRes, keysRes, adsRes, hfRes, tasbeehRes] = await Promise.all([
+      const [adminRes, usersRes, prayersRes, keysRes, adsRes, hfRes, tasbeehRes, sitesRes] = await Promise.all([
         fetch('/api/admin'),
         fetch('/api/admin/users'),
         fetch('/api/prayers?all=true'),
@@ -298,6 +331,7 @@ export default function AdminPanel() {
         fetch('/api/admin/ads'),
         fetch('/api/hf-keys'),
         fetch('/api/tasbeeh'),
+        fetch('/api/sites'),
       ]);
       if (adminRes.ok) setData(await adminRes.json());
       if (usersRes.ok) {
@@ -323,6 +357,10 @@ export default function AdminPanel() {
       if (tasbeehRes.ok) {
         const tData = await tasbeehRes.json();
         setTasbeehGroups(tData.groups || []);
+      }
+      if (sitesRes.ok) {
+        const sData = await sitesRes.json();
+        setSites(sData.sites || []);
       }
     } catch {
       // silent
@@ -1790,7 +1828,8 @@ export default function AdminPanel() {
                   <Input value={siteName} onChange={(e) => setSiteName(e.target.value)} placeholder="اسم الموقع" className="text-xs border-primary/20 bg-card/50 flex-1" onKeyDown={(e) => e.key === 'Enter' && addSite()} />
                   <Input value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} placeholder="https://example.com" className="text-xs border-primary/20 bg-card/50 flex-1" onKeyDown={(e) => e.key === 'Enter' && addSite()} />
                 </div>
-                <CrystalButton className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg" onClick={addSite} disabled={!siteName.trim() || !siteUrl.trim()}>
+                <Input value={siteDesc} onChange={(e) => setSiteDesc(e.target.value)} placeholder="وصف اختياري للموقع..." className="text-xs border-primary/20 bg-card/50" onKeyDown={(e) => e.key === 'Enter' && addSite()} />
+                <CrystalButton className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg" onClick={addSite} disabled={saving || !siteName.trim() || !siteUrl.trim()}>
                   <Plus className="w-4 h-4 ml-2" />
                   إضافة موقع
                 </CrystalButton>
@@ -1810,9 +1849,9 @@ export default function AdminPanel() {
                 <ScrollArea className="max-h-[400px]">
                   <div className="space-y-2">
                     {sites.length === 0 && <p className="text-xs text-muted-foreground text-center py-6">لا توجد مواقع مضافة بعد</p>}
-                    {sites.map((site, index) => (
+                    {sites.map((site) => (
                       <motion.div
-                        key={index}
+                        key={site.id}
                         className="flex items-center justify-between gap-2 p-3 rounded-xl bg-card/50 border border-border/30"
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -1824,6 +1863,9 @@ export default function AdminPanel() {
                           <div className="min-w-0">
                             <p className="text-xs font-medium truncate">{site.name}</p>
                             <p className="text-[10px] text-muted-foreground truncate">{site.url}</p>
+                            {site.description && (
+                              <p className="text-[10px] text-muted-foreground/70 truncate mt-0.5">{site.description}</p>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
@@ -1833,7 +1875,7 @@ export default function AdminPanel() {
                               زيارة
                             </CrystalButton>
                           </a>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70 hover:text-destructive shrink-0" onClick={() => removeSite(index)}>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/70 hover:text-destructive shrink-0" onClick={() => removeSite(site.id)} disabled={saving}>
                             <Trash2 className="w-3.5 h-3.5" />
                           </Button>
                         </div>

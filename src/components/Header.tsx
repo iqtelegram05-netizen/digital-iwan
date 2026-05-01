@@ -32,7 +32,7 @@ interface HeaderProps {
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
-  const { selectedScholar, setSelectedScholar, currentView, user, usageInfo, setCurrentView, setAdminInitialTab } = useAppStore();
+  const { selectedScholar, setSelectedScholar, currentView, user, usageInfo, setCurrentView } = useAppStore();
   const { theme, setTheme } = useTheme();
   const { t, lang, setLanguage } = useTranslation();
 
@@ -74,8 +74,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         <motion.button
           className="shrink-0 flex items-center gap-1 h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 transition-all"
           onClick={() => {
-            setAdminInitialTab('sites');
-            setCurrentView('admin');
+            window.location.href = '/sites';
           }}
           whileTap={{ scale: 0.95 }}
           whileHover={{ scale: 1.03 }}

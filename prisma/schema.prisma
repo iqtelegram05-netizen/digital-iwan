@@ -245,3 +245,19 @@ model TasbeehItem {
   @@index([groupId])
   @@index([displayOrder])
 }
+
+// ========== Sites (مواقعنا) ==========
+model Site {
+  id          String   @id @default(cuid())
+  name        String
+  url         String
+  description String?
+  iconUrl     String?
+  displayOrder Int     @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([displayOrder])
+  @@index([isActive])
+}
