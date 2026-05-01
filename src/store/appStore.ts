@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { UsageInfoData } from '@/lib/usageLimit';
 
-export type View = 'splash' | 'chat' | 'debate' | 'teacher' | 'research' | 'quiz' | 'profile' | 'admin' | 'reader';
+export type View = 'splash' | 'chat' | 'debate' | 'teacher' | 'research' | 'quiz' | 'profile' | 'admin' | 'reader' | 'about';
 export type ChatMode = 'chat' | 'debate' | 'teacher' | 'research';
 
 export interface ReaderItem {
