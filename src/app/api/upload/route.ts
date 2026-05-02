@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
-import path from 'path';
 
-// Allowed file types and max size (2MB)
+// Allowed file types and max size (1MB for base64 storage)
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_SIZE = 1024 * 1024; // 1MB
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
-    const folder = (formData.get('folder') as string) || 'sites';
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -28,39 +24,24 @@ export async function POST(request: NextRequest) {
     // Validate file size
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
-        { error: 'حجم الملف كبير جداً. الحد الأقصى 2MB' },
+        { error: 'حجم الملف كبير جداً. الحد الأقصى 1MB' },
         { status: 400 }
       );
     }
 
-    // Generate unique filename
-    const ext = path.extname(file.name) || `.${file.type.split('/')[1]}`;
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 8);
-    const filename = `${timestamp}_${random}${ext}`;
-
-    // Ensure upload directory exists
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', folder);
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
-
-    // Write file
-    const filePath = path.join(uploadDir, filename);
+    // Convert file to base64 data URL (works on Vercel read-only filesystem)
     const bytes = await file.arrayBuffer();
-    await writeFile(filePath, Buffer.from(bytes));
-
-    // Return the public URL
-    const publicUrl = `/uploads/${folder}/${filename}`;
+    const buffer = Buffer.from(bytes);
+    const base64 = buffer.toString('base64');
+    const dataUrl = `data:${file.type};base64,${base64}`;
 
     return NextResponse.json({
-      url: publicUrl,
-      filename,
+      url: dataUrl,
       size: file.size,
       type: file.type,
     });
   } catch (error) {
     console.error('Upload failed:', error);
-    return NextResponse.json({ error: 'فشل في رفع الملف' }, { status: 500 });
+    return NextResponse.json({ error: 'فشل في رفع الصورة' }, { status: 500 });
   }
 }
