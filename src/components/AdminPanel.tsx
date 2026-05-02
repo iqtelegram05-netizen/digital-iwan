@@ -244,29 +244,25 @@ export default function AdminPanel() {
     } catch { /* silent */ }
   }, []);
 
-  // Upload image for site
-  const uploadSiteImage = async (file: File) => {
-    setUploadingImage(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('folder', 'sites');
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setSiteImage(data.url);
-        setSiteImagePreview(data.url);
-      } else {
-        alert('فشل في رفع الصورة');
-      }
-    } catch {
-      alert('حدث خطأ أثناء رفع الصورة');
-    } finally {
-      setUploadingImage(false);
+  // Convert image to base64 directly in browser (works on Vercel)
+  const uploadSiteImage = (file: File) => {
+    if (file.size > 1024 * 1024) {
+      alert('حجم الصورة كبير جداً. الحد الأقصى 1MB');
+      return;
     }
+    setUploadingImage(true);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      setSiteImage(base64);
+      setSiteImagePreview(base64);
+      setUploadingImage(false);
+    };
+    reader.onerror = () => {
+      alert('فشل في قراءة الصورة');
+      setUploadingImage(false);
+    };
+    reader.readAsDataURL(file);
   };
 
   const addSite = async () => {
