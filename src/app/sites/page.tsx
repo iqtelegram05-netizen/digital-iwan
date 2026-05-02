@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { ArrowLeft, Globe, ExternalLink, Search, ArrowUpLeft, Sparkles, Zap, Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Globe, ExternalLink, Search, ArrowUpLeft, ChevronLeft } from 'lucide-react';
 
 interface SiteItem {
   id: string;
@@ -30,75 +30,6 @@ function getDomainFromUrl(url: string): string {
   } catch {
     return url;
   }
-}
-
-// Animated gradient border card component
-function GradientCard({ children, className = '', index = 0 }: { children: React.ReactNode; className?: string; index?: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [4, -4]), { stiffness: 200, damping: 30 });
-  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-4, 4]), { stiffness: 200, damping: 30 });
-  const shineX = useSpring(useTransform(mouseX, [0, 1], ['0%', '100%']), { stiffness: 300, damping: 30 });
-  const shineY = useSpring(useTransform(mouseY, [0, 1], ['0%', '100%']), { stiffness: 300, damping: 30 });
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    mouseX.set((e.clientX - rect.left) / rect.width);
-    mouseY.set((e.clientY - rect.top) / rect.height);
-  };
-
-  const handleMouseLeave = () => {
-    mouseX.set(0.5);
-    mouseY.set(0.5);
-  };
-
-  const colors = [
-    ['#3b82f6', '#8b5cf6', '#06b6d4'],
-    ['#8b5cf6', '#ec4899', '#6366f1'],
-    ['#10b981', '#06b6d4', '#3b82f6'],
-    ['#f59e0b', '#ef4444', '#f97316'],
-    ['#ec4899', '#8b5cf6', '#f43f5e'],
-    ['#06b6d4', '#3b82f6', '#10b981'],
-  ];
-  const [c1, c2, c3] = colors[index % colors.length];
-
-  return (
-    <motion.div
-      ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.07, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-      style={{
-        rotateX,
-        rotateY,
-        transformPerspective: 800,
-      }}
-      className={`relative rounded-2xl ${className}`}
-    >
-      {/* Animated gradient border */}
-      <div
-        className="absolute -inset-[1px] rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{
-          background: `conic-gradient(from 0deg, ${c1}33, ${c2}66, ${c3}33, ${c1}33)`,
-        }}
-      />
-      {/* Inner card */}
-      <div className="relative rounded-2xl overflow-hidden bg-[#0c1422]/90 backdrop-blur-xl border border-white/[0.06]">
-        {/* Dynamic shine overlay */}
-        <motion.div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10"
-          style={{
-            background: `radial-gradient(400px circle at ${shineX} ${shineY}, rgba(255,255,255,0.04), transparent 60%)`,
-          }}
-        />
-        {children}
-      </div>
-    </motion.div>
-  );
 }
 
 export default function SitesPage() {
@@ -129,314 +60,279 @@ export default function SitesPage() {
     (site.description && site.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  // Split into featured (with image) and regular sites
+  const featuredSites = filteredSites.filter(s => s.imageUrl);
+  const regularSites = filteredSites.filter(s => !s.imageUrl);
+
   return (
-    <div
-      className="h-[100dvh] flex flex-col overflow-hidden"
-      style={{
-        background: 'linear-gradient(170deg, #060a14 0%, #0a1225 30%, #0d1830 50%, #091422 75%, #050910 100%)',
-      }}
-    >
-      {/* Ambient background glow effects */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-blue-500/[0.03] blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-15%] w-[400px] h-[400px] rounded-full bg-violet-500/[0.03] blur-[100px]" />
-        <div className="absolute top-[40%] left-[50%] w-[300px] h-[300px] rounded-full bg-cyan-500/[0.02] blur-[80px]" />
+    <div className="h-[100dvh] flex flex-col overflow-hidden bg-[#05070a]">
+      {/* Subtle mesh gradient background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 right-0 w-[600px] h-[400px] bg-indigo-900/[0.07] rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-950/[0.08] rounded-full blur-[150px]" />
       </div>
 
       {/* Header */}
-      <motion.div
-        className="shrink-0 px-4 pt-4 pb-3 relative z-10"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+      <motion.header
+        className="shrink-0 px-5 pt-5 pb-4 relative z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.7 }}
       >
-        <div className="flex items-center gap-3 mb-4">
+        {/* Top bar */}
+        <div className="flex items-center justify-between mb-5">
           <button
             onClick={() => window.history.back()}
-            className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] hover:border-white/[0.12] transition-all duration-300 active:scale-95"
+            className="w-9 h-9 rounded-full bg-white/[0.06] flex items-center justify-center hover:bg-white/[0.1] transition-colors"
           >
-            <ArrowLeft className="w-4 h-4 text-white/60" />
+            <ArrowLeft className="w-4 h-4 text-white/50" />
           </button>
-          <div className="flex items-center gap-3 flex-1">
-            <div className="relative">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500/20 via-violet-500/15 to-cyan-500/10 border border-white/[0.08] flex items-center justify-center">
-                <Globe className="w-5 h-5 text-blue-400" />
-              </div>
-              <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#0a1225] animate-pulse" />
-            </div>
-            <div>
-              <h1
-                className="text-2xl font-bold text-white tracking-tight"
-                style={{ fontFamily: "var(--font-cairo), 'Cairo', 'Noto Sans Arabic', sans-serif" }}
-              >
-                مواقعنا
-              </h1>
-              <p
-                className="text-[11px] text-white/30 mt-0.5"
-                style={{ fontFamily: "var(--font-cairo), 'Cairo', sans-serif" }}
-              >
-                اكتشف مجموعة المواقع المميزة
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-blue-500/[0.08] to-violet-500/[0.08] border border-white/[0.06]">
-            <Zap className="w-3 h-3 text-blue-400/60" />
-            <span
-              className="text-[11px] text-white/40 font-semibold"
-              style={{ fontFamily: "var(--font-cairo), 'Cairo', sans-serif" }}
+
+          <div className="text-center">
+            <h1
+              className="text-[22px] font-extrabold text-white"
+              style={{
+                fontFamily: "'Readex Pro', 'IBM Plex Sans Arabic', sans-serif",
+                letterSpacing: '-0.02em',
+              }}
             >
-              {sites.length}
-            </span>
+              المواقع
+            </h1>
+          </div>
+
+          <div className="w-9 h-9 rounded-full bg-white/[0.06] flex items-center justify-center">
+            <Globe className="w-4 h-4 text-white/40" />
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative group">
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/0 via-violet-500/0 to-cyan-500/0 group-focus-within:from-blue-500/[0.05] group-focus-within:via-violet-500/[0.03] group-focus-within:to-cyan-500/[0.05] transition-all duration-500 blur-sm" />
-          <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-blue-400 transition-colors duration-300 z-10" />
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-[15px] h-[15px] text-white/15" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="ابحث عن موقع..."
-            className="relative w-full pr-10 pl-4 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.06] text-sm text-white placeholder-white/20 focus:outline-none focus:border-blue-500/20 focus:bg-white/[0.05] transition-all duration-300 z-10"
+            placeholder="ابحث هنا..."
+            className="w-full pr-11 pl-4 py-3 rounded-2xl bg-white/[0.04] border border-white/[0.06] text-[13px] text-white/80 placeholder-white/15 focus:outline-none focus:bg-white/[0.06] focus:border-white/[0.1] transition-all duration-300"
             dir="rtl"
-            style={{ fontFamily: "var(--font-cairo), 'Cairo', 'Noto Sans Arabic', sans-serif" }}
+            style={{ fontFamily: "'Readex Pro', sans-serif" }}
           />
         </div>
-      </motion.div>
+      </motion.header>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 pb-8 relative z-10">
-        {/* Loading State */}
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto px-5 pb-10 relative z-10">
+        {/* Loading */}
         {loading && (
-          <div className="flex items-center justify-center py-20">
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative">
-                <div className="w-14 h-14 rounded-2xl border border-blue-500/20 bg-blue-500/[0.05] animate-pulse flex items-center justify-center">
-                  <Globe className="w-6 h-6 text-blue-400/40 animate-spin" style={{ animationDuration: '3s' }} />
-                </div>
-              </div>
-              <p className="text-xs text-white/25" style={{ fontFamily: "var(--font-cairo), 'Cairo', sans-serif" }}>جاري التحميل...</p>
-            </div>
+          <div className="flex items-center justify-center py-24">
+            <div className="w-8 h-8 border-2 border-white/[0.08] border-t-white/30 rounded-full animate-spin" />
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Empty */}
         {!loading && sites.length === 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex flex-col items-center justify-center py-20 text-center"
+            className="flex flex-col items-center py-24"
           >
-            <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-blue-500/[0.05] to-violet-500/[0.03] border border-white/[0.04] flex items-center justify-center mb-5">
-              <Globe className="w-10 h-10 text-white/[0.08]" />
+            <div className="w-16 h-16 rounded-2xl bg-white/[0.03] flex items-center justify-center mb-4">
+              <Globe className="w-7 h-7 text-white/[0.08]" />
             </div>
-            <h3 className="text-lg font-bold text-white/40 mb-2" style={{ fontFamily: "var(--font-cairo), 'Cairo', sans-serif" }}>لا توجد مواقع بعد</h3>
-            <p className="text-xs text-white/20 max-w-[260px] leading-relaxed" style={{ fontFamily: "var(--font-cairo), 'Cairo', sans-serif" }}>
-              سيتم إضافة المواقع المميزة قريباً
+            <p className="text-[13px] text-white/20" style={{ fontFamily: "'Readex Pro', sans-serif" }}>
+              لا توجد مواقع مضافة بعد
             </p>
           </motion.div>
         )}
 
-        {/* No Search Results */}
+        {/* No results */}
         {!loading && sites.length > 0 && filteredSites.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex flex-col items-center justify-center py-16 text-center"
+            className="flex flex-col items-center py-20"
           >
-            <Search className="w-8 h-8 text-white/[0.08] mb-3" />
-            <p className="text-sm text-white/25" style={{ fontFamily: "var(--font-cairo), 'Cairo', sans-serif" }}>
-              لا توجد نتائج لـ &quot;{searchQuery}&quot;
+            <p className="text-[13px] text-white/20" style={{ fontFamily: "'Readex Pro', sans-serif" }}>
+              لا توجد نتائج
             </p>
           </motion.div>
         )}
 
-        {/* Sites Grid */}
-        <AnimatePresence mode="wait">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {filteredSites.map((site, index) => {
-              return (
+        {/* Featured Sites (with images) - Horizontal scroll cards */}
+        {featuredSites.length > 0 && (
+          <div className="mb-6">
+            <AnimatePresence mode="wait">
+              {featuredSites.map((site, index) => (
                 <motion.a
                   key={site.id}
                   href={site.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group block"
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3 }}
+                  className="group block mb-4 last:mb-0"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ delay: index * 0.05, duration: 0.4 }}
                 >
-                  <GradientCard index={index}>
-                    {site.imageUrl ? (
-                      /* Card with image */
-                      <div className="relative">
-                        {/* Image */}
-                        <div className="relative h-36 w-full overflow-hidden">
-                          <img
-                            src={site.imageUrl}
-                            alt={site.name}
-                            className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-[1.08] group-hover:brightness-110"
-                          />
-                          {/* Premium gradient overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#0c1422] via-[#0c1422]/50 to-transparent" />
+                  <div className="relative rounded-[20px] overflow-hidden bg-white/[0.03] border border-white/[0.06] active:scale-[0.98] transition-transform duration-200">
+                    {/* Image */}
+                    <div className="relative h-36 w-full overflow-hidden">
+                      <img
+                        src={site.imageUrl}
+                        alt={site.name}
+                        className="w-full h-full object-cover transition-transform duration-600 group-hover:scale-[1.06]"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#05070a] via-[#05070a]/40 to-transparent" />
 
-                          {/* Top-left badge */}
-                          <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                            <div className="px-2.5 py-1 rounded-lg bg-black/40 backdrop-blur-xl border border-white/[0.08]">
-                              <span
-                                className="text-[10px] text-white/70 font-semibold"
-                                style={{ fontFamily: "var(--font-cairo), 'Cairo', sans-serif" }}
-                              >
-                                {getDomainFromUrl(site.url)}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* External link - top right */}
-                          <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100">
-                            <div className="w-8 h-8 rounded-xl bg-white/[0.12] backdrop-blur-xl border border-white/[0.1] flex items-center justify-center">
-                              <ArrowUpLeft className="w-3.5 h-3.5 text-white/80" />
-                            </div>
-                          </div>
-
-                          {/* Bottom content overlay */}
-                          <div className="absolute bottom-0 left-0 right-0 p-4">
-                            <div className="flex items-end justify-between gap-3">
-                              <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                                {/* Favicon with glow ring */}
-                                <div className="relative shrink-0">
-                                  <div className="w-10 h-10 rounded-xl bg-white/[0.12] backdrop-blur-xl border border-white/[0.15] flex items-center justify-center overflow-hidden shadow-lg shadow-black/20">
-                                    <img
-                                      src={getFaviconUrl(site.url)}
-                                      alt=""
-                                      className="w-6 h-6 object-contain"
-                                      onError={(e) => {
-                                        const el = e.target as HTMLImageElement;
-                                        el.style.display = 'none';
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                                <div className="min-w-0">
-                                  <h3
-                                    className="text-[15px] font-bold text-white truncate leading-tight"
-                                    style={{ fontFamily: "var(--font-cairo), 'Cairo', 'Noto Sans Arabic', sans-serif" }}
-                                  >
-                                    {site.name}
-                                  </h3>
-                                  {site.description && (
-                                    <p
-                                      className="text-[11px] text-white/50 mt-0.5 truncate leading-relaxed"
-                                      style={{ fontFamily: "var(--font-cairo), 'Cairo', sans-serif" }}
-                                    >
-                                      {site.description}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Bottom visit bar */}
-                        <div className="px-4 py-2.5 flex items-center justify-between bg-white/[0.02] border-t border-white/[0.04]">
-                          <div className="flex items-center gap-1.5">
-                            <Sparkles className="w-3 h-3 text-violet-400/40" />
-                            <span
-                              className="text-[10px] text-white/20 font-medium"
-                              style={{ fontFamily: "var(--font-cairo), 'Cairo', sans-serif" }}
-                            >
-                              موقع موصى به
-                            </span>
-                          </div>
+                      {/* Domain badge - top right */}
+                      <div className="absolute top-3 left-3">
+                        <div className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md">
                           <span
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold text-blue-400/70 bg-blue-500/[0.08] border border-blue-500/[0.1] group-hover:bg-blue-500/[0.15] group-hover:text-blue-300 group-hover:border-blue-500/[0.2] transition-all duration-300 active:scale-95"
-                            style={{ fontFamily: "var(--font-cairo), 'Cairo', sans-serif" }}
+                            className="text-[10px] text-white/60 font-medium tracking-wide"
+                            style={{ fontFamily: "'IBM Plex Sans Arabic', monospace" }}
+                            dir="ltr"
                           >
-                            زيارة
-                            <ExternalLink className="w-2.5 h-2.5" />
+                            {getDomainFromUrl(site.url)}
                           </span>
                         </div>
                       </div>
-                    ) : (
-                      /* Card without image */
-                      <div className="p-4">
-                        {/* Top accent line */}
-                        <div className="absolute top-0 left-4 right-4 h-[1px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
 
-                        <div className="flex items-start gap-3">
-                          {/* Favicon with animated ring */}
-                          <div className="relative shrink-0">
-                            <div className="w-12 h-12 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center overflow-hidden group-hover:bg-white/[0.08] group-hover:border-white/[0.12] transition-all duration-300 group-hover:scale-105">
-                              <img
-                                src={getFaviconUrl(site.url)}
-                                alt=""
-                                className="w-7 h-7 object-contain"
-                                onError={(e) => {
-                                  const el = e.target as HTMLImageElement;
-                                  el.style.display = 'none';
-                                  el.parentElement!.innerHTML = `<span class="text-lg font-bold" style="font-family:var(--font-cairo),'Cairo',sans-serif;color:rgba(255,255,255,0.3)">${site.name[0]}</span>`;
-                                }}
-                              />
-                            </div>
-                            {/* Hover glow ring */}
-                            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-blue-500/0 to-violet-500/0 group-hover:from-blue-500/10 group-hover:to-violet-500/10 transition-all duration-500 blur-sm -z-10" />
+                      {/* Visit icon - top left */}
+                      <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center">
+                          <ArrowUpLeft className="w-3.5 h-3.5 text-white/70" />
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center overflow-hidden border border-white/10 shrink-0">
+                            <img
+                              src={getFaviconUrl(site.url)}
+                              alt=""
+                              className="w-5 h-5 object-contain"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            />
                           </div>
-
-                          {/* Site Info */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h3
-                                className="text-[15px] font-bold text-white/90 truncate group-hover:text-white transition-colors duration-300"
-                                style={{ fontFamily: "var(--font-cairo), 'Cairo', 'Noto Sans Arabic', sans-serif" }}
-                              >
-                                {site.name}
-                              </h3>
-                              <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <ArrowUpLeft className="w-3 h-3 text-blue-400/50" />
-                              </div>
-                            </div>
-                            <p
-                              className="text-[10px] text-white/20 truncate mt-0.5"
-                              dir="ltr"
-                              style={{ fontFamily: "var(--font-cairo), 'Cairo', sans-serif" }}
+                          <div className="min-w-0">
+                            <h3
+                              className="text-[16px] font-bold text-white leading-snug"
+                              style={{
+                                fontFamily: "'Readex Pro', sans-serif",
+                                letterSpacing: '-0.01em',
+                              }}
                             >
-                              {getDomainFromUrl(site.url)}
-                            </p>
+                              {site.name}
+                            </h3>
                             {site.description && (
                               <p
-                                className="text-[11px] text-white/25 mt-2 line-clamp-2 leading-relaxed group-hover:text-white/35 transition-colors duration-300"
-                                style={{ fontFamily: "var(--font-cairo), 'Cairo', sans-serif" }}
+                                className="text-[11px] text-white/45 mt-0.5 truncate leading-relaxed"
+                                style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}
                               >
                                 {site.description}
                               </p>
                             )}
                           </div>
                         </div>
-
-                        {/* Visit Button */}
-                        <div className="flex items-center justify-end mt-3 pt-3 border-t border-white/[0.04]">
-                          <span
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold text-white/25 bg-white/[0.03] border border-white/[0.06] group-hover:bg-blue-500/[0.08] group-hover:text-blue-300 group-hover:border-blue-500/[0.15] transition-all duration-300 active:scale-95"
-                            style={{ fontFamily: "var(--font-cairo), 'Cairo', sans-serif" }}
-                          >
-                            زيارة الموقع
-                            <ExternalLink className="w-2.5 h-2.5" />
-                          </span>
-                        </div>
                       </div>
-                    )}
-                  </GradientCard>
+                    </div>
+                  </div>
                 </motion.a>
-              );
-            })}
+              ))}
+            </AnimatePresence>
           </div>
-        </AnimatePresence>
+        )}
 
-        {/* Bottom spacing */}
-        <div className="h-8" />
+        {/* Regular Sites - Clean list items */}
+        {regularSites.length > 0 && featuredSites.length > 0 && (
+          <div className="flex items-center gap-2 mb-3 mt-2 px-1">
+            <div className="h-[1px] flex-1 bg-white/[0.04]" />
+            <span
+              className="text-[10px] text-white/15 font-medium uppercase tracking-widest"
+              style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}
+            >
+              المزيد من المواقع
+            </span>
+            <div className="h-[1px] flex-1 bg-white/[0.04]" />
+          </div>
+        )}
+
+        {regularSites.length > 0 && (
+          <div className="space-y-2">
+            <AnimatePresence mode="wait">
+              {regularSites.map((site, index) => (
+                <motion.a
+                  key={site.id}
+                  href={site.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group block"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ delay: (featuredSites.length + index) * 0.04, duration: 0.35 }}
+                >
+                  <div className="flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-white/[0.025] border border-white/[0.05] hover:bg-white/[0.05] hover:border-white/[0.08] active:scale-[0.98] transition-all duration-200">
+                    {/* Favicon */}
+                    <div className="shrink-0 w-10 h-10 rounded-xl bg-white/[0.05] border border-white/[0.06] flex items-center justify-center overflow-hidden group-hover:bg-white/[0.08] transition-colors">
+                      <img
+                        src={getFaviconUrl(site.url)}
+                        alt=""
+                        className="w-5 h-5 object-contain"
+                        onError={(e) => {
+                          const el = e.target as HTMLImageElement;
+                          el.style.display = 'none';
+                          el.parentElement!.innerHTML = `<span class="text-sm font-bold" style="font-family:'Readex Pro',sans-serif;color:rgba(255,255,255,0.2)">${site.name[0]}</span>`;
+                        }}
+                      />
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <h3
+                        className="text-[14px] font-semibold text-white/85 truncate group-hover:text-white transition-colors leading-tight"
+                        style={{
+                          fontFamily: "'Readex Pro', sans-serif",
+                          letterSpacing: '-0.01em',
+                        }}
+                      >
+                        {site.name}
+                      </h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span
+                          className="text-[10px] text-white/20 truncate"
+                          dir="ltr"
+                          style={{ fontFamily: "'IBM Plex Sans Arabic', monospace" }}
+                        >
+                          {getDomainFromUrl(site.url)}
+                        </span>
+                        {site.description && (
+                          <>
+                            <span className="text-white/[0.06]">·</span>
+                            <span
+                              className="text-[10px] text-white/20 truncate"
+                              style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}
+                            >
+                              {site.description}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Arrow */}
+                    <div className="shrink-0">
+                      <ChevronLeft className="w-4 h-4 text-white/[0.12] group-hover:text-white/30 group-hover:-translate-x-0.5 transition-all duration-200" />
+                    </div>
+                  </div>
+                </motion.a>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+
+        <div className="h-6" />
       </div>
     </div>
   );
