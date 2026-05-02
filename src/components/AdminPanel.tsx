@@ -48,6 +48,9 @@ import {
   Database,
   CircleDot,
   ChevronDown,
+  ImagePlus,
+  X,
+  Upload,
 } from 'lucide-react';
 
 // ========== Types ==========
@@ -211,10 +214,13 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState<AdminTab>('keys');
 
   // Sites state (persisted in DB via /api/sites)
-  const [sites, setSites] = useState<{ id: string; name: string; url: string; description?: string | null; iconUrl?: string | null }[]>([]);
+  const [sites, setSites] = useState<{ id: string; name: string; url: string; description?: string | null; iconUrl?: string | null; imageUrl?: string | null }[]>([]);
   const [siteName, setSiteName] = useState('');
   const [siteUrl, setSiteUrl] = useState('');
   const [siteDesc, setSiteDesc] = useState('');
+  const [siteImage, setSiteImage] = useState<string>(''); // uploaded image URL
+  const [siteImagePreview, setSiteImagePreview] = useState<string>(''); // preview URL
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Read adminInitialTab on mount and set active tab accordingly
   useEffect(() => {
@@ -238,6 +244,31 @@ export default function AdminPanel() {
     } catch { /* silent */ }
   }, []);
 
+  // Upload image for site
+  const uploadSiteImage = async (file: File) => {
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'sites');
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSiteImage(data.url);
+        setSiteImagePreview(data.url);
+      } else {
+        alert('فشل في رفع الصورة');
+      }
+    } catch {
+      alert('حدث خطأ أثناء رفع الصورة');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const addSite = async () => {
     if (!siteName.trim() || !siteUrl.trim()) return;
     setSaving(true);
@@ -245,13 +276,15 @@ export default function AdminPanel() {
       const res = await fetch('/api/sites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: siteName.trim(), url: siteUrl.trim(), description: siteDesc.trim() || undefined }),
+        body: JSON.stringify({ name: siteName.trim(), url: siteUrl.trim(), description: siteDesc.trim() || undefined, imageUrl: siteImage || undefined }),
       });
       if (res.ok) {
         await fetchSites();
         setSiteName('');
         setSiteUrl('');
         setSiteDesc('');
+        setSiteImage('');
+        setSiteImagePreview('');
       }
     } catch { /* silent */ } finally { setSaving(false); }
   };
@@ -1829,7 +1862,44 @@ export default function AdminPanel() {
                   <Input value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} placeholder="https://example.com" className="text-xs border-primary/20 bg-card/50 flex-1" onKeyDown={(e) => e.key === 'Enter' && addSite()} />
                 </div>
                 <Input value={siteDesc} onChange={(e) => setSiteDesc(e.target.value)} placeholder="وصف اختياري للموقع..." className="text-xs border-primary/20 bg-card/50" onKeyDown={(e) => e.key === 'Enter' && addSite()} />
-                <CrystalButton className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg" onClick={addSite} disabled={saving || !siteName.trim() || !siteUrl.trim()}>
+                {/* Image Upload */}
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <ImagePlus className="w-3.5 h-3.5" />
+                    صورة الموقع (اختياري)
+                  </p>
+                  {siteImagePreview ? (
+                    <div className="relative group">
+                      <img src={siteImagePreview} alt="معاينة" className="w-full h-32 object-cover rounded-xl border border-primary/15" />
+                      <button
+                        onClick={() => { setSiteImage(''); setSiteImagePreview(''); }}
+                        className="absolute top-1.5 left-1.5 p-1.5 rounded-full bg-red-500/90 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                        type="button"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center gap-2 h-28 rounded-xl border-2 border-dashed border-primary/15 bg-primary/3 hover:bg-primary/5 hover:border-primary/25 cursor-pointer transition-all">
+                      <Upload className="w-6 h-6 text-primary/40" />
+                      <span className="text-[11px] text-muted-foreground">
+                        {uploadingImage ? 'جاري الرفع...' : 'اضغط لاختيار صورة'}
+                      </span>
+                      <span className="text-[9px] text-muted-foreground/60">JPEG, PNG, GIF, WebP — حتى 2MB</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadSiteImage(file);
+                        }}
+                        disabled={uploadingImage}
+                      />
+                    </label>
+                  )}
+                </div>
+                <CrystalButton className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg" onClick={addSite} disabled={saving || !siteName.trim() || !siteUrl.trim() || uploadingImage}>
                   <Plus className="w-4 h-4 ml-2" />
                   إضافة موقع
                 </CrystalButton>
@@ -1857,9 +1927,15 @@ export default function AdminPanel() {
                         animate={{ opacity: 1, x: 0 }}
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary text-sm font-bold">
-                            {site.name[0].toUpperCase()}
-                          </div>
+                          {site.imageUrl ? (
+                            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden border border-primary/10">
+                              <img src={site.imageUrl} alt={site.name} className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary text-sm font-bold">
+                              {site.name[0].toUpperCase()}
+                            </div>
+                          )}
                           <div className="min-w-0">
                             <p className="text-xs font-medium truncate">{site.name}</p>
                             <p className="text-[10px] text-muted-foreground truncate">{site.url}</p>

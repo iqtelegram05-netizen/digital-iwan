@@ -11,6 +11,7 @@ interface SiteItem {
   url: string;
   description: string | null;
   iconUrl: string | null;
+  imageUrl: string | null;
   displayOrder: number;
   createdAt: string;
 }
@@ -170,7 +171,7 @@ export default function SitesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: index * 0.05, duration: 0.3 }}
-                className="group relative rounded-2xl p-4 transition-all duration-300 hover:scale-[1.02] cursor-pointer block"
+                className="group relative rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] cursor-pointer block"
                 style={{
                   background: 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))',
                   border: '1.5px solid rgba(255,255,255,0.06)',
@@ -184,60 +185,88 @@ export default function SitesPage() {
                   (e.currentTarget as HTMLElement).style.background = 'linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))';
                 }}
               >
-                {/* Top accent line */}
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                <div className="flex items-start gap-3">
-                  {/* Site Icon / Favicon */}
-                  <div className="shrink-0 w-12 h-12 rounded-xl bg-primary/8 border border-primary/10 flex items-center justify-center overflow-hidden group-hover:border-primary/25 transition-colors">
-                    {site.iconUrl ? (
-                      <img
-                        src={site.iconUrl}
-                        alt={site.name}
-                        className="w-8 h-8 object-contain rounded"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                          (e.target as HTMLImageElement).parentElement!.innerHTML = `<span class="text-lg font-black text-primary">${site.name[0]}</span>`;
-                        }}
-                      />
-                    ) : (
-                      <img
-                        src={getFaviconUrl(site.url)}
-                        alt=""
-                        className="w-7 h-7 object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                          (e.target as HTMLImageElement).parentElement!.innerHTML = `<span class="text-lg font-black text-primary">${site.name[0]}</span>`;
-                        }}
-                      />
-                    )}
-                  </div>
-
-                  {/* Site Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm font-bold text-white truncate group-hover:text-primary transition-colors">
-                        {site.name}
-                      </h3>
-                      <ExternalLink className="w-3 h-3 text-white/20 group-hover:text-primary/50 transition-colors shrink-0" />
+                {/* Site Image (if available) */}
+                {site.imageUrl && (
+                  <div className="relative h-36 w-full overflow-hidden">
+                    <img
+                      src={site.imageUrl}
+                      alt={site.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                    {/* Name overlay on image */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-bold text-white truncate">{site.name}</h3>
+                        <ExternalLink className="w-3 h-3 text-white/50 shrink-0" />
+                      </div>
+                      {site.description && (
+                        <p className="text-[11px] text-white/70 mt-0.5 line-clamp-1">{site.description}</p>
+                      )}
                     </div>
-                    <p className="text-[11px] text-white/30 truncate mt-0.5" dir="ltr">
-                      {getDomainFromUrl(site.url)}
-                    </p>
-                    {site.description && (
-                      <p className="text-xs text-white/40 mt-2 line-clamp-2 leading-relaxed">
-                        {site.description}
-                      </p>
-                    )}
                   </div>
-                </div>
+                )}
 
-                {/* Visit Button */}
-                <div className="mt-3 flex items-center justify-end">
-                  <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold text-primary/70 bg-primary/5 border border-primary/10 group-hover:bg-primary/10 group-hover:text-primary transition-all">
-                    زيارة الموقع
-                    <ExternalLink className="w-3 h-3" />
-                  </span>
+                {/* Content area */}
+                <div className={site.imageUrl ? 'p-3 pt-2' : 'p-4'}>
+                  {/* Top accent line */}
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                  {!site.imageUrl && (
+                    <div className="flex items-start gap-3">
+                      {/* Site Icon / Favicon */}
+                      <div className="shrink-0 w-12 h-12 rounded-xl bg-primary/8 border border-primary/10 flex items-center justify-center overflow-hidden group-hover:border-primary/25 transition-colors">
+                        {site.iconUrl ? (
+                          <img
+                            src={site.iconUrl}
+                            alt={site.name}
+                            className="w-8 h-8 object-contain rounded"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                              (e.target as HTMLImageElement).parentElement!.innerHTML = `<span class="text-lg font-black text-primary">${site.name[0]}</span>`;
+                            }}
+                          />
+                        ) : (
+                          <img
+                            src={getFaviconUrl(site.url)}
+                            alt=""
+                            className="w-7 h-7 object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                              (e.target as HTMLImageElement).parentElement!.innerHTML = `<span class="text-lg font-black text-primary">${site.name[0]}</span>`;
+                            }}
+                          />
+                        )}
+                      </div>
+
+                      {/* Site Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-bold text-white truncate group-hover:text-primary transition-colors">
+                            {site.name}
+                          </h3>
+                          <ExternalLink className="w-3 h-3 text-white/20 group-hover:text-primary/50 transition-colors shrink-0" />
+                        </div>
+                        <p className="text-[11px] text-white/30 truncate mt-0.5" dir="ltr">
+                          {getDomainFromUrl(site.url)}
+                        </p>
+                        {site.description && (
+                          <p className="text-xs text-white/40 mt-2 line-clamp-2 leading-relaxed">
+                            {site.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Visit Button */}
+                  <div className="flex items-center justify-end">
+                    <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold text-primary/70 bg-primary/5 border border-primary/10 group-hover:bg-primary/10 group-hover:text-primary transition-all">
+                      زيارة الموقع
+                      <ExternalLink className="w-3 h-3" />
+                    </span>
+                  </div>
                 </div>
               </motion.a>
             ))}

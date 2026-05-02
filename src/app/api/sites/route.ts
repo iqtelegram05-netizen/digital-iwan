@@ -13,6 +13,7 @@ export async function GET() {
         url: true,
         description: true,
         iconUrl: true,
+        imageUrl: true,
         displayOrder: true,
         createdAt: true,
       },
@@ -28,7 +29,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, url, description, iconUrl } = body;
+    const { name, url, description, iconUrl, imageUrl } = body;
 
     if (!name?.trim() || !url?.trim()) {
       return NextResponse.json({ error: 'Name and URL are required' }, { status: 400 });
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
         url: url.trim(),
         description: description?.trim() || null,
         iconUrl: iconUrl?.trim() || null,
+        imageUrl: imageUrl?.trim() || null,
         displayOrder: (maxOrder?.displayOrder || 0) + 1,
       },
     });
@@ -93,7 +95,7 @@ export async function DELETE(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, name, url, description, iconUrl, isActive, displayOrder } = body;
+    const { id, name, url, description, iconUrl, imageUrl, isActive, displayOrder } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Site ID is required' }, { status: 400 });
@@ -106,6 +108,7 @@ export async function PUT(request: NextRequest) {
         ...(url !== undefined && { url: url.trim() }),
         ...(description !== undefined && { description: description?.trim() || null }),
         ...(iconUrl !== undefined && { iconUrl: iconUrl?.trim() || null }),
+        ...(imageUrl !== undefined && { imageUrl: imageUrl?.trim() || null }),
         ...(isActive !== undefined && { isActive }),
         ...(displayOrder !== undefined && { displayOrder }),
       },
