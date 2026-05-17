@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { callAI } from '@/lib/aiProvider';
 import { filterArabicText } from '@/lib/arabicFilter';
+import { advancedShiaFilter } from '@/lib/shiaContentFilter';
 
 const CATEGORY_PROMPTS: Record<string, string> = {
   'عقائد': 'العقائد الشيعية الإمامية الاثني عشرية: التوحيد بأبعاده، النبوة العامة والخاصة، الإمامة وعصمة الأئمة، المعاد والبرزخ، العدل الإلهي، الجبر والتفويض والبين بين، البداء، الشفاعة، التوسل، الرؤية، القضاء والقدر، مسألة خلق القرآن، منزلة العقل، الحسن والقبح العقليين',
@@ -107,7 +108,16 @@ export async function POST(request: NextRequest) {
     const uniqueSeed = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
 
     // System prompt for quiz generation - VERY HARD, Shia-specific, INFINITELY VARIABLE
-    const systemPrompt = `أنت خبير عميق في العلوم الإسلامية الشيعية الإمامية الاثني عشرية على مستوى البحث الخارج في الحوزات العلمية.
+    const systemPrompt = `أنت خبير عميق حصرياً في العلوم الإسلامية الشيعية الإمامية الاثني عشرية على مستوى البحث الخارج في الحوزات العلمية.
+
+⛔⛔⛔ قواعد مطلقة لا مساومة فيها ⛔⛔⛔
+
+1. تختص بالمنهج الشيعي الإمامي الاثني عشري حصرياً.
+2. يُحظر عليك حظراً مطلقاً ذكر أو طرح أسئلة عن مذاهب إسلامية أخرى أو أديان أخرى.
+3. يُحظر عليك الاستشهاد بكتب غير شيعية: صحيح البخاري، صحيح مسلم، سنن الترمذي، سنن أبي داود، سنن النسائي، سنن ابن ماجه، الموطأ، مسند أحمد، أو أي كتاب من كتب أهل السنة.
+4. يُحظر عليك ذكر علماء غير شيعة: أبو حنيفة، مالك، الشافعي، أحمد بن حنبل، البخاري، مسلم، ابن تيمية، الغزالي، النووي، ابن حجر، الذهبي، الألباني.
+5. يُحظر عليك استخدام عبارة "متفق عليه" أو "عند الجمهور" أو "عند أهل السنة".
+6. مصادرك الوحيدة: الكتب الأربعة (الكافي للكليني، من لا يحضره الفقيه للصدوق، التهذيب للطوسي، الاستبصار للطوسي)، نهج البلاغة للشريف الرضي، الصحيفة السجادية، التفاسير الشيعية (القمي، العياشي، التبيان للطوسي، الميزان للطباطبائي، مجمع البيان للطبرسي، التفسير الأصفى للفيض الكاشاني)، الفقه الشيعي (الوسائل للحر العاملي، الجواهر للجواهري، شرائع الإسلام للمحقق الحلي، العروة الوثقى)، الكلام الشيعي (الإلهيات للطوسي، نهج الحق للعلامة الحلي)، الرجال الشيعي (الفهرست للطوسي، النجاشي، معجم رجال الحديث للخوئي). مراجعك فقط: علماء الشيعة الإمامية كالشيخ الصدوق والشيخ المفيد والشريف المرتضى والشيخ الطوسي والعلامة الحلي والشهيد الأول والثاني والمجلسي والسيد الخوئي والشهيد الصدر.
 
 مجال الأسئلة العام: ${categoryPrompt}
 المحاور المطلوب التركيز عليها في هذه المرة: ${randomSubtopics}
@@ -117,9 +127,9 @@ export async function POST(request: NextRequest) {
 2. تختص بالمنهج الشيعي الإمامي الاثني عشري حصراً
 3. يجب أن تغطي المحاور المذكورة أعلاه (${randomSubtopics}) بشكل متعمق
 4. لا تكرر أبداً الأسئلة الشائعة أو المعروفة أو المعتادة - ابحث عن مسائل نادرة ودقيقة
-5. كل سؤال يجب أن يكون فريداً تماماً - استخدم مسائل من كتب مرجعية متخصصة ومخطوطات
+5. كل سؤال يجب أن يكون فريداً تماماً - استخدم مسائل من الكتب الشيعية المرجعية المتخصصة
 6. الخيارات الأربعة يجب أن تكون مقنعة ومتشابهة الصعوبة بحيث لا يمكن التخمين
-7. الإجابة الصحيحة يجب أن تحتاج لمعرفة عميقة بالموضوع
+7. الإجابة الصحيحة يجب أن تحتاج لمعرفة عميقة بالموضوع الشيعي
 8. اكتب الأسئلة بلغة عربية فصيحة أكاديمية
 9. تنوّع بين أسئلة نصية وتحليلية واستدلالية وتراثية
 10. رمز التوليد الفريد: ${uniqueSeed} - تجاهله ولكن اذكره لضمان أن كل طلب ينتج أسئلة مختلفة تماماً
@@ -193,12 +203,22 @@ export async function POST(request: NextRequest) {
       typeof q.correctAnswer === 'number' && q.correctAnswer >= 0 && q.correctAnswer < q.options.length
     );
 
-    const questions: QuizQuestion[] = validQuestions.slice(0, 10).map((q, index) => ({
-      id: `q_${Date.now()}_${index}`,
-      question: filterArabicText(q.question),
-      options: q.options.slice(0, 4).map((opt: string) => filterArabicText(opt)),
-      correctAnswer: q.correctAnswer,
-    }));
+    const questions: QuizQuestion[] = validQuestions.slice(0, 10).map((q, index) => {
+      // Filter each question and options through both Arabic and Shia content filters
+      let filteredQuestion = filterArabicText(q.question);
+      filteredQuestion = advancedShiaFilter(filteredQuestion);
+      const filteredOptions = q.options.slice(0, 4).map((opt: string) => {
+        let filtered = filterArabicText(opt);
+        filtered = advancedShiaFilter(filtered);
+        return filtered;
+      });
+      return {
+        id: `q_${Date.now()}_${index}`,
+        question: filteredQuestion,
+        options: filteredOptions,
+        correctAnswer: q.correctAnswer,
+      };
+    });
 
     if (questions.length === 0) {
       return NextResponse.json(
