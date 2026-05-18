@@ -246,6 +246,23 @@ model TasbeehItem {
   @@index([displayOrder])
 }
 
+// ========== Scholar Custom Sources (مصادر المراجع المخصصة) ==========
+model ScholarSource {
+  id          String   @id @default(cuid())
+  scholarName String   // اسم المرجع أو العالم
+  title       String   // عنوان المصدر (اسم الكتاب أو اسم الرابط)
+  sourceType  String   @default("book") // "book" or "link"
+  url         String?  // رابط المصدر (للروابط والكتب الإلكترونية)
+  description String?  // وصف إضافي للمصدر
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([scholarName])
+  @@index([sourceType])
+  @@index([isActive])
+}
+
 // ========== Sites (مواقعنا) ==========
 model Site {
   id          String   @id @default(cuid())

@@ -391,7 +391,54 @@ export async function POST(request: NextRequest) {
     if (scholar) {
       if (mode === 'chat') {
         // الأيوان العلمي: مُقيّد بعرض رأي المرجع المختار فقط
+
+        // جلب المصادر المخصصة من قاعدة البيانات
+        let customSourcesPrompt = '';
+        try {
+          const customSources = await db.scholarSource.findMany({
+            where: { scholarName: scholar, isActive: true },
+            orderBy: { sourceType: 'asc' },
+          });
+
+          if (customSources.length > 0) {
+            const books = customSources.filter(s => s.sourceType === 'book');
+            const links = customSources.filter(s => s.sourceType === 'link');
+
+            customSourcesPrompt = '\n\n📚📚📚 مصادر مخصصة من مالك الموقع 📚📚📚\n';
+            customSourcesPrompt += '═══════════════════════════════════════\n';
+            customSourcesPrompt += '⚠️ هذه المصادر هي المراجع الأساسية التي حددها مالك الموقع للمرجع المختار. يجب أن تعتمد عليها أولاً وقبل كل شيء.\n\n';
+
+            if (books.length > 0) {
+              customSourcesPrompt += '📖 الكتب المخصصة:\n';
+              books.forEach(b => {
+                customSourcesPrompt += `  - ${b.title}`;
+                if (b.description) customSourcesPrompt += ` (${b.description})`;
+                if (b.url) customSourcesPrompt += ` - الرابط: ${b.url}`;
+                customSourcesPrompt += '\n';
+              });
+              customSourcesPrompt += '\n';
+            }
+
+            if (links.length > 0) {
+              customSourcesPrompt += '🔗 الروابط المخصصة:\n';
+              links.forEach(l => {
+                customSourcesPrompt += `  - ${l.title}`;
+                if (l.description) customSourcesPrompt += ` (${l.description})`;
+                customSourcesPrompt += ` - ${l.url}\n`;
+              });
+              customSourcesPrompt += '\n';
+            }
+
+            customSourcesPrompt += '⛔ قاعدة حاسمة: عند الإجابة، ابحث في المصادر المخصصة أعلاه أولاً. إذا وجدت الإجابة فيها، قدمها مع ذكر المصدر.\n';
+            customSourcesPrompt += '⛔ إذا لم تجد الإجابة في المصادر المخصصة، ثم ابحث في كتب المرجع الافتراضية.\n';
+            customSourcesPrompt += '⛔ لا تنسب أي فتوى أو رأي لم يرد في هذه المصادر أو في كتب المرجع المعروفة.\n';
+          }
+        } catch (dbErr) {
+          console.error('[CHAT] Error fetching custom sources:', dbErr);
+        }
+
         systemPrompt += buildScholarPromptSuffix(scholar);
+        systemPrompt += customSourcesPrompt;
       }
       // باقي الأقسام (debate, teacher, research): لا تُقيّد بمرجع معين - تشرح الحديث فقط
     }

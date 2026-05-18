@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAppStore } from '@/store/appStore';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, Moon, Sun, GraduationCap, Languages, Plus, X, Check, Tv, Gift, HandHeart, Globe, Users } from 'lucide-react';
+import { Menu, Moon, Sun, GraduationCap, Languages, Plus, X, Check, Tv, Gift, HandHeart, Globe, Users, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -17,6 +17,7 @@ import {
 import { LANGUAGES } from '@/i18n/languages';
 import { useTranslation } from '@/i18n/useTranslation';
 import AdWatchModal from './AdWatchModal';
+import ScholarSourcesModal from './ScholarSourcesModal';
 
 const SCHOLARS = [
   'السيد السيستاني',
@@ -39,6 +40,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customScholar, setCustomScholar] = useState('');
   const [showAdModal, setShowAdModal] = useState(false);
+  const [showSourcesModal, setShowSourcesModal] = useState(false);
 
   const currentLang = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
 
@@ -99,7 +101,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
         {/* Scholar Selector - hidden in debate/research modes */}
         {!hideScholarSelector && (
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 flex items-center gap-1">
             <Select value={selectedScholar || ''} onValueChange={setSelectedScholar}>
               <SelectTrigger className="h-8 sm:h-9 text-[10px] sm:text-xs border-primary/20 bg-primary/5 focus:ring-primary/30">
                 <div className="flex items-center gap-1.5 min-w-0">
@@ -127,6 +129,15 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 </div>
               </SelectContent>
             </Select>
+            {/* زر إعدادات المصادر */}
+            <motion.button
+              className="shrink-0 flex items-center justify-center h-8 w-8 rounded-lg bg-primary/5 hover:bg-primary/15 text-primary/70 hover:text-primary border border-primary/10 transition-all"
+              onClick={() => setShowSourcesModal(true)}
+              whileTap={{ scale: 0.92 }}
+              title="إعدادات المصادر"
+            >
+              <Settings className="w-3.5 h-3.5" />
+            </motion.button>
           </div>
         )}
 
@@ -276,6 +287,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
       </AnimatePresence>
 
       <AdWatchModal open={showAdModal} onClose={() => setShowAdModal(false)} />
+      <ScholarSourcesModal open={showSourcesModal} onClose={() => setShowSourcesModal(false)} />
     </motion.header>
   );
 }
